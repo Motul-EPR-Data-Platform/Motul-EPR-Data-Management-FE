@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Plus } from "lucide-react";
+import { usePermission } from "@/hooks/usePermission";
 
 // Mock data - replace with API call
 const mockUsers: User[] = [
@@ -110,6 +111,12 @@ export default function RecyclerUsersPage() {
     }
   };
 
+  // Check permission - users page requires users.view permission
+  const canViewUsers = usePermission("users.view");
+  const canInvite = usePermission("users.invite") || usePermission("users.inviteOwnOrg");
+  const canEditUser = usePermission("users.edit");
+  const canDeleteUser = usePermission("users.delete");
+
   if (isLoading) {
     return (
       <PageLayout
@@ -122,6 +129,22 @@ export default function RecyclerUsersPage() {
     );
   }
 
+  if (!canViewUsers) {
+    return (
+      <PageLayout
+        breadcrumbs={[{ label: "Quản lý người dùng" }]}
+        title="Quản lý người dùng"
+        subtitle="Access Denied"
+      >
+        <div className="rounded-lg border bg-card p-6">
+          <p className="text-center text-muted-foreground py-12">
+            Bạn không có quyền truy cập trang này.
+          </p>
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
     <PageLayout
       breadcrumbs={[{ label: "Quản lý người dùng" }]}
@@ -129,7 +152,7 @@ export default function RecyclerUsersPage() {
       subtitle="Manage user accounts and permissions"
     >
       {/* Filter Section */}
-      <div className="rounded-lg border bg-white p-6 space-y-4">
+      <div className="rounded-lg border bg-card p-6 space-y-4">
         <div className="space-y-1">
           <h2 className="text-lg font-semibold">Tất cả người dùng</h2>
           <p className="text-sm text-muted-foreground">
@@ -159,30 +182,34 @@ export default function RecyclerUsersPage() {
             </SelectContent>
           </Select>
 
-          <Button
-            onClick={() => setIsAddUserDialogOpen(true)}
-            className="bg-green-600 hover:bg-green-700 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Thêm Người dùng mới
-          </Button>
+          {canInvite && (
+            <Button
+              onClick={() => setIsAddUserDialogOpen(true)}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Thêm Người dùng mới
+            </Button>
+          )}
         </div>
       </div>
 
       {/* User Table */}
       <UserManagementTable
         users={filteredUsers}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        onEdit={canEditUser ? handleEdit : undefined}
+        onDelete={canDeleteUser ? handleDelete : undefined}
       />
 
       {/* Add User Dialog */}
-      <AddUserDialog
-        open={isAddUserDialogOpen}
-        onOpenChange={setIsAddUserDialogOpen}
-        onAddUser={handleAddUser}
-        availableRoles={recyclerRoles}
-      />
+      {canInvite && (
+        <AddUserDialog
+          open={isAddUserDialogOpen}
+          onOpenChange={setIsAddUserDialogOpen}
+          onAddUser={handleAddUser}
+          availableRoles={recyclerRoles}
+        />
+      )}
     </PageLayout>
   );
 }

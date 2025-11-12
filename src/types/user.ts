@@ -18,3 +18,14 @@ export interface User {
   createdAt: string;
 }
 
+export interface PendingInvite {
+  id: string;
+  email: string;
+  role: UserRole;
+  unit: string | null;
+  invitedBy: string;
+  invitedAt: string;
+  expiresAt: string;
+  status: "pending" | "expired" | "accepted";
+}
+
