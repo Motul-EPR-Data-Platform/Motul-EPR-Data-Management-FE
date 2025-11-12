@@ -9,6 +9,7 @@ import {
   Factory,
   FileText,
   User,
+  Building2,
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { UserRole } from "@/types/user";
@@ -66,6 +67,7 @@ export const recyclerSidebarConfig: SidebarConfig = {
     { title: "Bản ghi của tôi", url: "/recycler/my-records", icon: ClipboardList },
     { title: "Chủ nguồn thải", url: "/recycler/waste-sources", icon: Factory },
     { title: "Báo cáo", url: "/recycler/reports", icon: FileText },
+    { title: "Thông tin doanh nghiệp", url: "/recycler/business-info", icon: Building2 },
     { title: "Quản lý người dùng", url: "/recycler/users", icon: Users, requiresAdmin: true },
     { title: "Cài đặt", url: "/recycler/settings", icon: Settings },
     { title: "Tài khoản", url: "/recycler/account", icon: User },

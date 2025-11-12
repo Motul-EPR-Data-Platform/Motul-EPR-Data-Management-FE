@@ -87,6 +87,12 @@ export const routePermissions: RoutePermission[] = [
     permissions: ["users.view"],
   },
   {
+    path: "/recycler/business-info",
+    organization: "recycler",
+    roles: ["Recycler Admin", "Recycler User"],
+    permissions: ["settings.view"],
+  },
+  {
     path: "/recycler/settings",
     organization: "recycler",
     roles: ["Recycler Admin", "Recycler User"],
