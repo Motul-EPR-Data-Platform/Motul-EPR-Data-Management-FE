@@ -1,80 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { BusinessInfoForm } from "@/components/recyclers/BusinessInfoForm";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { RouteGuard } from "@/components/rbac/RouteGuard";
 import { Pencil, FileText, AlertCircle } from "lucide-react";
-import { AuthService } from "@/lib/services/auth.service";
-import { CompleteRecyclerAdminProfileFormData } from "@/lib/validations/recycler";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-// yyyy-mm-dd -> dd/mm/yyyy
-function convertISOToDate(isoStr: string): string {
-  if (!isoStr) return "";
-  const [year, month, day] = isoStr.split("-");
-  return `${day}/${month}/${year}`;
-}
-
 export default function RecyclerBusinessInfoPage() {
-  const router = useRouter();
-  const { user, userRole } = useAuth();
+  const { userRole } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [formData, setFormData] = useState<Partial<CompleteRecyclerAdminProfileFormData> | null>(null);
-  const [error, setError] = useState<string | null>(null);
   
   // Only Recycler Admin can edit
   const isAdmin = userRole === "Recycler Admin";
-
-  // Load business info data
-  useEffect(() => {
-    loadBusinessInfo();
-  }, []);
-
-  const loadBusinessInfo = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      // Fetch user data to get business info
-      // For now, we'll use mock data or fetch from API
-      // TODO: Replace with actual API call to get business info
-      const userData = await AuthService.me();
-      
-      // Transform user data to form data format
-      // This is a placeholder - adjust based on actual API response
-      if (userData) {
-        setFormData({
-          vendor_name: userData.fullName || "",
-          tax_code: "",
-          representative: "",
-          location: {
-            address: "",
-            city: "",
-          },
-          business_reg_number: "",
-          business_reg_issue_date: "",
-          phone: "",
-          contact_email: userData.email || "",
-          contact_point: "",
-          contact_phone: "",
-          google_map_link: "",
-          env_permit_number: "",
-          env_permit_issue_date: "",
-          env_permit_expiry_date: "",
-        });
-      }
-    } catch (err: any) {
-      console.error("Failed to load business info:", err);
-      setError("Không thể tải thông tin doanh nghiệp. Vui lòng thử lại.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -82,28 +22,8 @@ export default function RecyclerBusinessInfoPage() {
 
   const handleCancel = () => {
     setIsEditing(false);
-    // Reload data to reset form
-    loadBusinessInfo();
   };
 
-
-  if (isLoading) {
-    return (
-      <RouteGuard requiredPermission="settings.view">
-        <PageLayout
-          breadcrumbs={[{ label: "Thông tin doanh nghiệp" }]}
-          title="Thông tin doanh nghiệp"
-          subtitle="Thông tin pháp lý và liên hệ của đơn vị tái chế"
-        >
-          <div className="rounded-lg border bg-card p-6">
-            <p className="text-center text-muted-foreground py-12">
-              Đang tải thông tin...
-            </p>
-          </div>
-        </PageLayout>
-      </RouteGuard>
-    );
-  }
 
   return (
     <RouteGuard requiredPermission="settings.view">
@@ -158,21 +78,6 @@ export default function RecyclerBusinessInfoPage() {
             </Card>
           )}
 
-          {/* Error Message */}
-          {error && (
-            <Card className="bg-red-50 border-red-200">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-red-900">Lỗi</p>
-                    <p className="text-sm text-red-700 mt-1">{error}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Form */}
           <Card className="rounded-lg border bg-card">
             <CardContent className="pt-6">
@@ -194,7 +99,7 @@ export default function RecyclerBusinessInfoPage() {
                 </div>
               )}
               <BusinessInfoForm
-                initialData={formData || undefined}
+                initialData={undefined}
                 isEditMode={isEditing}
                 editable={isEditing && isAdmin}
               />

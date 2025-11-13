@@ -43,14 +43,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Fetch user data
       const userData = await AuthService.me();
-      setUser(userData);
-      console.log(userData);
+      
+      if (!userData || !userData.role) {
+        throw new Error("Invalid user data: role is missing");
+      }
+
       const mappedRole = mapBackendRoleToFrontend(userData.role);
+      
+      setUser(userData);
       setUserRole(mappedRole);
+      
       // Store the full role in localStorage
       localStorage.setItem("userRole", mappedRole);
     } catch (error) {
-      console.error("Failed to load user:", error);
       // Clear tokens on error
       tokenStore.clear();
       localStorage.removeItem("userRole");
@@ -64,13 +69,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await AuthService.login({ email, password });
-      setUser(response.data.user);
+      
+      if (!response.data.user || !response.data.user.role) {
+        throw new Error("Invalid login response: role is missing");
+      }
+
       const mappedRole = mapBackendRoleToFrontend(response.data.user.role);
+      
+      setUser(response.data.user);
       setUserRole(mappedRole);
+      
       // Store the full role in localStorage
       localStorage.setItem("userRole", mappedRole);
     } catch (error) {
-      console.error("Login failed:", error);
       throw error;
     }
   };
@@ -82,7 +93,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       // If logout API fails, still proceed with clearing local state
       // This can happen if token is already invalid/expired, which is fine
-      console.error("Logout API call failed (proceeding with local logout):", error);
     } finally {
       // Always clear local state and tokens, regardless of API call success
       // This ensures user is logged out even if API call fails

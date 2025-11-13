@@ -4,7 +4,11 @@ import { UserRole } from "@/types/user";
 /**
  * Maps backend role to frontend UserRole
  */
-export function mapBackendRoleToFrontend(backendRole: Role): UserRole {
+export function mapBackendRoleToFrontend(backendRole: Role | string | undefined | null): UserRole {
+  if (!backendRole) {
+    throw new Error("User role is missing");
+  }
+
   const mapping: Record<Role, UserRole> = {
     motul_admin: "Motul Admin",
     motul_reviewer: "Motul User",
@@ -14,7 +18,13 @@ export function mapBackendRoleToFrontend(backendRole: Role): UserRole {
     waste_transfer: "WTP User",
   };
 
-  return mapping[backendRole] || "Motul User";
+  // Type guard to check if backendRole is a valid Role
+  if (backendRole in mapping) {
+    return mapping[backendRole as Role];
+  }
+
+  // If role is not in mapping, throw error
+  throw new Error(`Unknown user role: ${backendRole}`);
 }
 
 /**

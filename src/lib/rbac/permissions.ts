@@ -7,6 +7,8 @@ export type Permission =
   | "users.invite"
   | "users.inviteAll"
   | "users.inviteOwnOrg"
+  | "users.inviteAdmins"
+  | "users.inviteMembers"
   | "users.edit"
   | "users.delete"
   | "users.viewInvitations"
@@ -42,6 +44,7 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "users.invite",
     "users.inviteAll",
     "users.inviteOwnOrg",
+    "users.inviteAdmins",
     "users.edit",
     "users.delete",
     "users.viewInvitations",
@@ -61,7 +64,7 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "pending-registration.reject",
     "reports.view",
     "reports.create",
-  ],
+    ],
   "Motul User": [
     "users.view",
     "records.view",
@@ -77,6 +80,7 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "users.view",
     "users.invite",
     "users.inviteOwnOrg",
+    "users.inviteMembers",
     "users.edit",
     "users.viewInvitations",
     "records.view",
@@ -107,6 +111,7 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "users.view",
     "users.invite",
     "users.inviteOwnOrg",
+    "users.inviteMembers",
     "users.edit",
     "users.viewInvitations",
     "records.view",
@@ -200,5 +205,50 @@ export function getOrganization(role: UserRole | Role): "motul" | "recycler" | "
     return getOrganizationFromBackendRole(role as Role);
   }
   return getOrganizationFromFrontendRole(role as UserRole);
+}
+
+/**
+ * Get available roles that can be invited by a given role
+ * Rules:
+ * - Motul Admin can only invite admins (Motul Admin, Recycler Admin, WTP Admin)
+ * - Recycler Admin can only invite members (Recycler User)
+ * - WTP Admin can only invite members (WTP User)
+ */
+export function getAvailableRolesForInvitation(inviterRole: UserRole | Role | null | undefined): UserRole[] {
+  if (!inviterRole) return [];
+
+  // Convert backend role to frontend role if needed
+  let frontendRole: UserRole;
+  if (
+    inviterRole === "motul_admin" ||
+    inviterRole === "motul_reviewer" ||
+    inviterRole === "recycler_admin" ||
+    inviterRole === "recycler" ||
+    inviterRole === "waste_transfer_admin" ||
+    inviterRole === "waste_transfer"
+  ) {
+    const { mapBackendRoleToFrontend } = require("./roleMapper");
+    frontendRole = mapBackendRoleToFrontend(inviterRole as Role);
+  } else {
+    frontendRole = inviterRole as UserRole;
+  }
+
+  // Motul Admin can only invite other admins
+  if (frontendRole === "Motul Admin") {
+    return ["Motul Admin", "Recycler Admin", "WTP Admin", "Motul User"];
+  }
+
+  // Recycler Admin can only invite Recycler User (members)
+  if (frontendRole === "Recycler Admin") {
+    return ["Recycler User"];
+  }
+
+  // WTP Admin can only invite WTP User (members)
+  if (frontendRole === "WTP Admin") {
+    return ["WTP User"];
+  }
+
+  // Default: no roles available
+  return [];
 }
 

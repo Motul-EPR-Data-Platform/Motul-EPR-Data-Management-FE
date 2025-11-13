@@ -54,7 +54,7 @@ export function AddUserDialog({
       setSelectedRole(defaultRole);
       onOpenChange(false);
     } catch (error) {
-      console.error("Error adding user:", error);
+      // Error handling is done by parent component
     } finally {
       setIsLoading(false);
     }

@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/select";
 import { Search, Plus } from "lucide-react";
 import { usePermission } from "@/hooks/usePermission";
+import { useAuth } from "@/contexts/AuthContext";
+import { getAvailableRolesForInvitation } from "@/lib/rbac/permissions";
 
 // Mock data - replace with API call
 const mockUsers: User[] = [
@@ -41,12 +43,17 @@ const mockUsers: User[] = [
 ];
 
 export default function WTPUsersPage() {
+  const { userRole } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  
+  // Get available roles for invitation based on current user's role
+  // WTP Admin can only invite WTP User (members)
+  const availableRoles = getAvailableRolesForInvitation(userRole);
 
   useEffect(() => {
     // Simulate API call
@@ -83,7 +90,9 @@ export default function WTPUsersPage() {
   const handleAddUser = async (email: string, role?: UserRole) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    const userRole: UserRole = role || "WTP User";
+    // Default role: use first available role if not provided
+    // WTP Admin can only invite WTP User
+    const userRole: UserRole = role || (availableRoles.length > 0 ? availableRoles[0] : "WTP User");
 
     const newUser: User = {
       id: `USR-${String(users.length + 1).padStart(3, "0")}`,
@@ -98,11 +107,9 @@ export default function WTPUsersPage() {
     setUsers([...users, newUser]);
   };
 
-  // WTP roles available for WTP Admin
-  const wtpRoles: UserRole[] = ["WTP Admin", "WTP User"];
 
   const handleEdit = (user: User) => {
-    console.log("Edit user:", user);
+    // TODO: Implement edit functionality
   };
 
   const handleDelete = (user: User) => {
@@ -207,7 +214,7 @@ export default function WTPUsersPage() {
           open={isAddUserDialogOpen}
           onOpenChange={setIsAddUserDialogOpen}
           onAddUser={handleAddUser}
-          availableRoles={wtpRoles}
+          availableRoles={availableRoles}
         />
       )}
     </PageLayout>

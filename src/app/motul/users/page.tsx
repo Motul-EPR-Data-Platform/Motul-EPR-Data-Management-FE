@@ -20,7 +20,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Search, Plus } from "lucide-react";
 import { useUserManagementPermissions, getVisibleTabs } from "@/lib/rbac/userManagementConfig";
 import { usePermission } from "@/hooks/usePermission";
-
+import { useAuth } from "@/contexts/AuthContext";
+import { getAvailableRolesForInvitation } from "@/lib/rbac/permissions";
+import { toast } from "sonner"
+import { InvitationService } from "@/lib/services/invitation.service";
+import { mapFrontendRoleToBackend } from "@/lib/rbac/roleMapper";
 // Mock data - replace with API call
 // Motul Admin can manage all users from all organizations
 const mockUsers: User[] = [
@@ -127,6 +131,7 @@ const mockPendingInvites: PendingInvite[] = [
 ];
 
 export default function UsersPage() {
+  const { userRole } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
@@ -146,6 +151,10 @@ export default function UsersPage() {
   
   // Get visible tabs based on permissions
   const visibleTabs = getVisibleTabs(permissions);
+  
+  // Get available roles for invitation based on current user's role
+  // Motul Admin can only invite other admins
+  const availableRoles = getAvailableRolesForInvitation(userRole);
 
   useEffect(() => {
     // Simulate API call
@@ -206,28 +215,43 @@ export default function UsersPage() {
   }, [inviteSearchQuery, selectedInviteRole, pendingInvites]);
 
   const handleAddUser = async (email: string, role?: UserRole) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    const userRole: UserRole =
+      role || (availableRoles.length > 0 ? availableRoles[0] : "Motul Admin");
 
-    // Default role if not provided
-    const userRole: UserRole = role || "Motul User";
-
-    // When adding a user, create a pending invite instead
-    const newInvite: PendingInvite = {
-      id: `INV-${String(pendingInvites.length + 1).padStart(3, "0")}`,
-      email,
-      role: userRole,
-      unit: null,
-      invitedBy: "Motul Admin",
-      invitedAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
-      status: "pending",
-    };
-
-    setPendingInvites([...pendingInvites, newInvite]);
-    // Switch to pending invites tab to show the new invite
-    setActiveTab("pending");
+  
+    await toast.promise(
+      InvitationService.send({ email, role: mapFrontendRoleToBackend(userRole) }),
+      {
+        loading: `Đang gửi lời mời tới ${email}...`,
+        success: () => {
+          // optimistic UI update
+          setPendingInvites((prev) => [
+            ...prev,
+            {
+              id: `INV-${String(prev.length + 1).padStart(3, "0")}`,
+              email,
+              role: userRole,
+              unit: null,
+              invitedBy: "Motul Admin",
+              invitedAt: new Date().toISOString(),
+              expiresAt: new Date(
+                Date.now() + 7 * 24 * 60 * 60 * 1000,
+              ).toISOString(),
+              status: "pending",
+            },
+          ]);
+          setActiveTab("pending");
+          return `Đã gửi lời mời tới ${email}`;
+        },
+        error: (err) =>
+          err?.response?.data?.message ||
+          err?.message ||
+          "Không thể gửi lời mời. Vui lòng thử lại.",
+      },
+    );
   };
+  
+  
 
   const handleResendInvite = async (invite: PendingInvite) => {
     // Simulate API call
@@ -256,18 +280,8 @@ export default function UsersPage() {
     }
   };
 
-  // All roles available for Motul Admin
-  const allRoles: UserRole[] = [
-    "Motul Admin",
-    "Motul User",
-    "Recycler Admin",
-    "Recycler User",
-    "WTP Admin",
-    "WTP User",
-  ];
 
   const handleEdit = (user: User) => {
-    console.log("Edit user:", user);
     // TODO: Implement edit functionality
   };
 
@@ -429,7 +443,7 @@ export default function UsersPage() {
           open={isAddUserDialogOpen}
           onOpenChange={setIsAddUserDialogOpen}
           onAddUser={handleAddUser}
-          availableRoles={allRoles}
+          availableRoles={availableRoles}
         />
       )}
     </PageLayout>

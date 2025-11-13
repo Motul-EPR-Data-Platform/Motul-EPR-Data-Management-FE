@@ -40,11 +40,12 @@ export const AuthService = {
   },
 
   async completeRecyclerAdminProfile(dto: CompleteRecyclerAdminProfileDTO): Promise<AppUser> {
-    const { data } = await api.post<AppUser>(
+    const response = await api.post<{ data: AppUser }>(
       path.auth(ENDPOINTS.AUTH.COMPLETE_PROFILE.RECYCLER_ADMIN),
       dto,
     );
-    return data;
+    // Extract nested data if present, otherwise use response.data directly
+    return (response.data as any).data || response.data;
   },
 
   async registerRecycler(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
@@ -68,11 +69,12 @@ export const AuthService = {
   async completeWasteTransferAdminProfile(
     dto: CompleteWasteTransferAdminProfileDTO,
   ): Promise<AppUser> {
-    const { data } = await api.post<AppUser>(
+    const response = await api.post<{ data: AppUser }>(
       path.auth(ENDPOINTS.AUTH.COMPLETE_PROFILE.WASTE_TRANSFER_ADMIN),
       dto,
     );
-    return data;
+    // Extract nested data if present, otherwise use response.data directly
+    return (response.data as any).data || response.data;
   },
 
   async registerWasteTransfer(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
@@ -90,7 +92,6 @@ export const AuthService = {
       dto,
     );
     persistSession(data.data.session);
-    console.log(data);
     return data;
   },
 
@@ -111,9 +112,24 @@ export const AuthService = {
   },
 
   async me(): Promise<AppUser> {
-    const { data } = await api.get<AppUser>(path.auth(ENDPOINTS.AUTH.ME));
-    console.log("me", data);
-    return data;
+    const response = await api.get<{ data: AppUser } | AppUser>(path.auth(ENDPOINTS.AUTH.ME));
+    
+    // The API returns { data: AppUser }
+    // Axios wraps it: axios response = { data: { data: AppUser } }
+    // So we need: response.data.data
+    // But if the API directly returns AppUser, we use response.data
+    const apiResponse = response.data as any;
+    const userData: AppUser = apiResponse?.data || apiResponse;
+    
+    if (!userData) {
+      throw new Error("Invalid user data: user data is missing");
+    }
+    
+    if (!userData.role) {
+      throw new Error("Invalid user data: role is missing");
+    }
+    
+    return userData;
   },
 
   async refresh(): Promise<SessionPayload> {
