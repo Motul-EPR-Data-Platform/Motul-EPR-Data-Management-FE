@@ -1,16 +1,16 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   /* config options here */
   typedRoutes: true,
   reactStrictMode: true,
   eslint: {
-    ignoreDuringBuilds: true, // Temporarily ignore ESLint errors during build
+    ignoreDuringBuilds: true,
   },
   experimental: {
     typedRoutes: true,
     optimizePackageImports: ["lucide-react"],
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig
