@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Store the full role in localStorage
       localStorage.setItem("userRole", mappedRole);
-    } catch (error) {
+    } catch {
       // Clear tokens on error
       tokenStore.clear();
       localStorage.removeItem("userRole");
