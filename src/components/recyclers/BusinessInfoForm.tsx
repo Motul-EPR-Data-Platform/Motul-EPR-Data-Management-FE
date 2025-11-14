@@ -39,7 +39,7 @@ export function BusinessInfoForm({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  
+
   // If not editable, disable all form interactions
   const isFormDisabled = !editable || isLoading;
 
@@ -115,7 +115,7 @@ export function BusinessInfoForm({
       await refreshUser();
 
       setSuccess(true);
-      
+
       // If in edit mode, reload page after showing success message
       // This will exit edit mode and show updated data
       if (isEditMode) {
@@ -160,7 +160,9 @@ export function BusinessInfoForm({
 
       {/* Legal Company Information */}
       <div className="space-y-4 border-l-4 border-red-500 pl-6">
-        <h3 className="text-lg font-semibold mb-2">THÔNG TIN PHÁP LÝ CÔNG TY</h3>
+        <h3 className="text-lg font-semibold mb-2">
+          THÔNG TIN PHÁP LÝ CÔNG TY
+        </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -259,7 +261,9 @@ export function BusinessInfoForm({
           </div>
 
           <div>
-            <Label htmlFor="business_reg_issue_date">Ngày cấp (giấy phép)</Label>
+            <Label htmlFor="business_reg_issue_date">
+              Ngày cấp (giấy phép)
+            </Label>
             <Input
               id="business_reg_issue_date"
               placeholder="dd/mm/yyyy"
@@ -293,7 +297,9 @@ export function BusinessInfoForm({
               className={!editable ? "bg-muted cursor-not-allowed" : ""}
             />
             {errors.phone && (
-              <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.phone.message}
+              </p>
             )}
           </div>
 
@@ -377,7 +383,8 @@ export function BusinessInfoForm({
           GIẤY PHÉP MÔI TRƯỜNG BẮT BUỘC
         </h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Giấy phép thu gom/xử lý CTNH. Tối đa 5 giấy phép. Vui lòng nhập thông tin.
+          Giấy phép thu gom/xử lý CTNH. Tối đa 5 giấy phép. Vui lòng nhập thông
+          tin.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -454,7 +461,9 @@ export function BusinessInfoForm({
               id="env_permit_file"
               label="Tải lên bản sao giấy phép môi trường"
               value={envPermitFile || null}
-              onChange={(file) => setValue("env_permit_file", file || undefined)}
+              onChange={(file) =>
+                setValue("env_permit_file", file || undefined)
+              }
               error={errors.env_permit_file?.message}
               disabled={isFormDisabled}
             />
@@ -478,12 +487,16 @@ export function BusinessInfoForm({
       {/* Actions */}
       {editable && (
         <div className="flex items-center justify-end gap-3 pt-4 border-t mt-6">
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={isLoading}
             className="bg-red-600 hover:bg-red-700 text-white"
           >
-            {isLoading ? "Đang lưu..." : isEditMode ? "Lưu thay đổi" : "Hoàn tất và tiếp tục"}
+            {isLoading
+              ? "Đang lưu..."
+              : isEditMode
+                ? "Lưu thay đổi"
+                : "Hoàn tất và tiếp tục"}
           </Button>
         </div>
       )}

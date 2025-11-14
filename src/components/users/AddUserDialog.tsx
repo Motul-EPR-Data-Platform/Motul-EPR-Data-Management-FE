@@ -38,7 +38,7 @@ export function AddUserDialog({
 }: AddUserDialogProps) {
   const [email, setEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole | undefined>(
-    defaultRole
+    defaultRole,
   );
   const [isLoading, setIsLoading] = useState(false);
 
@@ -124,4 +124,3 @@ export function AddUserDialog({
     </Dialog>
   );
 }
-

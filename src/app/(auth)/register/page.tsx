@@ -31,7 +31,6 @@ export default function AcceptInvitePage() {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const accessToken = hashParams.get("access_token") || "";
 
-    
     // Use hash token first, then query token
     const finalToken = accessToken;
 
@@ -43,13 +42,12 @@ export default function AcceptInvitePage() {
       motul_reviewer: "Đăng ký Kiểm duyệt viên Motul",
       recycler_admin: "Đăng ký Quản trị viên Đơn vị tái chế",
       recycler: "Đăng ký Nhân viên Đơn vị tái chế",
-      waste_transfer_admin:
-        "Đăng ký Quản trị viên Điểm trung chuyển chất thải",
+      waste_transfer_admin: "Đăng ký Quản trị viên Điểm trung chuyển chất thải",
       waste_transfer: "Đăng ký Nhân viên Điểm trung chuyển chất thải",
     };
 
     setRoleTitle(titleMap[targetRole] || "Đăng ký tài khoản");
-    console.log('email and accessToken', email, finalToken);
+    console.log("email and accessToken", email, finalToken);
     setInviteInfo({ targetRole, accessToken: finalToken, email });
   }, [searchParams]);
 

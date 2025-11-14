@@ -7,12 +7,18 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { RouteGuard } from "@/components/rbac/RouteGuard";
 import { Pencil, FileText, AlertCircle } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function RecyclerBusinessInfoPage() {
   const { userRole } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  
+
   // Only Recycler Admin can edit
   const isAdmin = userRole === "Recycler Admin";
 
@@ -23,7 +29,6 @@ export default function RecyclerBusinessInfoPage() {
   const handleCancel = () => {
     setIsEditing(false);
   };
-
 
   return (
     <RouteGuard requiredPermission="settings.view">
@@ -42,19 +47,16 @@ export default function RecyclerBusinessInfoPage() {
                   <CardTitle>Thông tin Đơn vị tái chế</CardTitle>
                 </div>
                 {isAdmin && !isEditing && (
-                  <Button
-                    onClick={handleEdit}
-                    variant="default"
-                  >
+                  <Button onClick={handleEdit} variant="default">
                     <Pencil className="h-4 w-4 mr-2" />
                     Chỉnh sửa
                   </Button>
                 )}
               </div>
               <CardDescription className="mt-2">
-                Thông tin ban đầu để thu thập, hoàn thiện hồ sơ và xác nhận. 
-                Thông tin này là bắt buộc để Motul thực hiện trách nhiệm và tuân thủ 
-                các quy định pháp luật về EPR.
+                Thông tin ban đầu để thu thập, hoàn thiện hồ sơ và xác nhận.
+                Thông tin này là bắt buộc để Motul thực hiện trách nhiệm và tuân
+                thủ các quy định pháp luật về EPR.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -70,7 +72,8 @@ export default function RecyclerBusinessInfoPage() {
                       Chế độ xem chỉ đọc
                     </p>
                     <p className="text-sm text-blue-700 mt-1">
-                      Chỉ quản trị viên có quyền chỉnh sửa thông tin doanh nghiệp.
+                      Chỉ quản trị viên có quyền chỉnh sửa thông tin doanh
+                      nghiệp.
                     </p>
                   </div>
                 </div>
@@ -111,9 +114,10 @@ export default function RecyclerBusinessInfoPage() {
             <Card className="bg-yellow-50 border-yellow-200">
               <CardContent className="pt-6">
                 <p className="text-sm text-yellow-800">
-                  <strong>Lưu ý quan trọng:</strong> Bằng cách nhấp vào nút chấp nhận, 
-                  bạn xác nhận rằng tất cả thông tin được cung cấp là chính xác và đầy đủ. 
-                  Thông tin không chính xác có thể dẫn đến việc hủy tài khoản của bạn.
+                  <strong>Lưu ý quan trọng:</strong> Bằng cách nhấp vào nút chấp
+                  nhận, bạn xác nhận rằng tất cả thông tin được cung cấp là
+                  chính xác và đầy đủ. Thông tin không chính xác có thể dẫn đến
+                  việc hủy tài khoản của bạn.
                 </p>
               </CardContent>
             </Card>
@@ -123,4 +127,3 @@ export default function RecyclerBusinessInfoPage() {
     </RouteGuard>
   );
 }
-

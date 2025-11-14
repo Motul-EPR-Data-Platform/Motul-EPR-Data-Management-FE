@@ -12,7 +12,7 @@ export default function NotFound() {
         {/* Logo */}
         <div className="mx-auto mb-6 flex items-center justify-center">
           <Image
-            src="/motul-logo.png"           // ensure this file exists in /public
+            src="/motul-logo.png" // ensure this file exists in /public
             alt="MOTUL"
             width={140}
             height={40}
@@ -23,12 +23,17 @@ export default function NotFound() {
         {/* Tag + Title */}
         <span
           className="inline-block rounded-md px-3 py-1 text-xs font-medium tracking-wide"
-          style={{ backgroundColor: "color-mix(in oklab, var(--motul-red) 12%, white)", color: "var(--motul-red)" }}
+          style={{
+            backgroundColor: "color-mix(in oklab, var(--motul-red) 12%, white)",
+            color: "var(--motul-red)",
+          }}
         >
           404 • Không tìm thấy trang
         </span>
 
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">Trang bạn tìm không tồn tại</h1>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+          Trang bạn tìm không tồn tại
+        </h1>
         <p className="mt-2 text-muted-foreground">
           Liên kết có thể đã bị thay đổi hoặc xóa. Hãy quay lại bảng điều khiển.
         </p>

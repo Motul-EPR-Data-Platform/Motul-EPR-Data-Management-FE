@@ -106,4 +106,3 @@ export function UserManagementSkeleton() {
     </div>
   );
 }
-

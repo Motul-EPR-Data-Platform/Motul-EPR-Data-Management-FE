@@ -18,11 +18,14 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Search, Plus } from "lucide-react";
-import { useUserManagementPermissions, getVisibleTabs } from "@/lib/rbac/userManagementConfig";
+import {
+  useUserManagementPermissions,
+  getVisibleTabs,
+} from "@/lib/rbac/userManagementConfig";
 import { usePermission } from "@/hooks/usePermission";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAvailableRolesForInvitation } from "@/lib/rbac/permissions";
-import { toast } from "sonner"
+import { toast } from "sonner";
 import { InvitationService } from "@/lib/services/invitation.service";
 import { mapFrontendRoleToBackend } from "@/lib/rbac/roleMapper";
 // Mock data - replace with API call
@@ -148,10 +151,10 @@ export default function UsersPage() {
   const permissions = useUserManagementPermissions();
   const canEditUser = usePermission("users.edit");
   const canDeleteUser = usePermission("users.delete");
-  
+
   // Get visible tabs based on permissions
   const visibleTabs = getVisibleTabs(permissions);
-  
+
   // Get available roles for invitation based on current user's role
   // Motul Admin can only invite other admins
   const availableRoles = getAvailableRolesForInvitation(userRole);
@@ -181,7 +184,7 @@ export default function UsersPage() {
         (user) =>
           user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.id.toLowerCase().includes(searchQuery.toLowerCase())
+          user.id.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
@@ -200,15 +203,21 @@ export default function UsersPage() {
     if (inviteSearchQuery) {
       filtered = filtered.filter(
         (invite) =>
-          invite.email.toLowerCase().includes(inviteSearchQuery.toLowerCase()) ||
+          invite.email
+            .toLowerCase()
+            .includes(inviteSearchQuery.toLowerCase()) ||
           invite.id.toLowerCase().includes(inviteSearchQuery.toLowerCase()) ||
-          invite.invitedBy.toLowerCase().includes(inviteSearchQuery.toLowerCase())
+          invite.invitedBy
+            .toLowerCase()
+            .includes(inviteSearchQuery.toLowerCase()),
       );
     }
 
     // Filter by role
     if (selectedInviteRole !== "all") {
-      filtered = filtered.filter((invite) => invite.role === selectedInviteRole);
+      filtered = filtered.filter(
+        (invite) => invite.role === selectedInviteRole,
+      );
     }
 
     setFilteredInvites(filtered);
@@ -218,9 +227,11 @@ export default function UsersPage() {
     const userRole: UserRole =
       role || (availableRoles.length > 0 ? availableRoles[0] : "Motul Admin");
 
-  
     await toast.promise(
-      InvitationService.send({ email, role: mapFrontendRoleToBackend(userRole) }),
+      InvitationService.send({
+        email,
+        role: mapFrontendRoleToBackend(userRole),
+      }),
       {
         loading: `Đang gửi lời mời tới ${email}...`,
         success: () => {
@@ -250,8 +261,6 @@ export default function UsersPage() {
       },
     );
   };
-  
-  
 
   const handleResendInvite = async (invite: PendingInvite) => {
     // Simulate API call
@@ -263,10 +272,12 @@ export default function UsersPage() {
         ? {
             ...inv,
             invitedAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            expiresAt: new Date(
+              Date.now() + 7 * 24 * 60 * 60 * 1000,
+            ).toISOString(),
             status: "pending" as const,
           }
-        : inv
+        : inv,
     );
 
     setPendingInvites(updatedInvites);
@@ -279,7 +290,6 @@ export default function UsersPage() {
       setPendingInvites(pendingInvites.filter((inv) => inv.id !== invite.id));
     }
   };
-
 
   const handleEdit = (user: User) => {
     // TODO: Implement edit functionality
@@ -305,7 +315,7 @@ export default function UsersPage() {
 
   // Check permission - users page requires users.view permission
   const canViewUsers = usePermission("users.view");
-  
+
   if (!canViewUsers) {
     return (
       <PageLayout
@@ -328,36 +338,36 @@ export default function UsersPage() {
       title="Quản lý người dùng"
       subtitle="Manage user accounts and permissions"
     >
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="rounded-lg border bg-card p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <h2 className="text-lg font-semibold">Quản lý người dùng</h2>
-                <p className="text-sm text-muted-foreground">
-                  {activeTab === "users"
-                    ? "Quản lý người dùng từ tất cả các tổ chức (Motul, Recycler, WTP)"
-                    : "Quản lý lời mời đang chờ xử lý"}
-                </p>
-              </div>
-              {permissions.canInvite && (
-                <Button
-                  onClick={() => setIsAddUserDialogOpen(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Thêm Người dùng mới
-                </Button>
-              )}
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="rounded-lg border bg-card p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold">Quản lý người dùng</h2>
+              <p className="text-sm text-muted-foreground">
+                {activeTab === "users"
+                  ? "Quản lý người dùng từ tất cả các tổ chức (Motul, Recycler, WTP)"
+                  : "Quản lý lời mời đang chờ xử lý"}
+              </p>
             </div>
+            {permissions.canInvite && (
+              <Button
+                onClick={() => setIsAddUserDialogOpen(true)}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Thêm Người dùng mới
+              </Button>
+            )}
+          </div>
 
-            <TabsList>
-              {visibleTabs.map((tab) => (
-                <TabsTrigger key={tab.key} value={tab.key}>
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+          <TabsList>
+            {visibleTabs.map((tab) => (
+              <TabsTrigger key={tab.key} value={tab.key}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
           {/* Users Tab Content */}
           <TabsContent value="users" className="space-y-4 mt-4">
@@ -399,39 +409,44 @@ export default function UsersPage() {
           {/* Pending Invites Tab Content */}
           {permissions.canViewInvitationsTab && (
             <TabsContent value="pending" className="space-y-4 mt-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Tìm kiếm lời mời..."
-                  className="pl-10"
-                  value={inviteSearchQuery}
-                  onChange={(e) => setInviteSearchQuery(e.target.value)}
-                />
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Tìm kiếm lời mời..."
+                    className="pl-10"
+                    value={inviteSearchQuery}
+                    onChange={(e) => setInviteSearchQuery(e.target.value)}
+                  />
+                </div>
+
+                <Select
+                  value={selectedInviteRole}
+                  onValueChange={setSelectedInviteRole}
+                >
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Tất cả vai trò" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả vai trò</SelectItem>
+                    <SelectItem value="Motul Admin">Motul Admin</SelectItem>
+                    <SelectItem value="Motul User">Motul User</SelectItem>
+                    <SelectItem value="Recycler Admin">
+                      Recycler Admin
+                    </SelectItem>
+                    <SelectItem value="Recycler User">Recycler User</SelectItem>
+                    <SelectItem value="WTP Admin">WTP Admin</SelectItem>
+                    <SelectItem value="WTP User">WTP User</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <Select value={selectedInviteRole} onValueChange={setSelectedInviteRole}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Tất cả vai trò" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả vai trò</SelectItem>
-                  <SelectItem value="Motul Admin">Motul Admin</SelectItem>
-                  <SelectItem value="Motul User">Motul User</SelectItem>
-                  <SelectItem value="Recycler Admin">Recycler Admin</SelectItem>
-                  <SelectItem value="Recycler User">Recycler User</SelectItem>
-                  <SelectItem value="WTP Admin">WTP Admin</SelectItem>
-                  <SelectItem value="WTP User">WTP User</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Pending Invite Table */}
-            <PendingInviteTable
-              invites={filteredInvites}
-              onResend={handleResendInvite}
-              onCancel={handleCancelInvite}
-            />
+              {/* Pending Invite Table */}
+              <PendingInviteTable
+                invites={filteredInvites}
+                onResend={handleResendInvite}
+                onCancel={handleCancelInvite}
+              />
             </TabsContent>
           )}
         </div>
@@ -449,4 +464,3 @@ export default function UsersPage() {
     </PageLayout>
   );
 }
-

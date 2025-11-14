@@ -28,4 +28,3 @@ export interface PendingInvite {
   expiresAt: string;
   status: "pending" | "expired" | "accepted";
 }
-

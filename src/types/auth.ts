@@ -25,10 +25,10 @@ export type SessionPayload = {
 };
 
 export type AuthResponse = {
-    data: {
-      user: AppUser;
-      session?: SessionPayload;
-    }
+  data: {
+    user: AppUser;
+    session?: SessionPayload;
+  };
 };
 
 export type LoginDTO = {

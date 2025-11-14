@@ -66,7 +66,10 @@ export function UserManagementTable({
         <TableBody>
           {users.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+              <TableCell
+                colSpan={8}
+                className="text-center text-muted-foreground py-8"
+              >
                 Không có dữ liệu
               </TableCell>
             </TableRow>
@@ -131,4 +134,3 @@ export function UserManagementTable({
     </div>
   );
 }
-

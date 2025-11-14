@@ -30,11 +30,15 @@ export interface SidebarConfig {
 
 // Helper function to check if user is admin
 export function isAdminRole(role: UserRole): boolean {
-  return role === "Motul Admin" || role === "Recycler Admin" || role === "WTP Admin";
+  return (
+    role === "Motul Admin" || role === "Recycler Admin" || role === "WTP Admin"
+  );
 }
 
 // Get organization from role
-export function getOrganizationFromRole(role: UserRole): "motul" | "recycler" | "wtp" {
+export function getOrganizationFromRole(
+  role: UserRole,
+): "motul" | "recycler" | "wtp" {
   if (role.startsWith("Motul")) return "motul";
   if (role.startsWith("Recycler")) return "recycler";
   if (role.startsWith("WTP")) return "wtp";
@@ -50,9 +54,18 @@ export const motulSidebarConfig: SidebarConfig = {
     { title: "Dashboard", url: "/motul", icon: Home },
     { title: "Bản ghi", url: "/motul/records", icon: ClipboardList },
     { title: "Kế hoạch tái chế", url: "/motul/recycling-plan", icon: Calendar },
-    { title: "Đăng ký chờ duyệt", url: "/motul/pending-registration", icon: FileCheck },
+    {
+      title: "Đăng ký chờ duyệt",
+      url: "/motul/pending-registration",
+      icon: FileCheck,
+    },
     { title: "Phân tích", url: "/motul/analytics", icon: BarChart2 },
-    { title: "Quản lý người dùng", url: "/motul/users", icon: Users, requiresAdmin: true },
+    {
+      title: "Quản lý người dùng",
+      url: "/motul/users",
+      icon: Users,
+      requiresAdmin: true,
+    },
     { title: "Cài đặt", url: "/motul/settings", icon: Settings },
   ],
 };
@@ -64,11 +77,24 @@ export const recyclerSidebarConfig: SidebarConfig = {
   basePath: "/recycler",
   items: [
     { title: "Dashboard", url: "/recycler", icon: Home },
-    { title: "Bản ghi của tôi", url: "/recycler/my-records", icon: ClipboardList },
+    {
+      title: "Bản ghi của tôi",
+      url: "/recycler/my-records",
+      icon: ClipboardList,
+    },
     { title: "Chủ nguồn thải", url: "/recycler/waste-sources", icon: Factory },
     { title: "Báo cáo", url: "/recycler/reports", icon: FileText },
-    { title: "Thông tin doanh nghiệp", url: "/recycler/business-info", icon: Building2 },
-    { title: "Quản lý người dùng", url: "/recycler/users", icon: Users, requiresAdmin: true },
+    {
+      title: "Thông tin doanh nghiệp",
+      url: "/recycler/business-info",
+      icon: Building2,
+    },
+    {
+      title: "Quản lý người dùng",
+      url: "/recycler/users",
+      icon: Users,
+      requiresAdmin: true,
+    },
     { title: "Cài đặt", url: "/recycler/settings", icon: Settings },
     { title: "Tài khoản", url: "/recycler/account", icon: User },
   ],
@@ -82,14 +108,19 @@ export const wtpSidebarConfig: SidebarConfig = {
   items: [
     { title: "Dashboard", url: "/wtp", icon: Home },
     { title: "Bản ghi của tôi", url: "/wtp/my-records", icon: ClipboardList },
-    { title: "Quản lý người dùng", url: "/wtp/users", icon: Users, requiresAdmin: true },
+    {
+      title: "Quản lý người dùng",
+      url: "/wtp/users",
+      icon: Users,
+      requiresAdmin: true,
+    },
     { title: "Tài khoản", url: "/wtp/account", icon: User },
   ],
 };
 
 // Get sidebar config based on organization
 export function getSidebarConfig(
-  organization: "motul" | "recycler" | "wtp"
+  organization: "motul" | "recycler" | "wtp",
 ): SidebarConfig {
   switch (organization) {
     case "recycler":
@@ -105,12 +136,12 @@ export function getSidebarConfig(
 // Get filtered sidebar items based on user role
 export function getFilteredSidebarItems(
   config: SidebarConfig,
-  userRole: UserRole | null
+  userRole: UserRole | null,
 ): SidebarItem[] {
   if (!userRole) return config.items;
 
   const isAdmin = isAdminRole(userRole);
-  
+
   return config.items.filter((item) => {
     // If item requires admin, only show if user is admin
     if (item.requiresAdmin) {
@@ -120,4 +151,3 @@ export function getFilteredSidebarItems(
     return true;
   });
 }
-

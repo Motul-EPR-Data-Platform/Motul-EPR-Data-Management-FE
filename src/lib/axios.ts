@@ -1,6 +1,5 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
-import { API_BASE_URL,path, ENDPOINTS } from "@/constants/api";
-
+import { API_BASE_URL, path, ENDPOINTS } from "@/constants/api";
 
 // Token storage keys
 const ACCESS_KEY = "access_token";
@@ -89,7 +88,11 @@ api.interceptors.response.use(
       if (isRefreshing) {
         return new Promise((resolve) => {
           queue((newAccess) => {
-            if (newAccess) original.headers = { ...original.headers, Authorization: `Bearer ${newAccess}` };
+            if (newAccess)
+              original.headers = {
+                ...original.headers,
+                Authorization: `Bearer ${newAccess}`,
+              };
             resolve(api(original));
           });
         });
@@ -103,13 +106,17 @@ api.interceptors.response.use(
           { headers: { "Content-Type": "application/json" } },
         );
 
-        const { access_token, refresh_token, expires_at } = resp.data as TokenBundle;
+        const { access_token, refresh_token, expires_at } =
+          resp.data as TokenBundle;
         tokenStore.set({ access_token, refresh_token, expires_at });
 
         flush(access_token);
         return api({
           ...original,
-          headers: { ...original.headers, Authorization: `Bearer ${access_token}` },
+          headers: {
+            ...original.headers,
+            Authorization: `Bearer ${access_token}`,
+          },
         });
       } catch (e) {
         tokenStore.clear();

@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { AppUser } from "@/types/auth";
 import { UserRole } from "@/types/user";
 import { AuthService } from "@/lib/services/auth.service";
@@ -43,16 +49,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Fetch user data
       const userData = await AuthService.me();
-      
+
       if (!userData || !userData.role) {
         throw new Error("Invalid user data: role is missing");
       }
 
       const mappedRole = mapBackendRoleToFrontend(userData.role);
-      
+
       setUser(userData);
       setUserRole(mappedRole);
-      
+
       // Store the full role in localStorage
       localStorage.setItem("userRole", mappedRole);
     } catch (error) {
@@ -69,16 +75,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await AuthService.login({ email, password });
-      
+
       if (!response.data.user || !response.data.user.role) {
         throw new Error("Invalid login response: role is missing");
       }
 
       const mappedRole = mapBackendRoleToFrontend(response.data.user.role);
-      
+
       setUser(response.data.user);
       setUserRole(mappedRole);
-      
+
       // Store the full role in localStorage
       localStorage.setItem("userRole", mappedRole);
     } catch (error) {
@@ -144,4 +150,3 @@ export function useAuth() {
   }
   return context;
 }
-

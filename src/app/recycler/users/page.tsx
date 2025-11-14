@@ -50,7 +50,7 @@ export default function RecyclerUsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
-  
+
   // Get available roles for invitation based on current user's role
   // Recycler Admin can only invite Recycler User (members)
   const availableRoles = getAvailableRolesForInvitation(userRole);
@@ -76,7 +76,7 @@ export default function RecyclerUsersPage() {
         (user) =>
           user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.id.toLowerCase().includes(searchQuery.toLowerCase())
+          user.id.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
@@ -92,7 +92,8 @@ export default function RecyclerUsersPage() {
 
     // Default role: use first available role if not provided
     // Recycler Admin can only invite Recycler User
-    const userRole: UserRole = role || (availableRoles.length > 0 ? availableRoles[0] : "Recycler User");
+    const userRole: UserRole =
+      role || (availableRoles.length > 0 ? availableRoles[0] : "Recycler User");
 
     const newUser: User = {
       id: `USR-${String(users.length + 1).padStart(3, "0")}`,
@@ -107,7 +108,6 @@ export default function RecyclerUsersPage() {
     setUsers([...users, newUser]);
   };
 
-
   const handleEdit = (user: User) => {
     // TODO: Implement edit functionality
   };
@@ -120,7 +120,8 @@ export default function RecyclerUsersPage() {
 
   // Check permission - users page requires users.view permission
   const canViewUsers = usePermission("users.view");
-  const canInvite = usePermission("users.invite") || usePermission("users.inviteOwnOrg");
+  const canInvite =
+    usePermission("users.invite") || usePermission("users.inviteOwnOrg");
   const canEditUser = usePermission("users.edit");
   const canDeleteUser = usePermission("users.delete");
 
@@ -220,4 +221,3 @@ export default function RecyclerUsersPage() {
     </PageLayout>
   );
 }
-

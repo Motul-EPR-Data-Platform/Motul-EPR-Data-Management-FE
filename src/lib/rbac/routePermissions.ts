@@ -135,7 +135,7 @@ export const routePermissions: RoutePermission[] = [
  */
 export function canAccessRoute(
   role: UserRole | Role | null | undefined,
-  pathname: string
+  pathname: string,
 ): boolean {
   if (!role) return false;
 
@@ -190,4 +190,3 @@ export function getAllowedRoutes(role: UserRole | Role): string[] {
     .filter((rp) => rp.roles.includes(frontendRole))
     .map((rp) => rp.path);
 }
-

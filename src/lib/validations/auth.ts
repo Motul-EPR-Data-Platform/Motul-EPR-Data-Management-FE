@@ -1,10 +1,7 @@
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email là bắt buộc")
-    .email("Email không hợp lệ"),
+  email: z.string().min(1, "Email là bắt buộc").email("Email không hợp lệ"),
   password: z
     .string()
     .min(1, "Mật khẩu là bắt buộc")
@@ -21,19 +18,13 @@ export const registerInviteSchema = z
       .trim()
       .min(2, "Họ và tên tối thiểu 2 ký tự")
       .max(120, "Họ và tên tối đa 120 ký tự"),
-    email: z
-      .string()
-      .email("Email không hợp lệ"),
+    email: z.string().email("Email không hợp lệ"),
     password: z
       .string()
       .min(8, "Mật khẩu tối thiểu 8 ký tự")
       .max(128, "Mật khẩu tối đa 128 ký tự"),
-    confirmPassword: z.string({
-    
-    }).min(1, "Xác nhận mật khẩu là bắt buộc"),
-    accessToken: z
-      .string()
-      .min(1, "Thiếu mã lời mời"),
+    confirmPassword: z.string({}).min(1, "Xác nhận mật khẩu là bắt buộc"),
+    accessToken: z.string().min(1, "Thiếu mã lời mời"),
     targetRole: z.enum([
       "motul_admin",
       "motul_reviewer",

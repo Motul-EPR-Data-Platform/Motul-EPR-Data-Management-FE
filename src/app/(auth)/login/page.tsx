@@ -32,7 +32,8 @@ export default function LoginPage() {
 
           {/* Subtext */}
           <p className="mt-4 text-white/80 text-sm md:text-base">
-            Truy cập bảng điều khiển, quản lý hồ sơ, và theo dõi quy trình tái chế của bạn một cách dễ dàng.
+            Truy cập bảng điều khiển, quản lý hồ sơ, và theo dõi quy trình tái
+            chế của bạn một cách dễ dàng.
           </p>
 
           <p className="mt-4 text-white/80 text-xs md:text-sm font-medium">
