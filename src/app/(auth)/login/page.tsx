@@ -2,8 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { Button } from "@/components/ui/button";
+
+function LoginContent() {
+  return <LoginForm />;
+}
 
 export default function LoginPage() {
   return (
@@ -69,7 +74,9 @@ export default function LoginPage() {
       {/* Right panel */}
       <div className="flex-1 flex justify-center items-center bg-gray-50 px-4 py-10 md:px-8 relative">
         <div className="w-full max-w-md">
-          <LoginForm />
+          <Suspense fallback={<div>Loading...</div>}>
+            <LoginContent />
+          </Suspense>
         </div>
       </div>
     </div>

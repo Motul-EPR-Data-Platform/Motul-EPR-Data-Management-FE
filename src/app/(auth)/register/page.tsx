@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { Button } from "@/components/ui/button";
 
-export default function AcceptInvitePage() {
+function RegisterContent() {
   const searchParams = useSearchParams();
   const [roleTitle, setRoleTitle] = useState("Đăng ký tài khoản");
   const [inviteInfo, setInviteInfo] = useState({
@@ -126,5 +126,13 @@ export default function AcceptInvitePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AcceptInvitePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterContent />
+    </Suspense>
   );
 }
