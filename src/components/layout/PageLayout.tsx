@@ -48,7 +48,7 @@ export function PageLayout({
             <ChevronRight className="h-4 w-4" />
             {crumb.href ? (
               <Link
-                href={crumb.href as any}
+                href={crumb.href}
                 className="hover:text-foreground"
               >
                 {crumb.label}

@@ -41,13 +41,14 @@ export type RegisterMotulDTO = {
   password: string;
   fullName: string;
   role: "motul_admin" | "motul_reviewer";
+  accessToken: string;
 };
 
 export type RegisterWithInviteDTO = {
   email: string;
   password: string;
   fullName: string;
-  inviteToken: string;
+  accessToken: string;
 };
 
 export type CompleteRecyclerAdminProfileDTO = {

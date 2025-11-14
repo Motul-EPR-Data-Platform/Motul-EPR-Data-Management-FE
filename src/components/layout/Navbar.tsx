@@ -26,12 +26,12 @@ export function Navbar() {
       await logout();
       // The logout function in AuthContext will clear state
       // We'll handle redirect here as well to ensure it happens
-      router.push("/login" as any);
+      router.push("/login");
       router.refresh();
     } catch (error) {
       console.error("Logout error:", error);
       // Redirect anyway to ensure user is logged out
-      router.push("/login" as any);
+      router.push("/login");
       router.refresh();
     }
   };

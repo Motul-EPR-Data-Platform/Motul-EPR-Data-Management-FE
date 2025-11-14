@@ -38,12 +38,12 @@ const locationSchema = z.object({
 });
 
 // Environmental permit schema
-const envPermitSchema = z.object({
-  env_permit_number: z.string().min(1, "Số giấy phép môi trường là bắt buộc"),
-  env_permit_issue_date: z.string().regex(dateRegex, "Ngày cấp phải có định dạng dd/mm/yyyy"),
-  env_permit_expiry_date: z.string().regex(dateRegex, "Ngày hết hạn phải có định dạng dd/mm/yyyy"),
-  env_permit_file: fileValidation,
-});
+// const envPermitSchema = z.object({
+//   env_permit_number: z.string().min(1, "Số giấy phép môi trường là bắt buộc"),
+//   env_permit_issue_date: z.string().regex(dateRegex, "Ngày cấp phải có định dạng dd/mm/yyyy"),
+//   env_permit_expiry_date: z.string().regex(dateRegex, "Ngày hết hạn phải có định dạng dd/mm/yyyy"),
+//   env_permit_file: fileValidation,
+// });
 
 // Complete recycler admin profile schema
 export const completeRecyclerAdminProfileSchema = z

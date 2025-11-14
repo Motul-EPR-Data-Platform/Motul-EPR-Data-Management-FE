@@ -54,6 +54,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="z-40 relative">
       <SidebarHeader>
         <div className="p-4 flex justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={config.logo} alt="Logo" className="h-8" />
         </div>
       </SidebarHeader>
@@ -71,7 +72,7 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive}>
-                      {/* @ts-ignore - Next.js Link type compatibility with Radix Slot */}
+                      {/* @ts-expect-error - Next.js Link type compatibility with Radix Slot */}
                       <Link href={item.url} className="flex items-center gap-2">
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>

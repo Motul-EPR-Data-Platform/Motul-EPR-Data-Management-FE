@@ -24,7 +24,12 @@ export const AuthService = {
   async registerMotul(dto: RegisterMotulDTO): Promise<AuthResponse> {
     const { data } = await api.post<AuthResponse>(
       path.auth(ENDPOINTS.AUTH.REGISTER.MOTUL),
-      dto,
+      { email: dto.email, password: dto.password, fullName: dto.fullName, role: dto.role },
+      {
+        headers: {
+          Authorization: `Bearer ${dto.accessToken}`,
+        },
+      }
     );
     persistSession(data.data.session);
     return data;
@@ -33,7 +38,13 @@ export const AuthService = {
   async registerRecyclerAdmin(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
     const { data } = await api.post<AuthResponse>(
       path.auth(ENDPOINTS.AUTH.REGISTER.RECYCLER_ADMIN),
-      dto,
+      // Don't send accessToken in body - it's in the Authorization header
+      { email: dto.email, password: dto.password, fullName: dto.fullName },
+      {
+        headers: {
+          Authorization: `Bearer ${dto.accessToken}`,
+        },
+      }
     );
     persistSession(data.data.session);
     return data;
@@ -51,7 +62,13 @@ export const AuthService = {
   async registerRecycler(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
     const { data } = await api.post<AuthResponse>(
       path.auth(ENDPOINTS.AUTH.REGISTER.RECYCLER),
-      dto,
+      // Don't send accessToken in body - it's in the Authorization header
+      { email: dto.email, password: dto.password, fullName: dto.fullName },
+      {
+        headers: {
+          Authorization: `Bearer ${dto.accessToken}`,
+        },
+      }
     );
     persistSession(data.data.session);
     return data;
@@ -60,7 +77,13 @@ export const AuthService = {
   async registerWasteTransferAdmin(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
     const { data } = await api.post<AuthResponse>(
       path.auth(ENDPOINTS.AUTH.REGISTER.WASTE_TRANSFER_ADMIN),
-      dto,
+      // Don't send accessToken in body - it's in the Authorization header
+      { email: dto.email, password: dto.password, fullName: dto.fullName },
+      {
+        headers: {
+          Authorization: `Bearer ${dto.accessToken}`,
+        },
+      }
     );
     persistSession(data.data.session);
     return data;
@@ -80,7 +103,13 @@ export const AuthService = {
   async registerWasteTransfer(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
     const { data } = await api.post<AuthResponse>(
       path.auth(ENDPOINTS.AUTH.REGISTER.WASTE_TRANSFER),
-      dto,
+      // Don't send accessToken in body - it's in the Authorization header
+      { email: dto.email, password: dto.password, fullName: dto.fullName },
+      {
+        headers: {
+          Authorization: `Bearer ${dto.accessToken}`,
+        },
+      }
     );
     persistSession(data.data.session);
     return data;

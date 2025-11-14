@@ -28,10 +28,10 @@ type Props = {
     | "waste_transfer_admin"
     | "waste_transfer"
     | "";
-  inviteToken: string; // must be the short ?token=
+  accessToken: string; // access_token from URL hash
 };
 
-export function RegisterForm({ title, email, targetRole, inviteToken }: Props) {
+export function RegisterForm({ title, email, targetRole, accessToken }: Props) {
   const router = useRouter();
 
 const form = useForm<RegisterInviteFormData>({
@@ -42,7 +42,7 @@ const form = useForm<RegisterInviteFormData>({
     email: "",
     password: "",
     confirmPassword: "",
-    inviteToken: "",
+    accessToken: "", // This will hold the accessToken
     targetRole: "" as RegisterInviteFormData["targetRole"],
   },
 });
@@ -61,8 +61,10 @@ useEffect(() => {
   }, [email, setValue]);
 
   useEffect(() => {
-    if (inviteToken) setValue("inviteToken", inviteToken, { shouldDirty: false, shouldValidate: false });
-  }, [inviteToken, setValue]);
+    // Pass access_token as accessToken to the form
+    // The backend expects this token for verification
+    if (accessToken) setValue("accessToken", accessToken, { shouldDirty: false, shouldValidate: false });
+  }, [accessToken, setValue]);
 
   useEffect(() => {
     if (targetRole) setValue("targetRole", targetRole as RegisterInviteFormData["targetRole"], { shouldDirty: false, shouldValidate: false });
@@ -87,11 +89,13 @@ useEffect(() => {
   };
 
   function registerByRole(values: RegisterInviteFormData) {
+    // The access_token will be sent in the Authorization header as Bearer token
+    // Backend extracts it from: req.headers.authorization
     const dto = {
       email: values.email,
       password: values.password,
       fullName: values.fullName,
-      inviteToken: values.inviteToken,
+      accessToken: values.accessToken, // This is the access_token from URL - sent as Bearer token
     };
 
     switch (values.targetRole) {
@@ -110,6 +114,7 @@ useEffect(() => {
           password: dto.password,
           fullName: dto.fullName,
           role: values.targetRole,
+          accessToken: dto.accessToken,
         });
       default:
         throw new Error(`Unsupported role: ${values.targetRole}`);
@@ -152,7 +157,7 @@ useEffect(() => {
           </div>
 
           {/* Keep hidden fields to ensure payload integrity */}
-          <input type="hidden" {...register("inviteToken")} />
+          <input type="hidden" {...register("accessToken")} />
           <input type="hidden" {...register("targetRole")} />
 
           <div>

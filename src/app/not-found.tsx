@@ -36,7 +36,7 @@ export default function NotFound() {
         {/* Actions */}
         <div className="mt-6 flex items-center justify-center gap-3">
           <Button asChild variant="outline">
-            <Link href={"/" as any}>
+            <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Quay lại
             </Link>
@@ -47,7 +47,7 @@ export default function NotFound() {
             className="border-0"
             style={{ backgroundColor: "var(--motul-red)" }}
           >
-            <Link href={"/motul" as any}>
+            <Link href="/motul">
               <Home className="mr-2 h-4 w-4" />
               Về Dashboard
             </Link>

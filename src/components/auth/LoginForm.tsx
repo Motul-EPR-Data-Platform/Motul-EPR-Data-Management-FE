@@ -44,16 +44,17 @@ export function LoginForm() {
       // The redirect will be handled by checking the user's organization
       const redirectTo = searchParams.get("redirect");
       if (redirectTo) {
-        router.push(redirectTo as any);
+        router.push(redirectTo);
       } else {
         // Default redirect - will be handled by RouteGuard or redirect to user's org
-        router.push("/motul" as any);
+        router.push("/motul");
       }
       router.refresh();
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as Error & { response?: { data?: { message?: string } } };
       setError(
-        err?.response?.data?.message ||
-          err?.message ||
+        error?.response?.data?.message ||
+          error?.message ||
           "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin."
       );
       setIsLoading(false);

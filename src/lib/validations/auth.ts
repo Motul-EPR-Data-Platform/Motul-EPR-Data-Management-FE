@@ -31,7 +31,7 @@ export const registerInviteSchema = z
     confirmPassword: z.string({
     
     }).min(1, "Xác nhận mật khẩu là bắt buộc"),
-    inviteToken: z
+    accessToken: z
       .string()
       .min(1, "Thiếu mã lời mời"),
     targetRole: z.enum([

@@ -19,7 +19,7 @@ export default function AcceptInvitePage() {
       | "waste_transfer_admin"
       | "waste_transfer"
       | "",
-    inviteToken: "",
+    accessToken: "",
     email: "",
   });
 
@@ -27,18 +27,16 @@ export default function AcceptInvitePage() {
     const targetRole =
       (searchParams.get("target_role") as typeof inviteInfo.targetRole) || "";
 
-    // handle both patterns:
-    // ?token=<short_token> → backend token
-    // #access_token=<long_token> → session token (email decode only)
-    const urlToken = searchParams.get("token") || "";
+    // Get access_token from URL hash (after #)
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const access_token = hashParams.get("access_token") || "";
+    const accessToken = hashParams.get("access_token") || "";
 
-    // token for backend verification
-    const inviteToken = urlToken || "";
+    
+    // Use hash token first, then query token
+    const finalToken = accessToken;
 
-    // decode email from access_token in url
-    const email = access_token ? decodeEmail(access_token) : "";
+    // Decode email from access_token
+    const email = finalToken ? decodeEmail(finalToken) : "";
 
     const titleMap: Record<string, string> = {
       motul_admin: "Đăng ký Quản trị viên Motul",
@@ -51,8 +49,8 @@ export default function AcceptInvitePage() {
     };
 
     setRoleTitle(titleMap[targetRole] || "Đăng ký tài khoản");
-    console.log('email and token', email, inviteToken)
-    setInviteInfo({ targetRole, inviteToken, email });
+    console.log('email and accessToken', email, finalToken);
+    setInviteInfo({ targetRole, accessToken: finalToken, email });
   }, [searchParams]);
 
   function decodeEmail(token: string): string {
@@ -125,7 +123,7 @@ export default function AcceptInvitePage() {
             title={roleTitle}
             email={inviteInfo.email}
             targetRole={inviteInfo.targetRole}
-            inviteToken={inviteInfo.inviteToken}
+            accessToken={inviteInfo.accessToken}
           />
         </div>
       </div>
