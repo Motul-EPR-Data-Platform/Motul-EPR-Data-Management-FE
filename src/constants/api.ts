@@ -28,11 +28,27 @@ export const ENDPOINTS = {
       ROOT: "/invitations",
       SEND: "/send",
     },
+    DEFINITIONS: {
+      ROOT: "/definitions",
+  
+      // === Subcategories ===
+      CATEGORIES: "/categories",
+      WASTE_TYPES: "/waste-types",
+      CONTRACT_TYPES: "/contract-types",
+      EPR_ENTITIES: "/epr-entities",
+      CUSTOM: "/custom",
+  
+      // === Common actions ===
+      APPROVE: (id: string) => `/${id}/approve`,
+      REJECT: (id: string) => `/${id}/reject`,
+      ARCHIVE: (id: string) => `/${id}`,
+    },
   } as const;
   
   // Helpers to compose full paths
   export const path = {
     auth: (p: string) => `${ENDPOINTS.AUTH.ROOT}${p}`,
     invitations: (p: string) => `${ENDPOINTS.INVITATIONS.ROOT}${p}`,
+    definitions: (p: string) => `${ENDPOINTS.DEFINITIONS.ROOT}${p}`,
   };
   
