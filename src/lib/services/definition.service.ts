@@ -1,5 +1,5 @@
 
-import { api, tokenStore } from "@/lib/axios";
+import { api } from "@/lib/axios";
 import { path, ENDPOINTS } from "@/constants/api";
 import { DefinitionResponse, RejectDefinitionDTO, CreateCategoryDTO, UpdateCategoryDTO, CreateDefinitionDTO, UpdateDefinitionDTO } from "@/types/definition";
 
@@ -59,7 +59,9 @@ export const DefinitionService = {
           `${ENDPOINTS.DEFINITIONS.CATEGORIES}?includeInactive=${includeInactive}`,
         ),
       );
-      return data.data;
+      // Handle both cases: { data: [...] } and direct array
+      const result = data.data || data;
+      return Array.isArray(result) ? result : [];
     },
   
     async getCategoryByKey(key: string): Promise<any> {

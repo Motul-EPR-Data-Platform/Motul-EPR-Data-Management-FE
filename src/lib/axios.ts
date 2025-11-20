@@ -40,7 +40,7 @@ const tokenStore = {
 // Create instance
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: false,
+  withCredentials: true, // Enable cookies for HTTP-only auth tokens
   headers: { "Content-Type": "application/json" },
 });
 
@@ -56,16 +56,10 @@ function flush(newAccess?: string) {
   queued = [];
 }
 
-// Attach Authorization
+// Request interceptor - cookies are sent automatically with withCredentials: true
+// No need to manually attach Authorization header
 api.interceptors.request.use(async (config) => {
-  const t = tokenStore.get();
-  if (!t) return config;
-
-  // Add bearer if not present
-  if (!config.headers?.Authorization) {
-    config.headers = config.headers ?? {};
-    config.headers.Authorization = `Bearer ${t.access_token}`;
-  }
+  // Cookies are automatically included with withCredentials: true
   return config;
 });
 
@@ -80,16 +74,11 @@ api.interceptors.response.use(
     if (status === 401 && !original._retry) {
       original._retry = true;
 
-      const current = tokenStore.get();
-      if (!current?.refresh_token) {
-        tokenStore.clear();
-        return Promise.reject(error);
-      }
-
       if (isRefreshing) {
-        return new Promise((resolve) => {
-          queue((newAccess) => {
-            if (newAccess) original.headers = { ...original.headers, Authorization: `Bearer ${newAccess}` };
+        // Queue the request to retry after refresh completes
+        return new Promise((resolve, reject) => {
+          queue(() => {
+            // Retry original request (cookies will be automatically included)
             resolve(api(original));
           });
         });
@@ -97,21 +86,25 @@ api.interceptors.response.use(
 
       try {
         isRefreshing = true;
+        // Refresh token is in HTTP-only cookie, so we don't need to send it in body
+        // Backend should read refresh token from cookie
         const resp = await axios.post(
           `${API_BASE_URL}${path.auth(ENDPOINTS.AUTH.REFRESH)}`,
-          { refreshToken: current.refresh_token },
-          { headers: { "Content-Type": "application/json" } },
+          {},
+          { 
+            withCredentials: true, // Include cookies
+            headers: { "Content-Type": "application/json" } 
+          },
         );
 
-        const { access_token, refresh_token, expires_at } = resp.data as TokenBundle;
-        tokenStore.set({ access_token, refresh_token, expires_at });
-
-        flush(access_token);
-        return api({
-          ...original,
-          headers: { ...original.headers, Authorization: `Bearer ${access_token}` },
-        });
+        // New tokens are set in HTTP-only cookies by backend
+        // No need to store them in localStorage
+        
+        flush(); // Wake queued requests
+        // Retry original request (cookies will be automatically included)
+        return api(original);
       } catch (e) {
+        // Refresh failed - clear any local state and redirect to login
         tokenStore.clear();
         flush(); // wake waiters with failure
         return Promise.reject(e);

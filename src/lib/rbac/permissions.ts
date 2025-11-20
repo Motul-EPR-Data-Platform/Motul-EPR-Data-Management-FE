@@ -33,7 +33,13 @@ export type Permission =
   | "waste-sources.edit"
   | "waste-sources.delete"
   | "account.view"
-  | "account.edit";
+  | "account.edit"
+  | "definitions.view"
+  | "definitions.create"
+  | "definitions.edit"
+  | "definitions.delete"
+  | "definitions.approve"
+  | "definitions.reject";
 
 /**
  * Permission matrix: maps roles to their permissions
@@ -64,6 +70,12 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "pending-registration.reject",
     "reports.view",
     "reports.create",
+    "definitions.view",
+    "definitions.create",
+    "definitions.edit",
+    "definitions.delete",
+    "definitions.approve",
+    "definitions.reject",
     ],
   "Motul User": [
     "users.view",
@@ -75,6 +87,8 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "settings.view",
     "pending-registration.view",
     "reports.view",
+    "definitions.view",
+    "definitions.create",
   ],
   "Recycler Admin": [
     "users.view",
@@ -96,6 +110,10 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "settings.edit",
     "account.view",
     "account.edit",
+    "definitions.view",
+    "definitions.create",
+    "definitions.edit",
+    "definitions.delete",
   ],
   "Recycler User": [
     "records.view",
@@ -106,6 +124,8 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "settings.view",
     "account.view",
     "account.edit",
+    "definitions.view",
+    "definitions.create",
   ],
   "WTP Admin": [
     "users.view",
@@ -123,6 +143,10 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "settings.edit",
     "account.view",
     "account.edit",
+    "definitions.view",
+    "definitions.create",
+    "definitions.edit",
+    "definitions.delete",
   ],
   "WTP User": [
     "records.view",
@@ -132,6 +156,8 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "settings.view",
     "account.view",
     "account.edit",
+    "definitions.view",
+    "definitions.create",
   ],
 };
 

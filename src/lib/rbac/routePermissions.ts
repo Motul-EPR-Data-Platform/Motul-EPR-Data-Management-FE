@@ -56,6 +56,12 @@ export const routePermissions: RoutePermission[] = [
     roles: ["Motul Admin", "Motul User"],
     permissions: ["settings.view"],
   },
+  {
+    path: "/motul/definitions",
+    organization: "motul",
+    roles: ["Motul Admin", "Motul User"],
+    permissions: ["definitions.view"],
+  },
   // Recycler routes
   {
     path: "/recycler",
@@ -104,6 +110,12 @@ export const routePermissions: RoutePermission[] = [
     roles: ["Recycler Admin", "Recycler User"],
     permissions: ["account.view"],
   },
+  {
+    path: "/recycler/definitions",
+    organization: "recycler",
+    roles: ["Recycler Admin", "Recycler User"],
+    permissions: ["definitions.view"],
+  },
   // WTP routes
   {
     path: "/wtp",
@@ -127,6 +139,12 @@ export const routePermissions: RoutePermission[] = [
     organization: "wtp",
     roles: ["WTP Admin", "WTP User"],
     permissions: ["account.view"],
+  },
+  {
+    path: "/wtp/definitions",
+    organization: "wtp",
+    roles: ["WTP Admin", "WTP User"],
+    permissions: ["definitions.view"],
   },
 ];
 

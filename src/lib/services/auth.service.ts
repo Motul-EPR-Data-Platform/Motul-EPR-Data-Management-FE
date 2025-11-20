@@ -1,4 +1,4 @@
-import { api, tokenStore } from "@/lib/axios";
+import { api } from "@/lib/axios";
 import { path, ENDPOINTS } from "@/constants/api";
 import {
   AppUser,
@@ -14,10 +14,8 @@ import {
   UpdatePasswordDTO,
 } from "@/types/index";
 
-function persistSession(session?: SessionPayload) {
-  if (!session) return;
-  tokenStore.set(session);
-}
+// Session is now stored in HTTP-only cookies by the backend
+// No need to persist tokens in localStorage
 
 export const AuthService = {
   // -------- Public --------
@@ -26,7 +24,7 @@ export const AuthService = {
       path.auth(ENDPOINTS.AUTH.REGISTER.MOTUL),
       dto,
     );
-    persistSession(data.data.session);
+    // Session is stored in HTTP-only cookies by backend
     return data;
     },
 
@@ -35,7 +33,7 @@ export const AuthService = {
       path.auth(ENDPOINTS.AUTH.REGISTER.RECYCLER_ADMIN),
       dto,
     );
-    persistSession(data.data.session);
+    // Session is stored in HTTP-only cookies by backend
     return data;
   },
 
@@ -53,7 +51,7 @@ export const AuthService = {
       path.auth(ENDPOINTS.AUTH.REGISTER.RECYCLER),
       dto,
     );
-    persistSession(data.data.session);
+    // Session is stored in HTTP-only cookies by backend
     return data;
   },
 
@@ -62,7 +60,7 @@ export const AuthService = {
       path.auth(ENDPOINTS.AUTH.REGISTER.WASTE_TRANSFER_ADMIN),
       dto,
     );
-    persistSession(data.data.session);
+    // Session is stored in HTTP-only cookies by backend
     return data;
   },
 
@@ -82,7 +80,7 @@ export const AuthService = {
       path.auth(ENDPOINTS.AUTH.REGISTER.WASTE_TRANSFER),
       dto,
     );
-    persistSession(data.data.session);
+    // Session is stored in HTTP-only cookies by backend
     return data;
   },
 
@@ -91,7 +89,7 @@ export const AuthService = {
       path.auth(ENDPOINTS.AUTH.LOGIN),
       dto,
     );
-    persistSession(data.data.session);
+    // Session is stored in HTTP-only cookies by backend
     return data;
   },
 
@@ -133,13 +131,12 @@ export const AuthService = {
   },
 
   async refresh(): Promise<SessionPayload> {
-    const tokens = tokenStore.get();
-    if (!tokens?.refresh_token) throw new Error("Missing refresh token");
+    // Refresh token is in HTTP-only cookie, backend reads it from cookie
     const { data } = await api.post<SessionPayload>(
       path.auth(ENDPOINTS.AUTH.REFRESH),
-      { refreshToken: tokens.refresh_token },
+      {}, // No body needed - refresh token is in cookie
     );
-    tokenStore.set(data);
+    // New tokens are stored in HTTP-only cookies by backend
     return data;
   },
 

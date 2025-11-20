@@ -5,7 +5,6 @@ import { AppUser } from "@/types/auth";
 import { UserRole } from "@/types/user";
 import { AuthService } from "@/lib/services/auth.service";
 import { mapBackendRoleToFrontend } from "@/lib/rbac/roleMapper";
-import { tokenStore } from "@/lib/axios";
 
 interface AuthContextType {
   user: AppUser | null;
@@ -33,15 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadUser = async () => {
     try {
-      const tokens = tokenStore.get();
-      if (!tokens) {
-        setIsLoading(false);
-        // Clear any stale role from localStorage
-        localStorage.removeItem("userRole");
-        return;
-      }
-
-      // Fetch user data
+      // Try to fetch user data - cookies are sent automatically
+      // If not authenticated, this will fail with 401
       const userData = await AuthService.me();
       
       if (!userData || !userData.role) {
@@ -53,11 +45,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userData);
       setUserRole(mappedRole);
       
-      // Store the full role in localStorage
+      // Store the full role in localStorage (keep role storage as requested)
       localStorage.setItem("userRole", mappedRole);
     } catch (error) {
-      // Clear tokens on error
-      tokenStore.clear();
+      // User is not authenticated or session expired
+      // Clear any stale role from localStorage
       localStorage.removeItem("userRole");
       setUser(null);
       setUserRole(null);
@@ -89,16 +81,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       // Try to call logout API (may fail if token is invalid/expired)
+      // Backend will clear HTTP-only cookies
       await AuthService.logout();
     } catch (error) {
       // If logout API fails, still proceed with clearing local state
       // This can happen if token is already invalid/expired, which is fine
     } finally {
-      // Always clear local state and tokens, regardless of API call success
+      // Always clear local state, regardless of API call success
       // This ensures user is logged out even if API call fails
       setUser(null);
       setUserRole(null);
-      tokenStore.clear();
       // Clear role from localStorage
       localStorage.removeItem("userRole");
     }
