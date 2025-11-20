@@ -26,12 +26,12 @@ export function Navbar() {
       await logout();
       // The logout function in AuthContext will clear state
       // We'll handle redirect here as well to ensure it happens
-      router.push("/login" as any);
+      router.push("/login");
       router.refresh();
     } catch (error) {
       console.error("Logout error:", error);
       // Redirect anyway to ensure user is logged out
-      router.push("/login" as any);
+      router.push("/login");
       router.refresh();
     }
   };
@@ -51,22 +51,27 @@ export function Navbar() {
     <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2">
       {/* Left section: sidebar toggle + search */}
       <div className="flex items-center gap-3">
-        <SidebarTrigger  />
+        <SidebarTrigger />
         <div className="relative w-64">
-          <Input
-            placeholder="Tìm kiếm..."
-            className="pl-3 pr-8"
-          />
+          <Input placeholder="Tìm kiếm..." className="pl-3 pr-8" />
         </div>
       </div>
 
       {/* Right section: notifications, settings, profile */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-foreground"
+        >
           <Bell className="h-5 w-5" />
         </Button>
 
-        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-foreground"
+        >
           <Settings className="h-5 w-5" />
         </Button>
 
@@ -82,8 +87,12 @@ export function Navbar() {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user?.fullName || "User"}</p>
-                <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                <p className="text-sm font-medium leading-none">
+                  {user?.fullName || "User"}
+                </p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user?.email}
+                </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -92,7 +101,7 @@ export function Navbar() {
             <DropdownMenuItem>Support</DropdownMenuItem>
             <ThemeToggle />
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
+            <DropdownMenuItem
               className="text-red-600 focus:text-red-600 cursor-pointer"
               onClick={handleLogout}
             >

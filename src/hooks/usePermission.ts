@@ -1,5 +1,10 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Permission, hasPermission, hasAnyPermission, hasAllPermissions } from "@/lib/rbac/permissions";
+import {
+  Permission,
+  hasPermission,
+  hasAnyPermission,
+  hasAllPermissions,
+} from "@/lib/rbac/permissions";
 
 /**
  * Hook to check if user has a specific permission
@@ -31,7 +36,7 @@ export function useAllPermissions(permissions: Permission[]): boolean {
 export function useRole() {
   const { userRole, user, organization, isAdmin } = useAuth();
   const { getPermissionsForRole } = require("@/lib/rbac/permissions");
-  
+
   return {
     role: userRole,
     user,
@@ -40,4 +45,3 @@ export function useRole() {
     permissions: userRole ? getPermissionsForRole(userRole) : [],
   };
 }
-

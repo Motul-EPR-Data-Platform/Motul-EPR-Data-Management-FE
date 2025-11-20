@@ -98,11 +98,12 @@ export const userManagementActions: ActionConfig[] = [
  */
 export function useUserManagementPermissions() {
   const { permissions } = useRole();
-  
+
   const canViewUsers = usePermission("users.view");
   const canInviteAll = usePermission("users.inviteAll");
   const canInviteOwnOrg = usePermission("users.inviteOwnOrg");
-  const canInvite = canInviteAll || canInviteOwnOrg || usePermission("users.invite");
+  const canInvite =
+    canInviteAll || canInviteOwnOrg || usePermission("users.invite");
   const canEditUser = usePermission("users.edit");
   const canDeleteUser = usePermission("users.delete");
   const canViewInvitations = usePermission("users.viewInvitations");
@@ -124,14 +125,17 @@ export function useUserManagementPermissions() {
 /**
  * Get visible tabs based on permissions
  */
-export function getVisibleTabs(permissions: Record<string, boolean>): TabConfig[] {
+export function getVisibleTabs(
+  permissions: Record<string, boolean>,
+): TabConfig[] {
   return userManagementTabs.filter((tab) => tab.visible(permissions));
 }
 
 /**
  * Get visible actions based on permissions
  */
-export function getVisibleActions(permissions: Record<string, boolean>): ActionConfig[] {
+export function getVisibleActions(
+  permissions: Record<string, boolean>,
+): ActionConfig[] {
   return userManagementActions.filter((action) => action.visible(permissions));
 }
-

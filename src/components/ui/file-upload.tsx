@@ -104,7 +104,14 @@ export function FileUpload({
   return (
     <div className={cn("space-y-2", className)}>
       {label && (
-        <Label htmlFor={id} className={required ? "after:content-['*'] after:ml-0.5 after:text-red-500" : ""}>
+        <Label
+          htmlFor={id}
+          className={
+            required
+              ? "after:content-['*'] after:ml-0.5 after:text-red-500"
+              : ""
+          }
+        >
           {label}
         </Label>
       )}
@@ -115,7 +122,7 @@ export function FileUpload({
             ? "border-primary bg-primary/5"
             : "border-gray-300 hover:border-gray-400",
           error && "border-red-500",
-          disabled && "opacity-50 cursor-not-allowed"
+          disabled && "opacity-50 cursor-not-allowed",
         )}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -166,4 +173,3 @@ export function FileUpload({
     </div>
   );
 }
-

@@ -4,7 +4,9 @@ import { UserRole } from "@/types/user";
 /**
  * Maps backend role to frontend UserRole
  */
-export function mapBackendRoleToFrontend(backendRole: Role | string | undefined | null): UserRole {
+export function mapBackendRoleToFrontend(
+  backendRole: Role | string | undefined | null,
+): UserRole {
   if (!backendRole) {
     throw new Error("User role is missing");
   }
@@ -46,7 +48,9 @@ export function mapFrontendRoleToBackend(frontendRole: UserRole): Role {
 /**
  * Get organization from backend role
  */
-export function getOrganizationFromBackendRole(role: Role): "motul" | "recycler" | "wtp" {
+export function getOrganizationFromBackendRole(
+  role: Role,
+): "motul" | "recycler" | "wtp" {
   if (role.startsWith("motul")) return "motul";
   if (role.startsWith("recycler")) return "recycler";
   if (role.startsWith("waste_transfer")) return "wtp";
@@ -56,7 +60,9 @@ export function getOrganizationFromBackendRole(role: Role): "motul" | "recycler"
 /**
  * Get organization from frontend role
  */
-export function getOrganizationFromFrontendRole(role: UserRole): "motul" | "recycler" | "wtp" {
+export function getOrganizationFromFrontendRole(
+  role: UserRole,
+): "motul" | "recycler" | "wtp" {
   if (role.startsWith("Motul")) return "motul";
   if (role.startsWith("Recycler")) return "recycler";
   if (role.startsWith("WTP")) return "wtp";
@@ -71,9 +77,12 @@ export function isAdminRole(role: Role | UserRole): boolean {
     // Backend role
     if (role.includes("admin")) return true;
     // Frontend role
-    if (role === "Motul Admin" || role === "Recycler Admin" || role === "WTP Admin")
+    if (
+      role === "Motul Admin" ||
+      role === "Recycler Admin" ||
+      role === "WTP Admin"
+    )
       return true;
   }
   return false;
 }
-

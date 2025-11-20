@@ -1,6 +1,5 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
-import { API_BASE_URL,path, ENDPOINTS } from "@/constants/api";
-
+import { API_BASE_URL, path, ENDPOINTS } from "@/constants/api";
 
 // Token storage keys
 const ACCESS_KEY = "access_token";
@@ -97,9 +96,7 @@ api.interceptors.response.use(
           },
         );
 
-        // New tokens are set in HTTP-only cookies by backend
-        // No need to store them in localStorage
-        
+       
         flush(); // Wake queued requests
         // Retry original request (cookies will be automatically included)
         return api(original);

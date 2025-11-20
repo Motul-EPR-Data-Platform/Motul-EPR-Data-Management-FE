@@ -91,15 +91,21 @@ export function PendingInviteTable({
         <TableBody>
           {invites.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+              <TableCell
+                colSpan={8}
+                className="text-center text-muted-foreground py-8"
+              >
                 Không có lời mời nào
               </TableCell>
             </TableRow>
           ) : (
             invites.map((invite) => {
               const expired = isExpired(invite.expiresAt);
-              const actualStatus = expired && invite.status === "pending" ? "expired" : invite.status;
-              
+              const actualStatus =
+                expired && invite.status === "pending"
+                  ? "expired"
+                  : invite.status;
+
               return (
                 <TableRow key={invite.id}>
                   <TableCell className="font-medium">
@@ -126,7 +132,9 @@ export function PendingInviteTable({
                   </TableCell>
                   <TableCell>{invite.unit || "-"}</TableCell>
                   <TableCell>{invite.invitedBy}</TableCell>
-                  <TableCell>{new Date(invite.invitedAt).toLocaleDateString("vi-VN")}</TableCell>
+                  <TableCell>
+                    {new Date(invite.invitedAt).toLocaleDateString("vi-VN")}
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3 text-muted-foreground" />
@@ -176,4 +184,3 @@ export function PendingInviteTable({
     </div>
   );
 }
-

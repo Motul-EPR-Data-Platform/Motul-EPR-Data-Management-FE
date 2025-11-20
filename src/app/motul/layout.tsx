@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  SidebarProvider,
-  SidebarInset,
-} from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/sidebar/AppSidebar";
 import { Navbar } from "@/components/layout/Navbar";
 import { RouteGuard } from "@/components/rbac/RouteGuard";
