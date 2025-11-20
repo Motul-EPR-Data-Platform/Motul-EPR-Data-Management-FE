@@ -28,6 +28,11 @@ export const ENDPOINTS = {
     ROOT: "/invitations",
     SEND: "/send",
   },
+  ADMIN: {
+    ROOT: "/admin",
+    USERS: "/users",
+    INVITATIONS: "/invitations",
+  },
    DEFINITIONS: {
       ROOT: "/definitions",
   
@@ -49,6 +54,7 @@ export const ENDPOINTS = {
   export const path = {
     auth: (p: string) => `${ENDPOINTS.AUTH.ROOT}${p}`,
     invitations: (p: string) => `${ENDPOINTS.INVITATIONS.ROOT}${p}`,
+    admin: (p: string) => `${ENDPOINTS.ADMIN.ROOT}${p}`,
     definitions: (p: string) => `${ENDPOINTS.DEFINITIONS.ROOT}${p}`,
   };
   

@@ -4,7 +4,7 @@ import {
   CATEGORY_KEYS,
   CATEGORY_ROUTE_KEYS,
 } from "@/constants/categoryKeys";
-import { transformDefinitions } from "@/lib/utils/definitionTransformers";
+import { transformDefinitions } from "@/lib/utils/definitionUtils/definitionTransformers";
 
 /**
  * Helper function to create a definition based on category key

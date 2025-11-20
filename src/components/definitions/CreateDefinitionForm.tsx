@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -145,12 +146,13 @@ export function CreateDefinitionForm({
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Label>
-            <Input
-              id={field.name}
-              type="date"
-              value={value}
-              onChange={(e) => handleFieldChange(field.name, e.target.value)}
-              required={field.required}
+            <DatePicker
+              value={value instanceof Date ? value : value ? new Date(value) : undefined}
+              onChange={(date) => {
+                // Convert Date to ISO string (yyyy-mm-dd) for form data
+                handleFieldChange(field.name, date ? date.toISOString().split("T")[0] : "");
+              }}
+              placeholder={`Chọn ${field.label.toLowerCase()}`}
               disabled={isLoading}
               className={error ? "border-red-500" : ""}
             />

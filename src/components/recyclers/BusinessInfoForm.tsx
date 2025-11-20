@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileUpload } from "@/components/ui/file-upload";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   completeRecyclerAdminProfileSchema,
   type CompleteRecyclerAdminProfileFormData,
@@ -17,10 +18,29 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
-// dd/mm/yyyy -> yyyy-mm-dd
-function convertDateToISO(dateStr: string): string {
-  const [day, month, year] = dateStr.split("/");
-  return `${year}-${month}-${day}`;
+// Convert Date object or dd/mm/yyyy string to dd/mm/yyyy format (backend expects this format)
+function convertDateToDDMMYYYY(date: Date | string | undefined): string | undefined {
+  if (!date) return undefined;
+  
+  if (date instanceof Date) {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+  
+  // If already in dd/mm/yyyy format, return as is
+  if (typeof date === "string" && date.includes("/")) {
+    return date;
+  }
+  
+  // If in ISO format (yyyy-mm-dd), convert to dd/mm/yyyy
+  if (typeof date === "string" && date.includes("-")) {
+    const [year, month, day] = date.split("-");
+    return `${day}/${month}/${year}`;
+  }
+  
+  return undefined;
 }
 
 interface BusinessInfoFormProps {
@@ -43,6 +63,27 @@ export function BusinessInfoForm({
   // If not editable, disable all form interactions
   const isFormDisabled = !editable || isLoading;
 
+  // Helper to convert string date (dd/mm/yyyy) to Date object
+  const parseDate = (dateStr: string | Date | undefined): Date | undefined => {
+    if (!dateStr) return undefined;
+    if (dateStr instanceof Date) return dateStr;
+    if (typeof dateStr !== "string") return undefined;
+    
+    // Handle dd/mm/yyyy format
+    const [day, month, year] = dateStr.split("/");
+    if (day && month && year) {
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    }
+    return undefined;
+  };
+  
+  // Convert initial data dates from string to Date objects
+  const getInitialDate = (fieldName: keyof CompleteRecyclerAdminProfileFormData): Date | undefined => {
+    if (!initialData) return undefined;
+    const value = initialData[fieldName];
+    return parseDate(value as string | Date | undefined);
+  };
+
   const {
     register,
     handleSubmit,
@@ -51,30 +92,36 @@ export function BusinessInfoForm({
     watch,
   } = useForm<CompleteRecyclerAdminProfileFormData>({
     resolver: zodResolver(completeRecyclerAdminProfileSchema),
-    defaultValues: initialData || {
-      vendor_name: "",
-      tax_code: "",
-      representative: "",
-      location: {
+    defaultValues: {
+      vendor_name: initialData?.vendor_name || "",
+      tax_code: initialData?.tax_code || "",
+      representative: initialData?.representative || "",
+      location: initialData?.location || {
         address: "",
         city: "",
+        code: "",
       },
-      business_reg_number: "",
-      business_reg_issue_date: "",
-      phone: "",
-      contact_email: "",
-      contact_point: "",
-      contact_phone: "",
-      google_map_link: "",
-      env_permit_number: "",
-      env_permit_issue_date: "",
-      env_permit_expiry_date: "",
+      business_reg_number: initialData?.business_reg_number || "",
+      business_reg_issue_date: getInitialDate("business_reg_issue_date"),
+      phone: initialData?.phone || "",
+      contact_email: initialData?.contact_email || "",
+      contact_point: initialData?.contact_point || "",
+      contact_phone: initialData?.contact_phone || "",
+      google_map_link: initialData?.google_map_link || "",
+      env_permit_number: initialData?.env_permit_number || "",
+      env_permit_issue_date: getInitialDate("env_permit_issue_date"),
+      env_permit_expiry_date: getInitialDate("env_permit_expiry_date"),
       // no password fields
     },
   });
 
   const envPermitFile = watch("env_permit_file");
   const businessRegFile = watch("business_reg_file");
+  
+  // Watch date fields to get current values
+  const businessRegIssueDate = watch("business_reg_issue_date");
+  const envPermitIssueDate = watch("env_permit_issue_date");
+  const envPermitExpiryDate = watch("env_permit_expiry_date");
 
   const onSubmit = async (data: CompleteRecyclerAdminProfileFormData) => {
     setIsLoading(true);
@@ -83,30 +130,32 @@ export function BusinessInfoForm({
 
     try {
       const dto: CompleteRecyclerAdminProfileDTO = {
-        vendor_name: data.vendor_name,
-        tax_code: data.tax_code,
+        vendorName: data.vendor_name,
+        taxCode: data.tax_code,
         representative: data.representative,
         location: {
           address: data.location.address,
-          city: data.location.city,
-          code: data.location.code,
+          city: data.location.city || "",
+          code: data.location.code || "",
           latitude: data.location.latitude,
           longitude: data.location.longitude,
         },
         phone: data.phone,
-        contact_email: data.contact_email,
-        contact_point: data.contact_point,
-        contact_phone: data.contact_phone,
-        google_map_link: data.google_map_link,
-        business_reg_number: data.business_reg_number,
-        env_permit_number: data.env_permit_number,
-        env_permit_issue_date: data.env_permit_issue_date
-          ? convertDateToISO(data.env_permit_issue_date)
+        contactEmail: data.contact_email,
+        contactPoint: data.contact_point,
+        contactPhone: data.contact_phone,
+        businessRegNumber: data.business_reg_number,
+        businessRegIssueDate: data.business_reg_issue_date
+          ? convertDateToDDMMYYYY(data.business_reg_issue_date)
           : undefined,
-        env_permit_expiry_date: data.env_permit_expiry_date
-          ? convertDateToISO(data.env_permit_expiry_date)
+        googleMapLink: data.google_map_link,
+        envPermitNumber: data.env_permit_number,
+        envPermitIssueDate: data.env_permit_issue_date
+          ? convertDateToDDMMYYYY(data.env_permit_issue_date)
           : undefined,
-        // Note: business_reg_issue_date is not in the DTO, so we skip it
+        envPermitExpiryDate: data.env_permit_expiry_date
+          ? convertDateToDDMMYYYY(data.env_permit_expiry_date)
+          : undefined,
       };
 
       // Files are optional and handled elsewhere; not included in dto here.
@@ -223,6 +272,25 @@ export function BusinessInfoForm({
           </div>
 
           <div>
+            <Label htmlFor="location.code">
+              Mã địa điểm <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="location.code"
+              placeholder="Vui lòng nhập mã địa điểm"
+              {...register("location.code")}
+              disabled={isFormDisabled}
+              readOnly={!editable}
+              className={!editable ? "bg-muted cursor-not-allowed" : ""}
+            />
+            {errors.location?.code && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.location.code.message}
+              </p>
+            )}
+          </div>
+
+          <div>
             <Label htmlFor="location.address">
               Địa chỉ trụ sở chính <span className="text-red-500">*</span>
             </Label>
@@ -237,6 +305,25 @@ export function BusinessInfoForm({
             {errors.location?.address && (
               <p className="mt-1 text-sm text-red-600">
                 {errors.location.address.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="location.city">
+              Thành phố <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="location.city"
+              placeholder="Vui lòng nhập thành phố"
+              {...register("location.city")}
+              disabled={isFormDisabled}
+              readOnly={!editable}
+              className={!editable ? "bg-muted cursor-not-allowed" : ""}
+            />
+            {errors.location?.city && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.location.city.message}
               </p>
             )}
           </div>
@@ -264,12 +351,15 @@ export function BusinessInfoForm({
             <Label htmlFor="business_reg_issue_date">
               Ngày cấp (giấy phép)
             </Label>
-            <Input
-              id="business_reg_issue_date"
-              placeholder="dd/mm/yyyy"
-              {...register("business_reg_issue_date")}
+            <DatePicker
+              value={
+                businessRegIssueDate instanceof Date
+                  ? businessRegIssueDate
+                  : parseDate(businessRegIssueDate as string | undefined)
+              }
+              onChange={(date) => setValue("business_reg_issue_date", date)}
+              placeholder="Chọn ngày cấp"
               disabled={isFormDisabled}
-              readOnly={!editable}
               className={!editable ? "bg-muted cursor-not-allowed" : ""}
             />
             {errors.business_reg_issue_date && (
@@ -411,12 +501,25 @@ export function BusinessInfoForm({
             <Label htmlFor="env_permit_issue_date">
               Ngày cấp <span className="text-red-500">*</span>
             </Label>
-            <Input
-              id="env_permit_issue_date"
-              placeholder="dd/mm/yyyy"
-              {...register("env_permit_issue_date")}
+            <DatePicker
+              value={
+                !envPermitIssueDate
+                  ? undefined
+                  : envPermitIssueDate instanceof Date
+                  ? envPermitIssueDate
+                  : typeof envPermitIssueDate === "string"
+                  ? parseDate(envPermitIssueDate)
+                  : undefined
+              }
+              onChange={(date) => {
+                if (date) {
+                  setValue("env_permit_issue_date", date);
+                } else {
+                  setValue("env_permit_issue_date", undefined as any);
+                }
+              }}
+              placeholder="Chọn ngày cấp"
               disabled={isFormDisabled}
-              readOnly={!editable}
               className={!editable ? "bg-muted cursor-not-allowed" : ""}
             />
             {errors.env_permit_issue_date && (
@@ -431,12 +534,25 @@ export function BusinessInfoForm({
               Thời hạn giấy phép (Ngày hết hạn){" "}
               <span className="text-red-500">*</span>
             </Label>
-            <Input
-              id="env_permit_expiry_date"
-              placeholder="dd/mm/yyyy"
-              {...register("env_permit_expiry_date")}
+            <DatePicker
+              value={
+                !envPermitExpiryDate
+                  ? undefined
+                  : envPermitExpiryDate instanceof Date
+                  ? envPermitExpiryDate
+                  : typeof envPermitExpiryDate === "string"
+                  ? parseDate(envPermitExpiryDate)
+                  : undefined
+              }
+              onChange={(date) => {
+                if (date) {
+                  setValue("env_permit_expiry_date", date);
+                } else {
+                  setValue("env_permit_expiry_date", undefined as any);
+                }
+              }}
+              placeholder="Chọn ngày hết hạn"
               disabled={isFormDisabled}
-              readOnly={!editable}
               className={!editable ? "bg-muted cursor-not-allowed" : ""}
             />
             {errors.env_permit_expiry_date && (

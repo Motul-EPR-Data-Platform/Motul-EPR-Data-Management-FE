@@ -19,31 +19,13 @@ import { Search, Plus } from "lucide-react";
 import { usePermission } from "@/hooks/usePermission";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAvailableRolesForInvitation } from "@/lib/rbac/permissions";
+import { InvitationService } from "@/lib/services/invitation.service";
+import { mapFrontendRoleToBackend } from "@/lib/rbac/roleMapper";
+import { toast } from "sonner";
 
-// Mock data - replace with API call
-const mockUsers: User[] = [
-  {
-    id: "USR-001",
-    name: "WTP Admin",
-    email: "admin@wtp.com",
-    unit: "CTY",
-    role: "WTP Admin",
-    status: "Active",
-    createdAt: "2024-01-15",
-  },
-  {
-    id: "USR-002",
-    name: "WTP User",
-    email: "user@wtp.com",
-    unit: "CTY",
-    role: "WTP User",
-    status: "Active",
-    createdAt: "2024-02-20",
-  },
-];
 
 export default function WTPUsersPage() {
-  const { userRole } = useAuth();
+  const { userRole, user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,13 +38,19 @@ export default function WTPUsersPage() {
   const availableRoles = getAvailableRolesForInvitation(userRole);
 
   useEffect(() => {
-    // Simulate API call
+    // TODO: Implement API call for wtp users
+    // WTP Admin should have an endpoint to get users in their organization
     const loadUsers = async () => {
       setIsLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setUsers(mockUsers);
-      setFilteredUsers(mockUsers);
-      setIsLoading(false);
+      try {
+        // Placeholder - will be implemented when backend endpoint is available
+        setUsers([]);
+        setFilteredUsers([]);
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message || "Không thể tải danh sách người dùng");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadUsers();
@@ -88,24 +76,28 @@ export default function WTPUsersPage() {
   }, [searchQuery, selectedRole, users]);
 
   const handleAddUser = async (email: string, role?: UserRole) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
     // Default role: use first available role if not provided
     // WTP Admin can only invite WTP User
-    const userRole: UserRole =
+    const invitedRole: UserRole =
       role || (availableRoles.length > 0 ? availableRoles[0] : "WTP User");
 
-    const newUser: User = {
-      id: `USR-${String(users.length + 1).padStart(3, "0")}`,
-      name: email.split("@")[0],
-      email,
-      unit: null,
-      role: userRole,
-      status: "Active",
-      createdAt: new Date().toISOString().split("T")[0],
-    };
-
-    setUsers([...users, newUser]);
+    await toast.promise(
+      InvitationService.send({
+        email,
+        role: mapFrontendRoleToBackend(invitedRole),
+        metadata: {
+          wasteTransferPointId: user?.wasteTransferPointId || null,
+        },
+      }),
+      {
+        loading: `Đang gửi lời mời tới ${email}...`,
+        success: `Đã gửi lời mời tới ${email}`,
+        error: (err) =>
+          err?.response?.data?.message ||
+          err?.message ||
+          "Không thể gửi lời mời. Vui lòng thử lại.",
+      }
+    );
   };
 
   const handleEdit = (user: User) => {

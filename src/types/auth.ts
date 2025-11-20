@@ -52,25 +52,26 @@ export type RegisterWithInviteDTO = {
 };
 
 export type CompleteRecyclerAdminProfileDTO = {
-  vendor_name: string;
+  vendorName: string;
   location: {
-    code?: string;
+    code: string;
     address: string;
-    city?: string;
+    city: string;
     latitude?: number;
     longitude?: number;
   };
-  google_map_link?: string;
   representative?: string;
-  tax_code?: string;
+  taxCode?: string;
   phone?: string;
-  contact_point?: string;
-  contact_phone?: string;
-  contact_email?: string;
-  business_reg_number?: string;
-  env_permit_number?: string;
-  env_permit_issue_date?: string; // ISO on the wire
-  env_permit_expiry_date?: string;
+  contactPoint?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  businessRegNumber?: string;
+  businessRegIssueDate?: string; // dd/mm/yyyy format
+  googleMapLink?: string;
+  envPermitNumber?: string;
+  envPermitIssueDate?: string; // dd/mm/yyyy format
+  envPermitExpiryDate?: string; // dd/mm/yyyy format
 };
 
 export type CompleteWasteTransferAdminProfileDTO = {

@@ -9,7 +9,7 @@ import { DefinitionService } from "@/lib/services/definition.service";
 import { Category, Definition } from "@/types/definition";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermission } from "@/hooks/usePermission";
-import { transformCategories, transformDefinitions } from "@/lib/utils/definitionTransformers";
+import { transformCategories, transformDefinitions } from "@/lib/utils/definitionUtils/definitionTransformers";
 import { toast } from "sonner";
 import { DashboardSkeleton } from "@/components/skeleton/DashboardSkeleton";
 import { Input } from "@/components/ui/input";

@@ -1,10 +1,11 @@
 import { z } from "zod";
 
-// Date validation helper (dd/mm/yyyy format)
+// Date validation helper - accepts Date object or dd/mm/yyyy string
 const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
-const dateValidation = z
-  .string()
-  .regex(dateRegex, "Ngày phải có định dạng dd/mm/yyyy");
+const dateValidation = z.union([
+  z.date(),
+  z.string().regex(dateRegex, "Ngày phải có định dạng dd/mm/yyyy"),
+]);
 
 // Phone number validation (Vietnamese format)
 const phoneRegex = /^(\+84|0)[0-9]{9,10}$/;
@@ -35,9 +36,9 @@ const fileValidation = z
 
 // Location schema
 const locationSchema = z.object({
-  code: z.string().optional(),
+  code: z.string().min(1, "Mã địa điểm là bắt buộc"),
   address: z.string().min(1, "Địa chỉ là bắt buộc"),
-  city: z.string().optional(),
+  city: z.string().min(2, "Thành phố phải có ít nhất 2 ký tự"),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
 });
@@ -70,12 +71,8 @@ export const completeRecyclerAdminProfileSchema = z.object({
 
   // Environmental permit (mandatory)
   env_permit_number: z.string().min(1, "Số giấy phép môi trường là bắt buộc"),
-  env_permit_issue_date: z
-    .string()
-    .regex(dateRegex, "Ngày cấp phải có định dạng dd/mm/yyyy"),
-  env_permit_expiry_date: z
-    .string()
-    .regex(dateRegex, "Ngày hết hạn phải có định dạng dd/mm/yyyy"),
+  env_permit_issue_date: dateValidation,
+  env_permit_expiry_date: dateValidation,
   env_permit_file: fileValidation,
 });
 

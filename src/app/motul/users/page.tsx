@@ -27,111 +27,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getAvailableRolesForInvitation } from "@/lib/rbac/permissions";
 import { toast } from "sonner";
 import { InvitationService } from "@/lib/services/invitation.service";
+import { AdminService } from "@/lib/services/admin.service";
 import { mapFrontendRoleToBackend } from "@/lib/rbac/roleMapper";
-// Mock data - replace with API call
-// Motul Admin can manage all users from all organizations
-const mockUsers: User[] = [
-  // Motul Users
-  {
-    id: "USR-001",
-    name: "Motul Admin",
-    email: "admin@motul.com",
-    unit: null,
-    role: "Motul Admin",
-    status: "Active",
-    createdAt: "2024-01-15",
-  },
-  {
-    id: "USR-002",
-    name: "John Doe",
-    email: "john@motul.com",
-    unit: "Motul Vietnam",
-    role: "Motul User",
-    status: "Active",
-    createdAt: "2024-02-20",
-  },
-  {
-    id: "USR-003",
-    name: "Jane Smith",
-    email: "jane@motul.com",
-    unit: "Motul Vietnam",
-    role: "Motul User",
-    status: "Active",
-    createdAt: "2024-03-10",
-  },
-  // Recycler Users
-  {
-    id: "USR-004",
-    name: "Recycler Admin",
-    email: "admin@recycler.com",
-    unit: "CTY",
-    role: "Recycler Admin",
-    status: "Active",
-    createdAt: "2024-03-15",
-  },
-  {
-    id: "USR-005",
-    name: "Recycler User",
-    email: "user@recycler.com",
-    unit: "CTY2",
-    role: "Recycler User",
-    status: "Active",
-    createdAt: "2024-04-01",
-  },
-  // WTP Users
-  {
-    id: "USR-006",
-    name: "WTP Admin",
-    email: "admin@wtp.com",
-    unit: "CTY3",
-    role: "WTP Admin",
-    status: "Active",
-    createdAt: "2024-04-05",
-  },
-  {
-    id: "USR-007",
-    name: "WTP User",
-    email: "user@wtp.com",
-    unit: "CTY4",
-    role: "WTP User",
-    status: "Inactive",
-    createdAt: "2024-04-10",
-  },
-];
-
-// Mock data for pending invites
-const mockPendingInvites: PendingInvite[] = [
-  {
-    id: "INV-001",
-    email: "newuser@motul.com",
-    role: "Motul User",
-    unit: "Motul Vietnam",
-    invitedBy: "Motul Admin",
-    invitedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    status: "pending",
-  },
-  {
-    id: "INV-002",
-    email: "recycler@example.com",
-    role: "Recycler User",
-    unit: "CTY5",
-    invitedBy: "Motul Admin",
-    invitedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    expiresAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    status: "pending",
-  },
-  {
-    id: "INV-003",
-    email: "wtpuser@example.com",
-    role: "WTP User",
-    unit: "CTY6",
-    invitedBy: "Motul Admin",
-    invitedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    expiresAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    status: "accepted",
-  },
-];
+import { transformUsers, transformInvitations } from "@/lib/utils/userTransformers";
 
 export default function UsersPage() {
   const { userRole } = useAuth();
@@ -160,18 +58,6 @@ export default function UsersPage() {
   const availableRoles = getAvailableRolesForInvitation(userRole);
 
   useEffect(() => {
-    // Simulate API call
-    const loadData = async () => {
-      setIsLoading(true);
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setUsers(mockUsers);
-      setFilteredUsers(mockUsers);
-      setPendingInvites(mockPendingInvites);
-      setFilteredInvites(mockPendingInvites);
-      setIsLoading(false);
-    };
-
     loadData();
   }, []);
 
@@ -223,6 +109,38 @@ export default function UsersPage() {
     setFilteredInvites(filtered);
   }, [inviteSearchQuery, selectedInviteRole, pendingInvites]);
 
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [usersResponse, invitationsResponse] = await Promise.allSettled([
+        AdminService.getUsers(),
+        AdminService.getInvitations(),
+      ]);
+
+      // Handle users
+      if (usersResponse.status === "fulfilled") {
+        const transformedUsers = transformUsers(usersResponse.value.data);
+        setUsers(transformedUsers);
+        setFilteredUsers(transformedUsers);
+      } else {
+        toast.error("Không thể tải danh sách người dùng");
+      }
+
+      // Handle invitations
+      if (invitationsResponse.status === "fulfilled") {
+        const transformedInvitations = transformInvitations(
+          invitationsResponse.value.data
+        );
+        setPendingInvites(transformedInvitations);
+        setFilteredInvites(transformedInvitations);
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Không thể tải dữ liệu");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleAddUser = async (email: string, role?: UserRole) => {
     const userRole: UserRole =
       role || (availableRoles.length > 0 ? availableRoles[0] : "Motul Admin");
@@ -235,22 +153,7 @@ export default function UsersPage() {
       {
         loading: `Đang gửi lời mời tới ${email}...`,
         success: () => {
-          // optimistic UI update
-          setPendingInvites((prev) => [
-            ...prev,
-            {
-              id: `INV-${String(prev.length + 1).padStart(3, "0")}`,
-              email,
-              role: userRole,
-              unit: null,
-              invitedBy: "Motul Admin",
-              invitedAt: new Date().toISOString(),
-              expiresAt: new Date(
-                Date.now() + 7 * 24 * 60 * 60 * 1000,
-              ).toISOString(),
-              status: "pending",
-            },
-          ]);
+          loadData(); // Reload data from API
           setActiveTab("pending");
           return `Đã gửi lời mời tới ${email}`;
         },
@@ -263,31 +166,18 @@ export default function UsersPage() {
   };
 
   const handleResendInvite = async (invite: PendingInvite) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    // Update the invite with new expiration date
-    const updatedInvites = pendingInvites.map((inv) =>
-      inv.id === invite.id
-        ? {
-            ...inv,
-            invitedAt: new Date().toISOString(),
-            expiresAt: new Date(
-              Date.now() + 7 * 24 * 60 * 60 * 1000,
-            ).toISOString(),
-            status: "pending" as const,
-          }
-        : inv,
-    );
-
-    setPendingInvites(updatedInvites);
+    // TODO: Implement resend invitation API endpoint
+    toast.info("Chức năng gửi lại lời mời sẽ được triển khai sớm");
+    // Reload data after resend
+    loadData();
   };
 
   const handleCancelInvite = async (invite: PendingInvite) => {
     if (confirm(`Bạn có chắc chắn muốn hủy lời mời cho ${invite.email}?`)) {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setPendingInvites(pendingInvites.filter((inv) => inv.id !== invite.id));
+      // TODO: Implement cancel invitation API endpoint
+      toast.info("Chức năng hủy lời mời sẽ được triển khai sớm");
+      // Reload data after cancel
+      loadData();
     }
   };
 

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Category, CreateDefinitionDTO } from "@/types/definition";
 import { CreateDefinitionForm } from "./CreateDefinitionForm";
-import { createDefinition } from "@/lib/utils/definitionHelpers";
+import { createDefinition } from "@/lib/utils/definitionUtils/definitionHelpers";
 import { toast } from "sonner";
 
 interface CreateDefinitionDialogProps {
