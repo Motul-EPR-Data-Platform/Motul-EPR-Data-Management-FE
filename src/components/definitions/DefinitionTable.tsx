@@ -46,7 +46,7 @@ export function DefinitionTable({
   // Get additional fields based on category
   const getAdditionalFields = (definition: Definition): Record<string, any> => {
     const data = definition.data as any;
-    const baseFields = ["code", "name", "description"];
+    const baseFields = ["code", "name", "description", "id"];
     const additional: Record<string, any> = {};
     
     // Handle null/undefined data

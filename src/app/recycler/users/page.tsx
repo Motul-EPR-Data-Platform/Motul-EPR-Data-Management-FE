@@ -63,8 +63,7 @@ export default function RecyclerUsersPage() {
       filtered = filtered.filter(
         (user) =>
           user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.id.toLowerCase().includes(searchQuery.toLowerCase()),
+          user.email.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 

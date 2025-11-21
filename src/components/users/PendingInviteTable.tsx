@@ -133,12 +133,20 @@ export function PendingInviteTable({
                   <TableCell>{invite.unit || "-"}</TableCell>
                   <TableCell>{invite.invitedBy}</TableCell>
                   <TableCell>
-                    {new Date(invite.invitedAt).toLocaleDateString("vi-VN")}
+                    {new Date(invite.invitedAt).toLocaleDateString("vi-VN", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    })}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3 text-muted-foreground" />
-                      {new Date(invite.expiresAt).toLocaleDateString("vi-VN")}
+                      {new Date(invite.expiresAt).toLocaleDateString("vi-VN", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                      })}
                     </div>
                   </TableCell>
                   <TableCell>

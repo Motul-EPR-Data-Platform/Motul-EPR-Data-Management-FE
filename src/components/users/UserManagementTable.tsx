@@ -53,7 +53,6 @@ export function UserManagementTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>ID</TableHead>
             <TableHead>Tên</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Đơn vị</TableHead>
@@ -67,7 +66,7 @@ export function UserManagementTable({
           {users.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={8}
+                colSpan={7}
                 className="text-center text-muted-foreground py-8"
               >
                 Không có dữ liệu
@@ -76,8 +75,7 @@ export function UserManagementTable({
           ) : (
             users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.id}</TableCell>
-                <TableCell>{user.name}</TableCell>
+                <TableCell className="font-medium">{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.unit || "-"}</TableCell>
                 <TableCell>
@@ -101,7 +99,13 @@ export function UserManagementTable({
                     {user.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{user.createdAt}</TableCell>
+                <TableCell>
+                  {new Date(user.createdAt).toLocaleDateString("vi-VN", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                  })}
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     {onEdit && (

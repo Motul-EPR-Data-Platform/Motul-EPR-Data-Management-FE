@@ -69,8 +69,7 @@ export default function UsersPage() {
       filtered = filtered.filter(
         (user) =>
           user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.id.toLowerCase().includes(searchQuery.toLowerCase()),
+          user.email.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
@@ -92,7 +91,6 @@ export default function UsersPage() {
           invite.email
             .toLowerCase()
             .includes(inviteSearchQuery.toLowerCase()) ||
-          invite.id.toLowerCase().includes(inviteSearchQuery.toLowerCase()) ||
           invite.invitedBy
             .toLowerCase()
             .includes(inviteSearchQuery.toLowerCase()),
