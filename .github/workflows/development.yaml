@@ -30,7 +30,7 @@ jobs:
         run: pnpm prepare
 
       - name: Build project
-        run: pnpm vercel-build
+        run: pnpm build
 
       - name: Install Vercel CLI
         run: pnpm add -g vercel
