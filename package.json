@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "vercel-build": "pnpm install --no-frozen-lockfile && next build",
+    "prepare": "husky install",
     "start": "next start",
     "test": "echo \"No tests yet\"",
     "lint": "eslint . --ext .ts",
