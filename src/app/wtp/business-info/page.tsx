@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { BusinessInfoForm } from "@/components/recyclers/BusinessInfoForm";
+import { WtpBusinessInfoForm } from "@/components/wtp/BusinessInfoForm";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { RouteGuard } from "@/components/rbac/RouteGuard";
-import { RecyclerService } from "@/lib/services/recycler.service";
-import { RecyclerProfile } from "@/types/auth";
+import { WtpService } from "@/lib/services/wtp.service";
+import { WtpProfile } from "@/types/auth";
 import { Pencil, FileText, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardSkeleton } from "@/components/skeleton/DashboardSkeleton";
@@ -19,28 +19,28 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function RecyclerBusinessInfoPage() {
+export default function WtpBusinessInfoPage() {
   const { userRole, user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [profile, setProfile] = useState<RecyclerProfile | null>(null);
+  const [profile, setProfile] = useState<WtpProfile | null>(null);
 
-  // Only Recycler Admin can edit
-  const isAdmin = userRole === "Recycler Admin";
+  // Only WTP Admin can edit
+  const isAdmin = userRole === "WTP Admin";
 
   useEffect(() => {
     loadProfile();
-  }, [user?.recyclerId]);
+  }, [user?.wasteTransferPointId]);
 
   const loadProfile = async () => {
-    if (!user?.recyclerId) {
+    if (!user?.wasteTransferPointId) {
       setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
     try {
-      const profileData = await RecyclerService.getProfile(user.recyclerId);
+      const profileData = await WtpService.getProfile(user.wasteTransferPointId);
       setProfile(profileData);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Không thể tải thông tin doanh nghiệp");
@@ -65,8 +65,8 @@ export default function RecyclerBusinessInfoPage() {
     loadProfile();
   };
 
-  // Convert RecyclerProfile to form data format
-  const convertProfileToFormData = (profile: RecyclerProfile) => {
+  // Convert WtpProfile to form data format
+  const convertProfileToFormData = (profile: WtpProfile) => {
     // Helper to parse date string to Date object
     const parseDate = (dateStr: string | Date | undefined): Date | undefined => {
       if (!dateStr) return undefined;
@@ -90,23 +90,12 @@ export default function RecyclerBusinessInfoPage() {
     };
 
     return {
-      vendor_name: profile.vendorName || "",
-      tax_code: profile.taxCode || "",
-      representative: profile.representative || "",
-      location: {
-        code: profile.location?.code || "",
-        address: profile.location?.address || "",
-        city: profile.location?.city || "",
-        latitude: profile.location?.latitude,
-        longitude: profile.location?.longitude,
-      },
-      business_reg_number: profile.businessRegNumber || "",
-      business_reg_issue_date: parseDate(profile.businessRegIssueDate),
+      waste_transfer_name: profile.wasteTransferName || "",
+      business_code: profile.businessCode || "",
       phone: profile.phone || "",
       contact_email: profile.contactEmail || "",
-      contact_point: profile.contactPoint || "",
+      contact_person: profile.contactPerson || "",
       contact_phone: profile.contactPhone || "",
-      google_map_link: profile.googleMapLink || "",
       env_permit_number: profile.envPermitNumber || "",
       env_permit_issue_date: parseDate(profile.envPermitIssueDate),
       env_permit_expiry_date: parseDate(profile.envPermitExpiryDate),
@@ -119,7 +108,7 @@ export default function RecyclerBusinessInfoPage() {
         <PageLayout
           breadcrumbs={[{ label: "Thông tin doanh nghiệp" }]}
           title="Thông tin doanh nghiệp"
-          subtitle="Thông tin pháp lý và liên hệ của đơn vị tái chế"
+          subtitle="Thông tin pháp lý và liên hệ của điểm tiếp nhận chất thải"
         >
           <DashboardSkeleton />
         </PageLayout>
@@ -132,7 +121,7 @@ export default function RecyclerBusinessInfoPage() {
       <PageLayout
         breadcrumbs={[{ label: "Thông tin doanh nghiệp" }]}
         title="Thông tin doanh nghiệp"
-        subtitle="Thông tin pháp lý và liên hệ của đơn vị tái chế"
+        subtitle="Thông tin pháp lý và liên hệ của điểm tiếp nhận chất thải"
       >
         <div className="space-y-6">
           {/* Header with Description */}
@@ -141,7 +130,7 @@ export default function RecyclerBusinessInfoPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-red-600" />
-                  <CardTitle>Thông tin Đơn vị tái chế</CardTitle>
+                  <CardTitle>Thông tin Điểm tiếp nhận chất thải</CardTitle>
                 </div>
                 {isAdmin && !isEditing && profile && (
                   <Button onClick={handleEdit} variant="default">
@@ -198,12 +187,12 @@ export default function RecyclerBusinessInfoPage() {
                   </div>
                 </div>
               )}
-              <BusinessInfoForm
+              <WtpBusinessInfoForm
                 initialData={profile ? convertProfileToFormData(profile) : undefined}
                 isEditMode={isEditing}
                 editable={isEditing && isAdmin}
                 onSaveSuccess={handleSaveSuccess}
-                profileId={user?.recyclerId}
+                profileId={user?.wasteTransferPointId}
               />
             </CardContent>
           </Card>
@@ -226,3 +215,4 @@ export default function RecyclerBusinessInfoPage() {
     </RouteGuard>
   );
 }
+

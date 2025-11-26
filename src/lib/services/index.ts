@@ -2,3 +2,5 @@ export * from "@/types";
 export { AuthService } from "./auth.service";
 export { InvitationService } from "./invitation.service";
 export { AdminService } from "./admin.service";
+export { RecyclerService } from "./recycler.service";
+export { WtpService } from "./wtp.service";

@@ -13,13 +13,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Bell, Settings, LogOut } from "lucide-react";
+import { Bell, Settings, LogOut, User } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function Navbar() {
   const router = useRouter();
-  const { logout, user } = useAuth();
+  const { logout, user, organization } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -34,6 +34,10 @@ export function Navbar() {
       router.push("/login");
       router.refresh();
     }
+  };
+
+  const handleProfileClick = () => {
+    router.push(`/${organization}/account`);
   };
 
   // Get user initials for avatar fallback
@@ -96,7 +100,10 @@ export function Navbar() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleProfileClick}>
+              <User className="mr-2 h-4 w-4" />
+              Hồ sơ
+            </DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuItem>Support</DropdownMenuItem>
             <ThemeToggle />

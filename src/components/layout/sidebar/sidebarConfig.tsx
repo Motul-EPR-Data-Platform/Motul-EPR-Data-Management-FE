@@ -56,6 +56,7 @@ export const motulSidebarConfig: SidebarConfig = {
     { title: "Định nghĩa", url: "/motul/definitions", icon: BookOpen },
     { title: "Quản lý người dùng", url: "/motul/users", icon: Users, requiresAdmin: true },
     { title: "Cài đặt", url: "/motul/settings", icon: Settings },
+    { title: "Tài khoản", url: "/motul/account", icon: User },
   ],
 };
 
@@ -86,6 +87,7 @@ export const wtpSidebarConfig: SidebarConfig = {
     { title: "Dashboard", url: "/wtp", icon: Home },
     { title: "Bản ghi của tôi", url: "/wtp/my-records", icon: ClipboardList },
     { title: "Định nghĩa", url: "/wtp/definitions", icon: BookOpen },
+    { title: "Thông tin doanh nghiệp", url: "/wtp/business-info", icon: Building2 },
     { title: "Quản lý người dùng", url: "/wtp/users", icon: Users, requiresAdmin: true },
     { title: "Tài khoản", url: "/wtp/account", icon: User },
   ],

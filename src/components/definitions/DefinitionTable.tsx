@@ -119,22 +119,12 @@ export function DefinitionTable({
                 <TableCell>
                   <Badge
                     variant={
-                      definition.status === "approved"
+                      definition.isActive
                         ? "default"
-                        : definition.status === "pending"
-                        ? "default"
-                        : definition.status === "rejected"
-                        ? "destructive"
                         : "secondary"
                     }
                   >
-                    {definition.status === "pending"
-                      ? "Chờ duyệt"
-                      : definition.status === "approved"
-                      ? "Đã duyệt"
-                      : definition.status === "rejected"
-                      ? "Đã từ chối"
-                      : "Đã lưu trữ"}
+                    {definition.isActive ? "Hoạt động" : "Không hoạt động"}
                   </Badge>
                 </TableCell>
                 <TableCell>

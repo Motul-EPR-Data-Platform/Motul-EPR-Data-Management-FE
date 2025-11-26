@@ -1,7 +1,7 @@
 
 import { api } from "@/lib/axios";
 import { path, ENDPOINTS } from "@/constants/api";
-import { DefinitionResponse, RejectDefinitionDTO, CreateCategoryDTO, UpdateCategoryDTO, CreateDefinitionDTO, UpdateDefinitionDTO } from "@/types/definition";
+import { DefinitionResponse, CreateCategoryDTO, UpdateCategoryDTO, CreateDefinitionDTO } from "@/types/definition";
 
 export const DefinitionService = {
 
@@ -25,24 +25,13 @@ export const DefinitionService = {
       return data.data;
     },
   
-    async approve(id: string): Promise<DefinitionResponse> {
-      const { data } = await api.post(
-        path.definitions(ENDPOINTS.DEFINITIONS.APPROVE(id)),
-      );
-      return data;
-    },
-  
-    async reject(id: string, dto: RejectDefinitionDTO): Promise<DefinitionResponse> {
-      const { data } = await api.post(
-        path.definitions(ENDPOINTS.DEFINITIONS.REJECT(id)),
-        dto,
-      );
-      return data;
-    },
-  
+    /**
+     * Archive definition (soft delete)
+     * DELETE /definitions/:id
+     */
     async archive(id: string): Promise<DefinitionResponse> {
       const { data } = await api.delete(
-        path.definitions(ENDPOINTS.DEFINITIONS.ARCHIVE(id)),
+        path.definitions(`/${id}`),
       );
       return data;
     },
@@ -111,24 +100,6 @@ export const DefinitionService = {
       return data.data;
     },
   
-    async getWasteTypeById(id: string): Promise<any> {
-      const { data } = await api.get(
-        path.definitions(`${ENDPOINTS.DEFINITIONS.WASTE_TYPES}/${id}`),
-      );
-      return data.data;
-    },
-  
-    async updateWasteType(
-      id: string,
-      dto: UpdateDefinitionDTO,
-    ): Promise<DefinitionResponse> {
-      const { data } = await api.put(
-        path.definitions(`${ENDPOINTS.DEFINITIONS.WASTE_TYPES}/${id}`),
-        dto,
-      );
-      return data;
-    },
-  
     /**
      * --------------------
      * Contract Type APIs
@@ -148,24 +119,6 @@ export const DefinitionService = {
         path.definitions(ENDPOINTS.DEFINITIONS.CONTRACT_TYPES),
       );
       return data.data;
-    },
-  
-    async getContractTypeById(id: string): Promise<any> {
-      const { data } = await api.get(
-        path.definitions(`${ENDPOINTS.DEFINITIONS.CONTRACT_TYPES}/${id}`),
-      );
-      return data.data;
-    },
-  
-    async updateContractType(
-      id: string,
-      dto: UpdateDefinitionDTO,
-    ): Promise<DefinitionResponse> {
-      const { data } = await api.put(
-        path.definitions(`${ENDPOINTS.DEFINITIONS.CONTRACT_TYPES}/${id}`),
-        dto,
-      );
-      return data;
     },
   
     /**
@@ -189,24 +142,6 @@ export const DefinitionService = {
       return data.data;
     },
   
-    async getEprEntityById(id: string): Promise<any> {
-      const { data } = await api.get(
-        path.definitions(`${ENDPOINTS.DEFINITIONS.EPR_ENTITIES}/${id}`),
-      );
-      return data.data;
-    },
-  
-    async updateEprEntity(
-      id: string,
-      dto: UpdateDefinitionDTO,
-    ): Promise<DefinitionResponse> {
-      const { data } = await api.put(
-        path.definitions(`${ENDPOINTS.DEFINITIONS.EPR_ENTITIES}/${id}`),
-        dto,
-      );
-      return data;
-    },
-  
     /**
      * --------------------
      * Custom Category APIs
@@ -226,24 +161,5 @@ export const DefinitionService = {
         path.definitions(`${ENDPOINTS.DEFINITIONS.CUSTOM}/${categoryKey}`),
       );
       return data.data;
-    },
-  
-    async getCustomById(categoryKey: string, id: string): Promise<any> {
-      const { data } = await api.get(
-        path.definitions(`${ENDPOINTS.DEFINITIONS.CUSTOM}/${categoryKey}/${id}`),
-      );
-      return data.data;
-    },
-  
-    async updateCustom(
-      categoryKey: string,
-      id: string,
-      dto: UpdateDefinitionDTO,
-    ): Promise<DefinitionResponse> {
-      const { data } = await api.put(
-        path.definitions(`${ENDPOINTS.DEFINITIONS.CUSTOM}/${categoryKey}/${id}`),
-        dto,
-      );
-      return data;
     },
   };

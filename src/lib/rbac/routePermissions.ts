@@ -57,6 +57,12 @@ export const routePermissions: RoutePermission[] = [
     permissions: ["settings.view"],
   },
   {
+    path: "/motul/account",
+    organization: "motul",
+    roles: ["Motul Admin", "Motul User"],
+    permissions: ["account.view"],
+  },
+  {
     path: "/motul/definitions",
     organization: "motul",
     roles: ["Motul Admin", "Motul User"],
@@ -133,6 +139,12 @@ export const routePermissions: RoutePermission[] = [
     organization: "wtp",
     roles: ["WTP Admin"],
     permissions: ["users.view"],
+  },
+  {
+    path: "/wtp/business-info",
+    organization: "wtp",
+    roles: ["WTP Admin", "WTP User"],
+    permissions: ["settings.view"],
   },
   {
     path: "/wtp/account",
