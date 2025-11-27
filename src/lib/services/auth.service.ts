@@ -20,22 +20,41 @@ import {
 export const AuthService = {
   // -------- Public --------
   async registerMotul(dto: RegisterMotulDTO): Promise<AuthResponse> {
+    const accessToken = dto.accessToken;
+    const payload = { ...dto };
+    delete payload.accessToken;
+
     const { data } = await api.post<AuthResponse>(
       path.auth(ENDPOINTS.AUTH.REGISTER.MOTUL),
-      dto,
-    );
-    // Session is stored in HTTP-only cookies by backend
-    return data;
-    },
-
-  async registerRecyclerAdmin(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
-    const { data } = await api.post<AuthResponse>(
-      path.auth(ENDPOINTS.AUTH.REGISTER.RECYCLER_ADMIN),
-      dto,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
     );
     // Session is stored in HTTP-only cookies by backend
     return data;
   },
+
+async registerRecyclerAdmin(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
+  const accessToken = dto.accessToken; // the token you passed earlier
+  const payload = { ...dto };
+  delete payload.accessToken; // remove it from body
+
+  const { data } = await api.post<AuthResponse>(
+    path.auth(ENDPOINTS.AUTH.REGISTER.RECYCLER_ADMIN),
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  return data;
+},
+
 
   async completeRecyclerAdminProfile(dto: CompleteRecyclerAdminProfileDTO): Promise<AppUser> {
     const response = await api.post<{ data: AppUser }>(
@@ -47,18 +66,36 @@ export const AuthService = {
   },
 
   async registerRecycler(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
+    const accessToken = dto.accessToken;
+    const payload = { ...dto };
+    delete payload.accessToken;
+
     const { data } = await api.post<AuthResponse>(
       path.auth(ENDPOINTS.AUTH.REGISTER.RECYCLER),
-      dto,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
     );
     // Session is stored in HTTP-only cookies by backend
     return data;
   },
 
   async registerWasteTransferAdmin(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
+    const accessToken = dto.accessToken;
+    const payload = { ...dto };
+    delete payload.accessToken;
+
     const { data } = await api.post<AuthResponse>(
       path.auth(ENDPOINTS.AUTH.REGISTER.WASTE_TRANSFER_ADMIN),
-      dto,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
     );
     // Session is stored in HTTP-only cookies by backend
     return data;
@@ -76,9 +113,18 @@ export const AuthService = {
   },
 
   async registerWasteTransfer(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
+    const accessToken = dto.accessToken;
+    const payload = { ...dto };
+    delete payload.accessToken;
+
     const { data } = await api.post<AuthResponse>(
       path.auth(ENDPOINTS.AUTH.REGISTER.WASTE_TRANSFER),
-      dto,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
     );
     // Session is stored in HTTP-only cookies by backend
     return data;
