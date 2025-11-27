@@ -34,14 +34,7 @@ const fileValidation = z
     "Chỉ chấp nhận file PDF, JPG, PNG",
   );
 
-// Location schema
-const locationSchema = z.object({
-  code: z.string().min(1, "Mã địa điểm là bắt buộc"),
-  address: z.string().min(1, "Địa chỉ là bắt buộc"),
-  city: z.string().min(2, "Thành phố phải có ít nhất 2 ký tự"),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-});
+// Company registration address - single field (not sent to BE yet)
 
 // Environmental permit schema
 // const envPermitSchema = z.object({
@@ -57,7 +50,7 @@ export const completeRecyclerAdminProfileSchema = z.object({
   vendor_name: z.string().min(1, "Tên thị trường là bắt buộc"),
   tax_code: z.string().min(1, "Mã số thuế là bắt buộc"),
   representative: z.string().min(1, "Người đại diện pháp luật là bắt buộc"),
-  location: locationSchema,
+  company_registration_address: z.string().min(1, "Địa chỉ đăng ký công ty là bắt buộc"),
   business_reg_number: z.string().optional(),
   business_reg_issue_date: dateValidation.optional(),
   business_reg_file: fileValidation,

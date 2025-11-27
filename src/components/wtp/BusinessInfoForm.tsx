@@ -67,6 +67,7 @@ export function WtpBusinessInfoForm({
     defaultValues: {
       waste_transfer_name: initialData?.waste_transfer_name || "",
       business_code: initialData?.business_code || "",
+      company_registration_address: initialData?.company_registration_address || "",
       phone: initialData?.phone || "",
       contact_email: initialData?.contact_email || "",
       contact_person: initialData?.contact_person || "",
@@ -83,6 +84,7 @@ export function WtpBusinessInfoForm({
       reset({
         waste_transfer_name: initialData.waste_transfer_name || "",
         business_code: initialData.business_code || "",
+        company_registration_address: initialData.company_registration_address || "",
         phone: initialData.phone || "",
         contact_email: initialData.contact_email || "",
         contact_person: initialData.contact_person || "",
@@ -104,12 +106,12 @@ export function WtpBusinessInfoForm({
     setSuccess(false);
 
     try {
-      const formatedEnvPermitIssueDate = toDDMMYYYY(
-        data.env_permit_issue_date instanceof Date,
-      );
-      const formatedEnvPermitExpiryDate = toDDMMYYYY(
-        data.env_permit_expiry_date instanceof Date,
-      );
+      const formatedEnvPermitIssueDate = data.env_permit_issue_date
+        ? toDDMMYYYY(data.env_permit_issue_date)
+        : undefined;
+      const formatedEnvPermitExpiryDate = data.env_permit_expiry_date
+        ? toDDMMYYYY(data.env_permit_expiry_date)
+        : undefined;
       // If in edit mode and profileId exists, use update endpoint
       if (isEditMode && profileId) {
         const dto: UpdateWtpProfileDTO = {
@@ -140,6 +142,19 @@ export function WtpBusinessInfoForm({
       } else {
         // Initial profile completion - this shouldn't happen on business-info page
         // but keeping for compatibility
+        // Split company_registration_address into location fields for backend validation
+        // Temporary workaround until backend supports single address field
+        const addressParts = data.company_registration_address
+          .split(",")
+          .map((part) => part.trim())
+          .filter(Boolean);
+        
+        // Assign parts: code (first, optional), address (middle or all, required min 5 chars), city (last, optional)
+        const locationCode = addressParts[0] || undefined;
+        const locationAddress =
+          addressParts.slice(1).join(", ") || addressParts[0] || data.company_registration_address || "Địa chỉ đăng ký công ty";
+        const locationCity = addressParts.length > 1 ? addressParts[addressParts.length - 1] : undefined;
+
         const dto: CompleteWasteTransferAdminProfileDTO = {
           waste_transfer_name: data.waste_transfer_name,
           business_code: data.business_code,
@@ -150,8 +165,11 @@ export function WtpBusinessInfoForm({
           env_permit_number: data.env_permit_number,
           env_permit_issue_date: formatedEnvPermitIssueDate,
           env_permit_expiry_date: formatedEnvPermitExpiryDate,
+          // Temporary: Split company_registration_address into location fields for backend
           location: {
-            address: "",
+            code: locationCode,
+            address: locationAddress.length >= 5 ? locationAddress : locationAddress.padEnd(5, " "),
+            city: locationCity,
           },
         };
 
@@ -236,6 +254,25 @@ export function WtpBusinessInfoForm({
           {errors.business_code && (
             <p className="text-sm text-red-500">
               {errors.business_code.message}
+            </p>
+          )}
+        </div>
+
+        {/* Company Registration Address */}
+        <div className="grid gap-2">
+          <Label htmlFor="company_registration_address">
+            Địa chỉ đăng ký công ty <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="company_registration_address"
+            placeholder="Vui lòng nhập địa chỉ đăng ký công ty"
+            {...register("company_registration_address")}
+            disabled={isFormDisabled}
+            className={errors.company_registration_address ? "border-red-500" : ""}
+          />
+          {errors.company_registration_address && (
+            <p className="text-sm text-red-500">
+              {errors.company_registration_address.message}
             </p>
           )}
         </div>

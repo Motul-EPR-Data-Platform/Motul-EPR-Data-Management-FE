@@ -5,6 +5,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { BusinessInfoForm } from "@/components/recyclers/BusinessInfoForm";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermission } from "@/hooks/usePermission";
 import { RouteGuard } from "@/components/rbac/RouteGuard";
 import { RecyclerService } from "@/lib/services/recycler.service";
 import { RecyclerProfile } from "@/types/auth";
@@ -25,8 +26,11 @@ export default function RecyclerBusinessInfoPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<RecyclerProfile | null>(null);
 
-  // Only Recycler Admin can edit
-  const isAdmin = userRole === "Recycler Admin";
+  // Check if user can edit organization info
+  const canEditOrganizationInfo = usePermission("settings.edit");
+  
+  // Check if profile is inactive (doesn't exist or user is inactive)
+  const isProfileInactive = !profile || !user?.isActive;
 
   useEffect(() => {
     loadProfile();
@@ -43,10 +47,15 @@ export default function RecyclerBusinessInfoPage() {
       const profileData = await RecyclerService.getProfile(user.recyclerId);
       setProfile(profileData);
     } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message ||
-          "Không thể tải thông tin doanh nghiệp",
-      );
+      // If profile doesn't exist (404), set profile to null
+      if (error?.response?.status === 404) {
+        setProfile(null);
+      } else {
+        toast.error(
+          error?.response?.data?.message ||
+            "Không thể tải thông tin doanh nghiệp",
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -94,17 +103,19 @@ export default function RecyclerBusinessInfoPage() {
       return undefined;
     };
 
+    // Combine location fields into single address string (if location exists)
+    const locationParts = [
+      profile.location?.code,
+      profile.location?.address,
+      profile.location?.city,
+    ].filter(Boolean);
+    const companyRegistrationAddress = locationParts.join(", ") || "";
+
     return {
       vendor_name: profile.vendorName || "",
       tax_code: profile.taxCode || "",
       representative: profile.representative || "",
-      location: {
-        code: profile.location?.code || "",
-        address: profile.location?.address || "",
-        city: profile.location?.city || "",
-        latitude: profile.location?.latitude,
-        longitude: profile.location?.longitude,
-      },
+      company_registration_address: companyRegistrationAddress,
       business_reg_number: profile.businessRegNumber || "",
       business_reg_issue_date: parseDate(profile.businessRegIssueDate),
       phone: profile.phone || "",
@@ -148,10 +159,10 @@ export default function RecyclerBusinessInfoPage() {
                   <FileText className="h-5 w-5 text-red-600" />
                   <CardTitle>Thông tin Đơn vị tái chế</CardTitle>
                 </div>
-                {isAdmin && !isEditing && profile && (
+                {canEditOrganizationInfo && !isEditing && (
                   <Button onClick={handleEdit} variant="default">
                     <Pencil className="h-4 w-4 mr-2" />
-                    Chỉnh sửa
+                    {isProfileInactive ? "Tạo Hồ Sơ" : "Chỉnh sửa"}
                   </Button>
                 )}
               </div>
@@ -163,8 +174,8 @@ export default function RecyclerBusinessInfoPage() {
             </CardHeader>
           </Card>
 
-          {/* Info Banner for Non-Admins */}
-          {!isAdmin && (
+          {/* Info Banner for users without edit permission */}
+          {!canEditOrganizationInfo && (
             <Card className="bg-blue-50 border-blue-200">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3">
@@ -196,7 +207,7 @@ export default function RecyclerBusinessInfoPage() {
                       type="button"
                       variant="outline"
                       onClick={handleCancel}
-                      disabled={!isAdmin}
+                      disabled={!canEditOrganizationInfo}
                     >
                       Hủy
                     </Button>
@@ -208,7 +219,7 @@ export default function RecyclerBusinessInfoPage() {
                   profile ? convertProfileToFormData(profile) : undefined
                 }
                 isEditMode={isEditing}
-                editable={isEditing && isAdmin}
+                editable={isEditing && canEditOrganizationInfo}
                 onSaveSuccess={handleSaveSuccess}
                 profileId={user?.recyclerId}
               />

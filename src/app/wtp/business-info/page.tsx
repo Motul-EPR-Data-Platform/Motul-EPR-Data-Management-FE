@@ -5,6 +5,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { WtpBusinessInfoForm } from "@/components/wtp/BusinessInfoForm";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermission } from "@/hooks/usePermission";
 import { RouteGuard } from "@/components/rbac/RouteGuard";
 import { WtpService } from "@/lib/services/wtp.service";
 import { WtpProfile } from "@/types/auth";
@@ -25,8 +26,11 @@ export default function WtpBusinessInfoPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<WtpProfile | null>(null);
 
-  // Only WTP Admin can edit
-  const isAdmin = userRole === "WTP Admin";
+  // Check if user can edit organization info
+  const canEditOrganizationInfo = usePermission("settings.edit");
+  
+  // Check if profile is inactive (doesn't exist or user is inactive)
+  const isProfileInactive = !profile || !user?.isActive;
 
   useEffect(() => {
     loadProfile();
@@ -45,10 +49,15 @@ export default function WtpBusinessInfoPage() {
       );
       setProfile(profileData);
     } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message ||
-          "Không thể tải thông tin doanh nghiệp",
-      );
+      // If profile doesn't exist (404), set profile to null
+      if (error?.response?.status === 404) {
+        setProfile(null);
+      } else {
+        toast.error(
+          error?.response?.data?.message ||
+            "Không thể tải thông tin doanh nghiệp",
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -96,9 +105,22 @@ export default function WtpBusinessInfoPage() {
       return undefined;
     };
 
+    // Combine location fields into single address string (if location exists)
+    // Note: WTP profile might not have location field yet
+    const locationParts: string[] = [];
+    // If profile has location data, combine it (safely access location property)
+    const profileWithLocation = profile as WtpProfile & { location?: { code?: string; address?: string; city?: string } };
+    if (profileWithLocation.location) {
+      if (profileWithLocation.location.code) locationParts.push(profileWithLocation.location.code);
+      if (profileWithLocation.location.address) locationParts.push(profileWithLocation.location.address);
+      if (profileWithLocation.location.city) locationParts.push(profileWithLocation.location.city);
+    }
+    const companyRegistrationAddress = locationParts.join(", ") || "";
+
     return {
       waste_transfer_name: profile.wasteTransferName || "",
       business_code: profile.businessCode || "",
+      company_registration_address: companyRegistrationAddress,
       phone: profile.phone || "",
       contact_email: profile.contactEmail || "",
       contact_person: profile.contactPerson || "",
@@ -139,10 +161,10 @@ export default function WtpBusinessInfoPage() {
                   <FileText className="h-5 w-5 text-red-600" />
                   <CardTitle>Thông tin Điểm tiếp nhận chất thải</CardTitle>
                 </div>
-                {isAdmin && !isEditing && profile && (
+                {canEditOrganizationInfo && !isEditing && (
                   <Button onClick={handleEdit} variant="default">
                     <Pencil className="h-4 w-4 mr-2" />
-                    Chỉnh sửa
+                    {isProfileInactive ? "Tạo Hồ Sơ" : "Chỉnh sửa"}
                   </Button>
                 )}
               </div>
@@ -154,8 +176,8 @@ export default function WtpBusinessInfoPage() {
             </CardHeader>
           </Card>
 
-          {/* Info Banner for Non-Admins */}
-          {!isAdmin && (
+          {/* Info Banner for users without edit permission */}
+          {!canEditOrganizationInfo && (
             <Card className="bg-blue-50 border-blue-200">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3">
@@ -187,7 +209,7 @@ export default function WtpBusinessInfoPage() {
                       type="button"
                       variant="outline"
                       onClick={handleCancel}
-                      disabled={!isAdmin}
+                      disabled={!canEditOrganizationInfo}
                     >
                       Hủy
                     </Button>
@@ -199,7 +221,7 @@ export default function WtpBusinessInfoPage() {
                   profile ? convertProfileToFormData(profile) : undefined
                 }
                 isEditMode={isEditing}
-                editable={isEditing && isAdmin}
+                editable={isEditing && canEditOrganizationInfo}
                 onSaveSuccess={handleSaveSuccess}
                 profileId={user?.wasteTransferPointId}
               />

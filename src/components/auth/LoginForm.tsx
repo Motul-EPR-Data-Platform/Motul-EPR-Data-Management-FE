@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/card";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { getAuthErrorMessage } from "@/lib/utils/errorHandler";
 
 export function LoginForm() {
   const router = useRouter();
@@ -45,6 +47,12 @@ export function LoginForm() {
       // Login using context (which will update user state)
       await login(data.email, data.password);
 
+      // Show success toast
+      toast.success("Đăng nhập thành công!");
+
+      // Reset loading state before redirect to prevent UI freeze
+      setIsLoading(false);
+
       // Wait a bit for context to update, then redirect
       // The redirect will be handled by checking the user's organization
       const redirectTo = searchParams.get("redirect");
@@ -56,14 +64,8 @@ export function LoginForm() {
       }
       router.refresh();
     } catch (err) {
-      const error = err as Error & {
-        response?: { data?: { message?: string } };
-      };
-      setError(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.",
-      );
+      const errorMessage = getAuthErrorMessage(err);
+      setError(errorMessage);
       setIsLoading(false);
     }
   };
