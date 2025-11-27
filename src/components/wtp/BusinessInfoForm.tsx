@@ -52,7 +52,12 @@ export function WtpBusinessInfoForm({
   ): Date | undefined => {
     if (!initialData) return undefined;
     const value = initialData[fieldName];
-    return parseDate(value as string | Date | undefined);
+    if (!value) return undefined;
+    if (value instanceof Date) return value;
+    if (typeof value === "string") {
+      return parseDate(value);
+    }
+    return undefined;
   };
 
   const {
@@ -96,9 +101,21 @@ export function WtpBusinessInfoForm({
     }
   }, [initialData, reset]);
 
-  // Watch date fields to get current values
-  const envPermitIssueDate = watch("env_permit_issue_date");
-  const envPermitExpiryDate = watch("env_permit_expiry_date");
+  // Watch date fields to get current values and ensure they're Date objects
+  const envPermitIssueDateRaw = watch("env_permit_issue_date");
+  const envPermitExpiryDateRaw = watch("env_permit_expiry_date");
+  
+  const envPermitIssueDate = envPermitIssueDateRaw instanceof Date 
+    ? envPermitIssueDateRaw 
+    : typeof envPermitIssueDateRaw === "string" 
+      ? parseDate(envPermitIssueDateRaw) 
+      : undefined;
+      
+  const envPermitExpiryDate = envPermitExpiryDateRaw instanceof Date 
+    ? envPermitExpiryDateRaw 
+    : typeof envPermitExpiryDateRaw === "string" 
+      ? parseDate(envPermitExpiryDateRaw) 
+      : undefined;
 
   const onSubmit = async (data: CompleteWtpAdminProfileFormData) => {
     setIsLoading(true);
@@ -149,27 +166,44 @@ export function WtpBusinessInfoForm({
           .map((part) => part.trim())
           .filter(Boolean);
         
-        // Assign parts: code (first, optional), address (middle or all, required min 5 chars), city (last, optional)
-        const locationCode = addressParts[0] || undefined;
+        // Assign parts: code (first, required), address (middle or all, required min 5 chars), city (last, required)
+        const locationCode = addressParts[0] || "LOC001";
         const locationAddress =
           addressParts.slice(1).join(", ") || addressParts[0] || data.company_registration_address || "Địa chỉ đăng ký công ty";
-        const locationCity = addressParts.length > 1 ? addressParts[addressParts.length - 1] : undefined;
+        const locationCity = addressParts.length > 1 ? addressParts[addressParts.length - 1] : "Thành phố";
+
+        // Ensure minimum length for address and city for backend validation
+        const finalAddress =
+          locationAddress.length >= 5
+            ? locationAddress
+            : (locationAddress + "     ").substring(0, 5);
+        const finalCity =
+          locationCity.length >= 2
+            ? locationCity
+            : (locationCity + "  ").substring(0, 2);
+
+        // Convert date strings to Date objects for backend
+        const envPermitIssueDateObj = formatedEnvPermitIssueDate
+          ? parseDate(formatedEnvPermitIssueDate)
+          : null;
+        const envPermitExpiryDateObj = formatedEnvPermitExpiryDate
+          ? parseDate(formatedEnvPermitExpiryDate)
+          : null;
 
         const dto: CompleteWasteTransferAdminProfileDTO = {
-          waste_transfer_name: data.waste_transfer_name,
-          business_code: data.business_code,
-          phone: data.phone,
-          contact_person: data.contact_person,
-          contact_phone: data.contact_phone,
-          contact_email: data.contact_email,
-          env_permit_number: data.env_permit_number,
-          env_permit_issue_date: formatedEnvPermitIssueDate,
-          env_permit_expiry_date: formatedEnvPermitExpiryDate,
-          // Temporary: Split company_registration_address into location fields for backend
+          wasteTransferName: data.waste_transfer_name,
+          businessCode: data.business_code,
+          phone: data.phone || null,
+          contactPerson: data.contact_person || null,
+          contactPhone: data.contact_phone || null,
+          contactEmail: data.contact_email || null,
+          envPermitNumber: data.env_permit_number || null,
+          envPermitIssueDate: envPermitIssueDateObj,
+          envPermitExpiryDate: envPermitExpiryDateObj,
           location: {
             code: locationCode,
-            address: locationAddress.length >= 5 ? locationAddress : locationAddress.padEnd(5, " "),
-            city: locationCity,
+            address: finalAddress,
+            city: finalCity,
           },
         };
 
