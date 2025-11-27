@@ -83,11 +83,7 @@ export function BusinessInfoForm({
       vendor_name: initialData?.vendor_name || "",
       tax_code: initialData?.tax_code || "",
       representative: initialData?.representative || "",
-      location: initialData?.location || {
-        address: "",
-        city: "",
-        code: "",
-      },
+      company_registration_address: initialData?.company_registration_address || "",
       business_reg_number: initialData?.business_reg_number || "",
       business_reg_issue_date: getInitialDate("business_reg_issue_date"),
       phone: initialData?.phone || "",
@@ -109,11 +105,7 @@ export function BusinessInfoForm({
         vendor_name: initialData.vendor_name || "",
         tax_code: initialData.tax_code || "",
         representative: initialData.representative || "",
-        location: initialData.location || {
-          address: "",
-          city: "",
-          code: "",
-        },
+        company_registration_address: initialData.company_registration_address || "",
         business_reg_number: initialData.business_reg_number || "",
         business_reg_issue_date: getInitialDate("business_reg_issue_date"),
         phone: initialData.phone || "",
@@ -143,14 +135,14 @@ export function BusinessInfoForm({
 
     try {
       const formatedEnvPermitIssueDate = toDDMMYYYY(
-        data.env_permit_issue_date instanceof Date,
+        data.env_permit_issue_date,
       );
       const formatedEnvPermitExpiryDate = toDDMMYYYY(
-        data.env_permit_expiry_date instanceof Date,
+        data.env_permit_expiry_date,
       );
-      const formatedBusinessRegIssueDate = toDDMMYYYY(
-        data.business_reg_issue_date instanceof Date,
-      );
+      const formatedBusinessRegIssueDate = data.business_reg_issue_date
+        ? toDDMMYYYY(data.business_reg_issue_date)
+        : undefined;
       // If in edit mode and profileId exists, use update endpoint
       if (isEditMode && profileId) {
         const dto: UpdateRecyclerProfileDTO = {
@@ -184,16 +176,29 @@ export function BusinessInfoForm({
         }
       } else {
         // Initial profile completion
+        // Split company_registration_address into location fields for backend validation
+        // Temporary workaround until backend supports single address field
+        const addressParts = data.company_registration_address
+          .split(",")
+          .map((part) => part.trim())
+          .filter(Boolean);
+        
+        // Assign parts: code (first), address (middle), city (last)
+        // If not enough parts, use defaults to satisfy backend validation
+        const locationCode = addressParts[0] || "LOC001";
+        const locationAddress =
+          addressParts.slice(1, -1).join(", ") || addressParts[0] || data.company_registration_address || "Địa chỉ đăng ký công ty";
+        const locationCity = addressParts[addressParts.length - 1] || "Thành phố";
+
         const dto: CompleteRecyclerAdminProfileDTO = {
           vendorName: data.vendor_name,
           taxCode: data.tax_code,
           representative: data.representative,
+          // Temporary: Split company_registration_address into location fields for backend
           location: {
-            address: data.location.address,
-            city: data.location.city || "",
-            code: data.location.code || "",
-            latitude: data.location.latitude,
-            longitude: data.location.longitude,
+            code: locationCode,
+            address: locationAddress.length >= 5 ? locationAddress : locationAddress.padEnd(5, " "),
+            city: locationCity.length >= 2 ? locationCity : locationCity.padEnd(2, " "),
           },
           phone: data.phone,
           contactEmail: data.contact_email,
@@ -313,58 +318,20 @@ export function BusinessInfoForm({
           </div>
 
           <div>
-            <Label htmlFor="location.code">
-              Mã địa điểm <span className="text-red-500">*</span>
+            <Label htmlFor="company_registration_address">
+              Địa chỉ đăng ký công ty <span className="text-red-500">*</span>
             </Label>
             <Input
-              id="location.code"
-              placeholder="Vui lòng nhập mã địa điểm"
-              {...register("location.code")}
+              id="company_registration_address"
+              placeholder="Vui lòng nhập địa chỉ đăng ký công ty"
+              {...register("company_registration_address")}
               disabled={isFormDisabled}
               readOnly={!editable}
               className={!editable ? "bg-muted cursor-not-allowed" : ""}
             />
-            {errors.location?.code && (
+            {errors.company_registration_address && (
               <p className="mt-1 text-sm text-red-600">
-                {errors.location.code.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="location.address">
-              Địa chỉ trụ sở chính <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="location.address"
-              placeholder="Vui lòng nhập địa chỉ trụ sở chính"
-              {...register("location.address")}
-              disabled={isFormDisabled}
-              readOnly={!editable}
-              className={!editable ? "bg-muted cursor-not-allowed" : ""}
-            />
-            {errors.location?.address && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.location.address.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="location.city">
-              Thành phố <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="location.city"
-              placeholder="Vui lòng nhập thành phố"
-              {...register("location.city")}
-              disabled={isFormDisabled}
-              readOnly={!editable}
-              className={!editable ? "bg-muted cursor-not-allowed" : ""}
-            />
-            {errors.location?.city && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.location.city.message}
+                {errors.company_registration_address.message}
               </p>
             )}
           </div>

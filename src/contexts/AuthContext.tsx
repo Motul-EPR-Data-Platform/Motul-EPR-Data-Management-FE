@@ -66,15 +66,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await AuthService.login({ email, password });
+      await AuthService.login({ email, password });
 
-      if (!response.data.user || !response.data.user.role) {
-        throw new Error("Invalid login response: role is missing");
+      // After successful login, call /me to get full user data including wasteTransferPointId
+      const userData = await AuthService.me();
+
+      if (!userData || !userData.role) {
+        throw new Error("Invalid user data: role is missing");
       }
 
-      const mappedRole = mapBackendRoleToFrontend(response.data.user.role);
+      const mappedRole = mapBackendRoleToFrontend(userData.role);
 
-      setUser(response.data.user);
+      setUser(userData);
       setUserRole(mappedRole);
 
       // Store the full role in localStorage
