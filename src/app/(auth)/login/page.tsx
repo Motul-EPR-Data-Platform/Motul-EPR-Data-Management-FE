@@ -2,13 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { Button } from "@/components/ui/button";
-
-function LoginContent() {
-  return <LoginForm />;
-}
 
 export default function LoginPage() {
   return (
@@ -37,8 +32,7 @@ export default function LoginPage() {
 
           {/* Subtext */}
           <p className="mt-4 text-white/80 text-sm md:text-base">
-            Truy cập bảng điều khiển, quản lý hồ sơ, và theo dõi quy trình tái
-            chế của bạn một cách dễ dàng.
+            Truy cập bảng điều khiển, quản lý hồ sơ, và theo dõi quy trình tái chế của bạn một cách dễ dàng.
           </p>
 
           <p className="mt-4 text-white/80 text-xs md:text-sm font-medium">
@@ -74,9 +68,7 @@ export default function LoginPage() {
       {/* Right panel */}
       <div className="flex-1 flex justify-center items-center bg-gray-50 px-4 py-10 md:px-8 relative">
         <div className="w-full max-w-md">
-          <Suspense fallback={<div>Loading...</div>}>
-            <LoginContent />
-          </Suspense>
+          <LoginForm />
         </div>
       </div>
     </div>

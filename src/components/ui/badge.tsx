@@ -1,7 +1,7 @@
-import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
   "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
@@ -20,27 +20,21 @@ const badgeVariants = cva(
         info: "border-transparent bg-blue-100 text-blue-800",
         purple: "border-transparent bg-purple-100 text-purple-800",
         // Motul roles - Red (using darker red-700 for admin, lighter red-100 for user)
-        "motul-admin":
-          "border-transparent bg-red-700 text-white hover:bg-red-800",
-        "motul-user":
-          "border-transparent bg-red-100 text-red-800 hover:bg-red-200",
+        "motul-admin": "border-transparent bg-red-700 text-white hover:bg-red-800",
+        "motul-user": "border-transparent bg-red-100 text-red-800 hover:bg-red-200",
         // Recycler roles - Blue (using darker blue-700 for admin, lighter blue-100 for user)
-        "recycler-admin":
-          "border-transparent bg-blue-700 text-white hover:bg-blue-800",
-        "recycler-user":
-          "border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200",
+        "recycler-admin": "border-transparent bg-blue-700 text-white hover:bg-blue-800",
+        "recycler-user": "border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200",
         // WTP roles - Green (using darker green-700 for admin, lighter green-100 for user)
-        "wtp-admin":
-          "border-transparent bg-green-700 text-white hover:bg-green-800",
-        "wtp-user":
-          "border-transparent bg-green-100 text-green-800 hover:bg-green-200",
+        "wtp-admin": "border-transparent bg-green-700 text-white hover:bg-green-800",
+        "wtp-user": "border-transparent bg-green-100 text-green-800 hover:bg-green-200",
       },
     },
     defaultVariants: {
       variant: "default",
     },
-  },
-);
+  }
+)
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
@@ -49,7 +43,8 @@ export interface BadgeProps
 function Badge({ className, variant, ...props }: BadgeProps) {
   return (
     <div className={cn(badgeVariants({ variant }), className)} {...props} />
-  );
+  )
 }
 
-export { Badge, badgeVariants };
+export { Badge, badgeVariants }
+

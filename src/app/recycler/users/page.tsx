@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, UserRole, PendingInvite } from "@/types/user";
+import { User, UserRole } from "@/types/user";
 import { UserManagementTable } from "@/components/users/UserManagementTable";
-import { PendingInviteTable } from "@/components/users/PendingInviteTable";
 import { AddUserDialog } from "@/components/users/AddUserDialog";
 import { UserManagementSkeleton } from "@/components/skeleton/UserManagementSkeleton";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -16,71 +15,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Search, Plus } from "lucide-react";
-import { usePermission } from "@/hooks/usePermission";
-import { useAuth } from "@/contexts/AuthContext";
-import { getAvailableRolesForInvitation } from "@/lib/rbac/permissions";
-import { InvitationService } from "@/lib/services/invitation.service";
-import { RecyclerService } from "@/lib/services/recycler.service";
-import { mapFrontendRoleToBackend } from "@/lib/rbac/roleMapper";
-import { transformUsers, transformInvitations } from "@/lib/utils/userTransformers";
-import { toast } from "sonner";
 
+// Mock data - replace with API call
+const mockUsers: User[] = [
+  {
+    id: "USR-001",
+    name: "Recycler Admin",
+    email: "admin@recycler.com",
+    unit: "CTY",
+    role: "Recycler Admin",
+    status: "Active",
+    createdAt: "2024-01-15",
+  },
+  {
+    id: "USR-002",
+    name: "Recycler User",
+    email: "user@recycler.com",
+    unit: "CTY",
+    role: "Recycler User",
+    status: "Active",
+    createdAt: "2024-02-20",
+  },
+];
 
 export default function RecyclerUsersPage() {
-  const { userRole, user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
-  const [filteredInvites, setFilteredInvites] = useState<PendingInvite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [inviteSearchQuery, setInviteSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
-  const [selectedInviteRole, setSelectedInviteRole] = useState<string>("all");
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("users");
-
-  // Get available roles for invitation based on current user's role
-  // Recycler Admin can only invite Recycler User (members)
-  const availableRoles = getAvailableRolesForInvitation(userRole);
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const [usersResponse, invitationsResponse] = await Promise.allSettled([
-        RecyclerService.getUsers(),
-        RecyclerService.getPendingInvitations(),
-      ]);
-
-      // Handle users
-      if (usersResponse.status === "fulfilled") {
-        const transformedUsers = transformUsers(usersResponse.value.data);
-        setUsers(transformedUsers);
-        setFilteredUsers(transformedUsers);
-      } else {
-        toast.error("Không thể tải danh sách người dùng");
-      }
-
-      // Handle invitations
-      if (invitationsResponse.status === "fulfilled") {
-        const transformedInvitations = transformInvitations(
-          invitationsResponse.value.data
-        );
-        setPendingInvites(transformedInvitations);
-        setFilteredInvites(transformedInvitations);
-      }
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Không thể tải dữ liệu");
-    } finally {
+    // Simulate API call
+    const loadUsers = async () => {
+      setIsLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setUsers(mockUsers);
+      setFilteredUsers(mockUsers);
       setIsLoading(false);
-    }
-  };
+    };
+
+    loadUsers();
+  }, []);
 
   useEffect(() => {
     let filtered = users;
@@ -89,7 +67,8 @@ export default function RecyclerUsersPage() {
       filtered = filtered.filter(
         (user) =>
           user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase()),
+          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.id.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -100,69 +79,29 @@ export default function RecyclerUsersPage() {
     setFilteredUsers(filtered);
   }, [searchQuery, selectedRole, users]);
 
-  useEffect(() => {
-    let filtered = pendingInvites;
-
-    if (inviteSearchQuery) {
-      filtered = filtered.filter(
-        (invite) =>
-          invite.email.toLowerCase().includes(inviteSearchQuery.toLowerCase()) ||
-          invite.invitedBy.toLowerCase().includes(inviteSearchQuery.toLowerCase()),
-      );
-    }
-
-    if (selectedInviteRole !== "all") {
-      filtered = filtered.filter((invite) => invite.role === selectedInviteRole);
-    }
-
-    setFilteredInvites(filtered);
-  }, [inviteSearchQuery, selectedInviteRole, pendingInvites]);
-
   const handleAddUser = async (email: string, role?: UserRole) => {
-    // Default role: use first available role if not provided
-    // Recycler Admin can only invite Recycler User
-    const invitedRole: UserRole =
-      role || (availableRoles.length > 0 ? availableRoles[0] : "Recycler User");
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    await toast.promise(
-      InvitationService.send({
-        email,
-        role: mapFrontendRoleToBackend(invitedRole),
-        metadata: {
-          recyclerId: user?.recyclerId || null,
-        },
-      }),
-      {
-        loading: `Đang gửi lời mời tới ${email}...`,
-        success: () => {
-          loadData(); // Reload data from API
-          setActiveTab("pending");
-          return `Đã gửi lời mời tới ${email}`;
-        },
-        error: (err) =>
-          err?.response?.data?.message ||
-          err?.message ||
-          "Không thể gửi lời mời. Vui lòng thử lại.",
-      }
-    );
+    const userRole: UserRole = role || "Recycler User";
+
+    const newUser: User = {
+      id: `USR-${String(users.length + 1).padStart(3, "0")}`,
+      name: email.split("@")[0],
+      email,
+      unit: null,
+      role: userRole,
+      status: "Active",
+      createdAt: new Date().toISOString().split("T")[0],
+    };
+
+    setUsers([...users, newUser]);
   };
 
-  const handleResendInvite = async (invite: PendingInvite) => {
-    // TODO: Implement resend invitation API endpoint
-    toast.info("Chức năng gửi lại lời mời sẽ được triển khai sớm");
-    loadData();
-  };
-
-  const handleCancelInvite = async (invite: PendingInvite) => {
-    if (confirm(`Bạn có chắc chắn muốn hủy lời mời cho ${invite.email}?`)) {
-      // TODO: Implement cancel invitation API endpoint
-      toast.info("Chức năng hủy lời mời sẽ được triển khai sớm");
-      loadData();
-    }
-  };
+  // Recycler roles available for Recycler Admin
+  const recyclerRoles: UserRole[] = ["Recycler Admin", "Recycler User"];
 
   const handleEdit = (user: User) => {
-    // TODO: Implement edit functionality
+    console.log("Edit user:", user);
   };
 
   const handleDelete = (user: User) => {
@@ -170,13 +109,6 @@ export default function RecyclerUsersPage() {
       setUsers(users.filter((u) => u.id !== user.id));
     }
   };
-
-  // Check permission - users page requires users.view permission
-  const canViewUsers = usePermission("users.view");
-  const canInvite =
-    usePermission("users.invite") || usePermission("users.inviteOwnOrg");
-  const canEditUser = usePermission("users.edit");
-  const canDeleteUser = usePermission("users.delete");
 
   if (isLoading) {
     return (
@@ -190,136 +122,68 @@ export default function RecyclerUsersPage() {
     );
   }
 
-  if (!canViewUsers) {
-    return (
-      <PageLayout
-        breadcrumbs={[{ label: "Quản lý người dùng" }]}
-        title="Quản lý người dùng"
-        subtitle="Access Denied"
-      >
-        <div className="rounded-lg border bg-card p-6">
-          <p className="text-center text-muted-foreground py-12">
-            Bạn không có quyền truy cập trang này.
-          </p>
-        </div>
-      </PageLayout>
-    );
-  }
-
   return (
     <PageLayout
       breadcrumbs={[{ label: "Quản lý người dùng" }]}
       title="Quản lý người dùng"
       subtitle="Manage user accounts and permissions"
     >
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="users">Người dùng</TabsTrigger>
-          <TabsTrigger value="pending">Lời mời đang chờ</TabsTrigger>
-        </TabsList>
+      {/* Filter Section */}
+      <div className="rounded-lg border bg-white p-6 space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold">Tất cả người dùng</h2>
+          <p className="text-sm text-muted-foreground">
+            Người dùng trong tổ chức Recycler
+          </p>
+        </div>
 
-        {/* Users Tab */}
-        <TabsContent value="users" className="space-y-4">
-          <div className="rounded-lg border bg-card p-6 space-y-4">
-            <div className="space-y-1">
-              <h2 className="text-lg font-semibold">Tất cả người dùng</h2>
-              <p className="text-sm text-muted-foreground">
-                Người dùng trong tổ chức Recycler
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Tìm kiếm..."
-                  className="pl-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-
-              <Select value={selectedRole} onValueChange={setSelectedRole}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Tất cả vai trò" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả vai trò</SelectItem>
-                  <SelectItem value="Recycler Admin">Recycler Admin</SelectItem>
-                  <SelectItem value="Recycler User">Recycler User</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {canInvite && (
-                <Button
-                  onClick={() => setIsAddUserDialogOpen(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Thêm Người dùng mới
-                </Button>
-              )}
-            </div>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Tìm kiếm..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
 
-          <UserManagementTable
-            users={filteredUsers}
-            onEdit={canEditUser ? handleEdit : undefined}
-            onDelete={canDeleteUser ? handleDelete : undefined}
-          />
-        </TabsContent>
+          <Select value={selectedRole} onValueChange={setSelectedRole}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Tất cả vai trò" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả vai trò</SelectItem>
+              <SelectItem value="Recycler Admin">Recycler Admin</SelectItem>
+              <SelectItem value="Recycler User">Recycler User</SelectItem>
+            </SelectContent>
+          </Select>
 
-        {/* Pending Invites Tab */}
-        <TabsContent value="pending" className="space-y-4">
-          <div className="rounded-lg border bg-card p-6 space-y-4">
-            <div className="space-y-1">
-              <h2 className="text-lg font-semibold">Lời mời đang chờ</h2>
-              <p className="text-sm text-muted-foreground">
-                Các lời mời chưa được chấp nhận
-              </p>
-            </div>
+          <Button
+            onClick={() => setIsAddUserDialogOpen(true)}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Thêm Người dùng mới
+          </Button>
+        </div>
+      </div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Tìm kiếm..."
-                  className="pl-10"
-                  value={inviteSearchQuery}
-                  onChange={(e) => setInviteSearchQuery(e.target.value)}
-                />
-              </div>
-
-              <Select value={selectedInviteRole} onValueChange={setSelectedInviteRole}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Tất cả vai trò" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả vai trò</SelectItem>
-                  <SelectItem value="Recycler Admin">Recycler Admin</SelectItem>
-                  <SelectItem value="Recycler User">Recycler User</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <PendingInviteTable
-            invites={filteredInvites}
-            onResend={handleResendInvite}
-            onCancel={handleCancelInvite}
-          />
-        </TabsContent>
-      </Tabs>
+      {/* User Table */}
+      <UserManagementTable
+        users={filteredUsers}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
       {/* Add User Dialog */}
-      {canInvite && (
-        <AddUserDialog
-          open={isAddUserDialogOpen}
-          onOpenChange={setIsAddUserDialogOpen}
-          onAddUser={handleAddUser}
-          availableRoles={availableRoles}
-        />
-      )}
+      <AddUserDialog
+        open={isAddUserDialogOpen}
+        onOpenChange={setIsAddUserDialogOpen}
+        onAddUser={handleAddUser}
+        availableRoles={recyclerRoles}
+      />
     </PageLayout>
   );
 }
+
