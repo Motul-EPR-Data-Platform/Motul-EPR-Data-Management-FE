@@ -1,0 +1,49 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+// Public routes that don't require authentication
+const publicRoutes = ["/login", "/register", "/"];
+
+// Auth routes (should redirect to dashboard if already authenticated)
+const authRoutes = ["/login", "/register"];
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Check if route is public
+  const isPublicRoute = publicRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route + "/"),
+  );
+
+  // Check if route is auth route
+  const isAuthRoute = authRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route + "/"),
+  );
+
+  // Check for access token in cookies (set by client after login)
+  const accessToken = request.cookies.get("access_token");
+
+  // If user has token and trying to access auth routes, allow it
+  // (The client-side RouteGuard will handle redirect after login)
+
+  // If user doesn't have token and trying to access protected routes
+  // Note: We'll handle authentication redirects client-side using RouteGuard
+  // since we can't access localStorage in middleware
+  // The middleware is mainly for setting up the request
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public files (public folder)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
+};

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, UserRole } from "@/types/user";
+import { User, UserRole, PendingInvite } from "@/types/user";
 import { UserManagementTable } from "@/components/users/UserManagementTable";
+import { PendingInviteTable } from "@/components/users/PendingInviteTable";
 import { AddUserDialog } from "@/components/users/AddUserDialog";
 import { UserManagementSkeleton } from "@/components/skeleton/UserManagementSkeleton";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -15,99 +16,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Search, Plus } from "lucide-react";
-
-// Mock data - replace with API call
-// Motul Admin can manage all users from all organizations
-const mockUsers: User[] = [
-  // Motul Users
-  {
-    id: "USR-001",
-    name: "Motul Admin",
-    email: "admin@motul.com",
-    unit: null,
-    role: "Motul Admin",
-    status: "Active",
-    createdAt: "2024-01-15",
-  },
-  {
-    id: "USR-002",
-    name: "John Doe",
-    email: "john@motul.com",
-    unit: "Motul Vietnam",
-    role: "Motul User",
-    status: "Active",
-    createdAt: "2024-02-20",
-  },
-  {
-    id: "USR-003",
-    name: "Jane Smith",
-    email: "jane@motul.com",
-    unit: "Motul Vietnam",
-    role: "Motul User",
-    status: "Active",
-    createdAt: "2024-03-10",
-  },
-  // Recycler Users
-  {
-    id: "USR-004",
-    name: "Recycler Admin",
-    email: "admin@recycler.com",
-    unit: "CTY",
-    role: "Recycler Admin",
-    status: "Active",
-    createdAt: "2024-03-15",
-  },
-  {
-    id: "USR-005",
-    name: "Recycler User",
-    email: "user@recycler.com",
-    unit: "CTY2",
-    role: "Recycler User",
-    status: "Active",
-    createdAt: "2024-04-01",
-  },
-  // WTP Users
-  {
-    id: "USR-006",
-    name: "WTP Admin",
-    email: "admin@wtp.com",
-    unit: "CTY3",
-    role: "WTP Admin",
-    status: "Active",
-    createdAt: "2024-04-05",
-  },
-  {
-    id: "USR-007",
-    name: "WTP User",
-    email: "user@wtp.com",
-    unit: "CTY4",
-    role: "WTP User",
-    status: "Inactive",
-    createdAt: "2024-04-10",
-  },
-];
+import {
+  useUserManagementPermissions,
+  getVisibleTabs,
+} from "@/lib/rbac/userManagementConfig";
+import { usePermission } from "@/hooks/usePermission";
+import { useAuth } from "@/contexts/AuthContext";
+import { getAvailableRolesForInvitation } from "@/lib/rbac/permissions";
+import { toast } from "sonner";
+import { InvitationService } from "@/lib/services/invitation.service";
+import { AdminService } from "@/lib/services/admin.service";
+import { mapFrontendRoleToBackend } from "@/lib/rbac/roleMapper";
+import { transformUsers, transformInvitations } from "@/lib/utils/userTransformers";
 
 export default function UsersPage() {
+  const { userRole } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
+  const [filteredInvites, setFilteredInvites] = useState<PendingInvite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [inviteSearchQuery, setInviteSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
+  const [selectedInviteRole, setSelectedInviteRole] = useState<string>("all");
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("users");
+
+  // Get permissions
+  const permissions = useUserManagementPermissions();
+  const canEditUser = usePermission("users.edit");
+  const canDeleteUser = usePermission("users.delete");
+
+  // Get visible tabs based on permissions
+  const visibleTabs = getVisibleTabs(permissions);
+
+  // Get available roles for invitation based on current user's role
+  // Motul Admin can only invite other admins
+  const availableRoles = getAvailableRolesForInvitation(userRole);
 
   useEffect(() => {
-    // Simulate API call
-    const loadUsers = async () => {
-      setIsLoading(true);
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setUsers(mockUsers);
-      setFilteredUsers(mockUsers);
-      setIsLoading(false);
-    };
-
-    loadUsers();
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -118,8 +69,7 @@ export default function UsersPage() {
       filtered = filtered.filter(
         (user) =>
           user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.id.toLowerCase().includes(searchQuery.toLowerCase())
+          user.email.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
@@ -131,38 +81,105 @@ export default function UsersPage() {
     setFilteredUsers(filtered);
   }, [searchQuery, selectedRole, users]);
 
-  const handleAddUser = async (email: string, role?: UserRole) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
+  useEffect(() => {
+    let filtered = pendingInvites;
 
-    // Default role if not provided
-    const userRole: UserRole = role || "Motul User";
+    // Filter by search query
+    if (inviteSearchQuery) {
+      filtered = filtered.filter(
+        (invite) =>
+          invite.email
+            .toLowerCase()
+            .includes(inviteSearchQuery.toLowerCase()) ||
+          invite.invitedBy
+            .toLowerCase()
+            .includes(inviteSearchQuery.toLowerCase()),
+      );
+    }
 
-    const newUser: User = {
-      id: `USR-${String(users.length + 1).padStart(3, "0")}`,
-      name: email.split("@")[0],
-      email,
-      unit: null,
-      role: userRole,
-      status: "Active",
-      createdAt: new Date().toISOString().split("T")[0],
-    };
+    // Filter by role
+    if (selectedInviteRole !== "all") {
+      filtered = filtered.filter(
+        (invite) => invite.role === selectedInviteRole,
+      );
+    }
 
-    setUsers([...users, newUser]);
+    setFilteredInvites(filtered);
+  }, [inviteSearchQuery, selectedInviteRole, pendingInvites]);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [usersResponse, invitationsResponse] = await Promise.allSettled([
+        AdminService.getUsers(),
+        AdminService.getInvitations(),
+      ]);
+
+      // Handle users
+      if (usersResponse.status === "fulfilled") {
+        const transformedUsers = transformUsers(usersResponse.value.data);
+        setUsers(transformedUsers);
+        setFilteredUsers(transformedUsers);
+      } else {
+        toast.error("Không thể tải danh sách người dùng");
+      }
+
+      // Handle invitations
+      if (invitationsResponse.status === "fulfilled") {
+        const transformedInvitations = transformInvitations(
+          invitationsResponse.value.data
+        );
+        setPendingInvites(transformedInvitations);
+        setFilteredInvites(transformedInvitations);
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Không thể tải dữ liệu");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // All roles available for Motul Admin
-  const allRoles: UserRole[] = [
-    "Motul Admin",
-    "Motul User",
-    "Recycler Admin",
-    "Recycler User",
-    "WTP Admin",
-    "WTP User",
-  ];
+  const handleAddUser = async (email: string, role?: UserRole) => {
+    const userRole: UserRole =
+      role || (availableRoles.length > 0 ? availableRoles[0] : "Motul Admin");
+
+    await toast.promise(
+      InvitationService.send({
+        email,
+        role: mapFrontendRoleToBackend(userRole),
+      }),
+      {
+        loading: `Đang gửi lời mời tới ${email}...`,
+        success: () => {
+          loadData(); // Reload data from API
+          setActiveTab("pending");
+          return `Đã gửi lời mời tới ${email}`;
+        },
+        error: (err) =>
+          err?.response?.data?.message ||
+          err?.message ||
+          "Không thể gửi lời mời. Vui lòng thử lại.",
+      },
+    );
+  };
+
+  const handleResendInvite = async (invite: PendingInvite) => {
+    // TODO: Implement resend invitation API endpoint
+    toast.info("Chức năng gửi lại lời mời sẽ được triển khai sớm");
+    // Reload data after resend
+    loadData();
+  };
+
+  const handleCancelInvite = async (invite: PendingInvite) => {
+    if (confirm(`Bạn có chắc chắn muốn hủy lời mời cho ${invite.email}?`)) {
+      // TODO: Implement cancel invitation API endpoint
+      toast.info("Chức năng hủy lời mời sẽ được triển khai sớm");
+      // Reload data after cancel
+      loadData();
+    }
+  };
 
   const handleEdit = (user: User) => {
-    console.log("Edit user:", user);
     // TODO: Implement edit functionality
   };
 
@@ -184,73 +201,154 @@ export default function UsersPage() {
     );
   }
 
+  // Check permission - users page requires users.view permission
+  const canViewUsers = usePermission("users.view");
+
+  if (!canViewUsers) {
+    return (
+      <PageLayout
+        breadcrumbs={[{ label: "Quản lý người dùng" }]}
+        title="Quản lý người dùng"
+        subtitle="Access Denied"
+      >
+        <div className="rounded-lg border bg-card p-6">
+          <p className="text-center text-muted-foreground py-12">
+            Bạn không có quyền truy cập trang này.
+          </p>
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
     <PageLayout
       breadcrumbs={[{ label: "Quản lý người dùng" }]}
       title="Quản lý người dùng"
       subtitle="Manage user accounts and permissions"
     >
-
-      {/* Filter Section */}
-      <div className="rounded-lg border bg-white p-6 space-y-4">
-        <div className="space-y-1">
-          <h2 className="text-lg font-semibold">Tất cả người dùng</h2>
-          <p className="text-sm text-muted-foreground">
-            Quản lý người dùng từ tất cả các tổ chức (Motul, Recycler, WTP)
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Tìm kiếm..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="rounded-lg border bg-card p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold">Quản lý người dùng</h2>
+              <p className="text-sm text-muted-foreground">
+                {activeTab === "users"
+                  ? "Quản lý người dùng từ tất cả các tổ chức (Motul, Recycler, WTP)"
+                  : "Quản lý lời mời đang chờ xử lý"}
+              </p>
+            </div>
+            {permissions.canInvite && (
+              <Button
+                onClick={() => setIsAddUserDialogOpen(true)}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Thêm Người dùng mới
+              </Button>
+            )}
           </div>
 
-          <Select value={selectedRole} onValueChange={setSelectedRole}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Tất cả vai trò" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả vai trò</SelectItem>
-              <SelectItem value="Motul Admin">Motul Admin</SelectItem>
-              <SelectItem value="Motul User">Motul User</SelectItem>
-              <SelectItem value="Recycler Admin">Recycler Admin</SelectItem>
-              <SelectItem value="Recycler User">Recycler User</SelectItem>
-              <SelectItem value="WTP Admin">WTP Admin</SelectItem>
-              <SelectItem value="WTP User">WTP User</SelectItem>
-            </SelectContent>
-          </Select>
+          <TabsList>
+            {visibleTabs.map((tab) => (
+              <TabsTrigger key={tab.key} value={tab.key}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-          <Button
-            onClick={() => setIsAddUserDialogOpen(true)}
-            className="bg-green-600 hover:bg-green-700 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Thêm Người dùng mới
-          </Button>
+          {/* Users Tab Content */}
+          <TabsContent value="users" className="space-y-4 mt-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Tìm kiếm..."
+                  className="pl-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <Select value={selectedRole} onValueChange={setSelectedRole}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Tất cả vai trò" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả vai trò</SelectItem>
+                  <SelectItem value="Motul Admin">Motul Admin</SelectItem>
+                  <SelectItem value="Motul User">Motul User</SelectItem>
+                  <SelectItem value="Recycler Admin">Recycler Admin</SelectItem>
+                  <SelectItem value="Recycler User">Recycler User</SelectItem>
+                  <SelectItem value="WTP Admin">WTP Admin</SelectItem>
+                  <SelectItem value="WTP User">WTP User</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* User Table */}
+            <UserManagementTable
+              users={filteredUsers}
+              onEdit={canEditUser ? handleEdit : undefined}
+              onDelete={canDeleteUser ? handleDelete : undefined}
+            />
+          </TabsContent>
+
+          {/* Pending Invites Tab Content */}
+          {permissions.canViewInvitationsTab && (
+            <TabsContent value="pending" className="space-y-4 mt-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Tìm kiếm lời mời..."
+                    className="pl-10"
+                    value={inviteSearchQuery}
+                    onChange={(e) => setInviteSearchQuery(e.target.value)}
+                  />
+                </div>
+
+                <Select
+                  value={selectedInviteRole}
+                  onValueChange={setSelectedInviteRole}
+                >
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Tất cả vai trò" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả vai trò</SelectItem>
+                    <SelectItem value="Motul Admin">Motul Admin</SelectItem>
+                    <SelectItem value="Motul User">Motul User</SelectItem>
+                    <SelectItem value="Recycler Admin">
+                      Recycler Admin
+                    </SelectItem>
+                    <SelectItem value="Recycler User">Recycler User</SelectItem>
+                    <SelectItem value="WTP Admin">WTP Admin</SelectItem>
+                    <SelectItem value="WTP User">WTP User</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Pending Invite Table */}
+              <PendingInviteTable
+                invites={filteredInvites}
+                onResend={handleResendInvite}
+                onCancel={handleCancelInvite}
+              />
+            </TabsContent>
+          )}
         </div>
-      </div>
-
-      {/* User Table */}
-      <UserManagementTable
-        users={filteredUsers}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      </Tabs>
 
       {/* Add User Dialog */}
-      <AddUserDialog
-        open={isAddUserDialogOpen}
-        onOpenChange={setIsAddUserDialogOpen}
-        onAddUser={handleAddUser}
-        availableRoles={allRoles}
-      />
+      {permissions.canInvite && (
+        <AddUserDialog
+          open={isAddUserDialogOpen}
+          onOpenChange={setIsAddUserDialogOpen}
+          onAddUser={handleAddUser}
+          availableRoles={availableRoles}
+        />
+      )}
     </PageLayout>
   );
 }
-

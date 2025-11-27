@@ -38,7 +38,7 @@ export function AddUserDialog({
 }: AddUserDialogProps) {
   const [email, setEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole | undefined>(
-    defaultRole
+    defaultRole,
   );
   const [isLoading, setIsLoading] = useState(false);
 
@@ -54,7 +54,7 @@ export function AddUserDialog({
       setSelectedRole(defaultRole);
       onOpenChange(false);
     } catch (error) {
-      console.error("Error adding user:", error);
+      // Error handling is done by parent component
     } finally {
       setIsLoading(false);
     }
@@ -124,4 +124,3 @@ export function AddUserDialog({
     </Dialog>
   );
 }
-

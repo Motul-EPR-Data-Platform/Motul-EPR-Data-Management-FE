@@ -1,20 +1,16 @@
 "use client";
 
 import { PageLayout } from "@/components/layout/PageLayout";
+import { ProfilePage } from "@/components/profile/ProfilePage";
 
 export default function RecyclerAccountPage() {
   return (
     <PageLayout
       breadcrumbs={[{ label: "Tài khoản" }]}
       title="Tài khoản"
-      subtitle="Manage your account information"
+      subtitle="Quản lý thông tin tài khoản của bạn"
     >
-      <div className="rounded-lg border bg-white p-6">
-        <p className="text-muted-foreground text-center py-12">
-          Nội dung trang tài khoản sẽ được hiển thị tại đây
-        </p>
-      </div>
+      <ProfilePage />
     </PageLayout>
   );
 }
-

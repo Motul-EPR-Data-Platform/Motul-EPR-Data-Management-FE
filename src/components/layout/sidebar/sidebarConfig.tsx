@@ -9,6 +9,8 @@ import {
   Factory,
   FileText,
   User,
+  Building2,
+  BookOpen,
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { UserRole } from "@/types/user";
@@ -51,8 +53,10 @@ export const motulSidebarConfig: SidebarConfig = {
     { title: "Kế hoạch tái chế", url: "/motul/recycling-plan", icon: Calendar },
     { title: "Đăng ký chờ duyệt", url: "/motul/pending-registration", icon: FileCheck },
     { title: "Phân tích", url: "/motul/analytics", icon: BarChart2 },
+    { title: "Định nghĩa", url: "/motul/definitions", icon: BookOpen },
     { title: "Quản lý người dùng", url: "/motul/users", icon: Users, requiresAdmin: true },
     { title: "Cài đặt", url: "/motul/settings", icon: Settings },
+    { title: "Tài khoản", url: "/motul/account", icon: User },
   ],
 };
 
@@ -66,6 +70,8 @@ export const recyclerSidebarConfig: SidebarConfig = {
     { title: "Bản ghi của tôi", url: "/recycler/my-records", icon: ClipboardList },
     { title: "Chủ nguồn thải", url: "/recycler/waste-sources", icon: Factory },
     { title: "Báo cáo", url: "/recycler/reports", icon: FileText },
+    { title: "Định nghĩa", url: "/recycler/definitions", icon: BookOpen },
+    { title: "Thông tin doanh nghiệp", url: "/recycler/business-info", icon: Building2 },
     { title: "Quản lý người dùng", url: "/recycler/users", icon: Users, requiresAdmin: true },
     { title: "Cài đặt", url: "/recycler/settings", icon: Settings },
     { title: "Tài khoản", url: "/recycler/account", icon: User },
@@ -80,6 +86,8 @@ export const wtpSidebarConfig: SidebarConfig = {
   items: [
     { title: "Dashboard", url: "/wtp", icon: Home },
     { title: "Bản ghi của tôi", url: "/wtp/my-records", icon: ClipboardList },
+    { title: "Định nghĩa", url: "/wtp/definitions", icon: BookOpen },
+    { title: "Thông tin doanh nghiệp", url: "/wtp/business-info", icon: Building2 },
     { title: "Quản lý người dùng", url: "/wtp/users", icon: Users, requiresAdmin: true },
     { title: "Tài khoản", url: "/wtp/account", icon: User },
   ],
