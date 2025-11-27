@@ -15,11 +15,13 @@ import {
 } from "@/lib/validations/recycler";
 import { AuthService } from "@/lib/services/auth.service";
 import { RecyclerService } from "@/lib/services/recycler.service";
-import { CompleteRecyclerAdminProfileDTO, UpdateRecyclerProfileDTO } from "@/types/auth";
+import {
+  CompleteRecyclerAdminProfileDTO,
+  UpdateRecyclerProfileDTO,
+} from "@/types/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
-
 
 interface BusinessInfoFormProps {
   initialData?: Partial<CompleteRecyclerAdminProfileFormData>;
@@ -60,7 +62,9 @@ export function BusinessInfoForm({
   };
 
   // Convert initial data dates from string to Date objects
-  const getInitialDate = (fieldName: keyof CompleteRecyclerAdminProfileFormData): Date | undefined => {
+  const getInitialDate = (
+    fieldName: keyof CompleteRecyclerAdminProfileFormData,
+  ): Date | undefined => {
     if (!initialData) return undefined;
     const value = initialData[fieldName];
     return parseDate(value as string | Date | undefined);
@@ -138,9 +142,15 @@ export function BusinessInfoForm({
     setSuccess(false);
 
     try {
-      const formatedEnvPermitIssueDate =toDDMMYYYY(data.env_permit_issue_date instanceof Date);
-      const formatedEnvPermitExpiryDate = toDDMMYYYY(data.env_permit_expiry_date instanceof Date);
-      const formatedBusinessRegIssueDate = toDDMMYYYY(data.business_reg_issue_date instanceof Date);
+      const formatedEnvPermitIssueDate = toDDMMYYYY(
+        data.env_permit_issue_date instanceof Date,
+      );
+      const formatedEnvPermitExpiryDate = toDDMMYYYY(
+        data.env_permit_expiry_date instanceof Date,
+      );
+      const formatedBusinessRegIssueDate = toDDMMYYYY(
+        data.business_reg_issue_date instanceof Date,
+      );
       // If in edit mode and profileId exists, use update endpoint
       if (isEditMode && profileId) {
         const dto: UpdateRecyclerProfileDTO = {
@@ -537,10 +547,10 @@ export function BusinessInfoForm({
                 !envPermitIssueDate
                   ? undefined
                   : envPermitIssueDate instanceof Date
-                  ? envPermitIssueDate
-                  : typeof envPermitIssueDate === "string"
-                  ? parseDate(envPermitIssueDate)
-                  : undefined
+                    ? envPermitIssueDate
+                    : typeof envPermitIssueDate === "string"
+                      ? parseDate(envPermitIssueDate)
+                      : undefined
               }
               onChange={(date) => {
                 if (date) {
@@ -570,10 +580,10 @@ export function BusinessInfoForm({
                 !envPermitExpiryDate
                   ? undefined
                   : envPermitExpiryDate instanceof Date
-                  ? envPermitExpiryDate
-                  : typeof envPermitExpiryDate === "string"
-                  ? parseDate(envPermitExpiryDate)
-                  : undefined
+                    ? envPermitExpiryDate
+                    : typeof envPermitExpiryDate === "string"
+                      ? parseDate(envPermitExpiryDate)
+                      : undefined
               }
               onChange={(date) => {
                 if (date) {

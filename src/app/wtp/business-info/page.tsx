@@ -40,10 +40,15 @@ export default function WtpBusinessInfoPage() {
 
     setIsLoading(true);
     try {
-      const profileData = await WtpService.getProfile(user.wasteTransferPointId);
+      const profileData = await WtpService.getProfile(
+        user.wasteTransferPointId,
+      );
       setProfile(profileData);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Không thể tải thông tin doanh nghiệp");
+      toast.error(
+        error?.response?.data?.message ||
+          "Không thể tải thông tin doanh nghiệp",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -68,16 +73,18 @@ export default function WtpBusinessInfoPage() {
   // Convert WtpProfile to form data format
   const convertProfileToFormData = (profile: WtpProfile) => {
     // Helper to parse date string to Date object
-    const parseDate = (dateStr: string | Date | undefined): Date | undefined => {
+    const parseDate = (
+      dateStr: string | Date | undefined,
+    ): Date | undefined => {
       if (!dateStr) return undefined;
       if (dateStr instanceof Date) return dateStr;
       if (typeof dateStr !== "string") return undefined;
-      
+
       // Handle ISO format
       if (dateStr.includes("T") || dateStr.includes("-")) {
         return new Date(dateStr);
       }
-      
+
       // Handle dd/mm/yyyy format
       if (dateStr.includes("/")) {
         const [day, month, year] = dateStr.split("/");
@@ -85,7 +92,7 @@ export default function WtpBusinessInfoPage() {
           return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         }
       }
-      
+
       return undefined;
     };
 
@@ -188,7 +195,9 @@ export default function WtpBusinessInfoPage() {
                 </div>
               )}
               <WtpBusinessInfoForm
-                initialData={profile ? convertProfileToFormData(profile) : undefined}
+                initialData={
+                  profile ? convertProfileToFormData(profile) : undefined
+                }
                 isEditMode={isEditing}
                 editable={isEditing && isAdmin}
                 onSaveSuccess={handleSaveSuccess}
@@ -215,4 +224,3 @@ export default function WtpBusinessInfoPage() {
     </RouteGuard>
   );
 }
-

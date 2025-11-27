@@ -43,7 +43,10 @@ export default function RecyclerBusinessInfoPage() {
       const profileData = await RecyclerService.getProfile(user.recyclerId);
       setProfile(profileData);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Không thể tải thông tin doanh nghiệp");
+      toast.error(
+        error?.response?.data?.message ||
+          "Không thể tải thông tin doanh nghiệp",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -68,16 +71,18 @@ export default function RecyclerBusinessInfoPage() {
   // Convert RecyclerProfile to form data format
   const convertProfileToFormData = (profile: RecyclerProfile) => {
     // Helper to parse date string to Date object
-    const parseDate = (dateStr: string | Date | undefined): Date | undefined => {
+    const parseDate = (
+      dateStr: string | Date | undefined,
+    ): Date | undefined => {
       if (!dateStr) return undefined;
       if (dateStr instanceof Date) return dateStr;
       if (typeof dateStr !== "string") return undefined;
-      
+
       // Handle ISO format
       if (dateStr.includes("T") || dateStr.includes("-")) {
         return new Date(dateStr);
       }
-      
+
       // Handle dd/mm/yyyy format
       if (dateStr.includes("/")) {
         const [day, month, year] = dateStr.split("/");
@@ -85,7 +90,7 @@ export default function RecyclerBusinessInfoPage() {
           return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         }
       }
-      
+
       return undefined;
     };
 
@@ -199,7 +204,9 @@ export default function RecyclerBusinessInfoPage() {
                 </div>
               )}
               <BusinessInfoForm
-                initialData={profile ? convertProfileToFormData(profile) : undefined}
+                initialData={
+                  profile ? convertProfileToFormData(profile) : undefined
+                }
                 isEditMode={isEditing}
                 editable={isEditing && isAdmin}
                 onSaveSuccess={handleSaveSuccess}

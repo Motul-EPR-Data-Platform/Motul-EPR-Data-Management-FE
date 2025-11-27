@@ -1,9 +1,6 @@
 import { DefinitionService } from "@/lib/services/definition.service";
 import { CreateDefinitionDTO, DefinitionResponse } from "@/types/definition";
-import {
-  CATEGORY_KEYS,
-  CATEGORY_ROUTE_KEYS,
-} from "@/constants/categoryKeys";
+import { CATEGORY_KEYS, CATEGORY_ROUTE_KEYS } from "@/constants/categoryKeys";
 import { transformDefinitions } from "@/lib/utils/definitionUtils/definitionTransformers";
 
 /**
@@ -13,7 +10,7 @@ import { transformDefinitions } from "@/lib/utils/definitionUtils/definitionTran
  */
 export async function createDefinition(
   categoryKey: string,
-  dto: CreateDefinitionDTO
+  dto: CreateDefinitionDTO,
 ): Promise<DefinitionResponse> {
   // Check both route keys (from URL) and backend keys (from API)
   if (
@@ -42,7 +39,9 @@ export async function createDefinition(
  * Helper function to get definitions for a category
  * @param categoryKey - Can be either backend key (waste_type) or route key (waste-types)
  */
-export async function getDefinitionsByCategory(categoryKey: string): Promise<any[]> {
+export async function getDefinitionsByCategory(
+  categoryKey: string,
+): Promise<any[]> {
   let rawDefinitions: any[] = [];
 
   // Check both route keys (from URL) and backend keys (from API)
@@ -69,4 +68,3 @@ export async function getDefinitionsByCategory(categoryKey: string): Promise<any
   // Transform backend response to frontend format
   return transformDefinitions(rawDefinitions);
 }
-

@@ -13,9 +13,11 @@ export const AdminService = {
    * Get all users with filters and pagination
    * Only accessible by motul_admin
    */
-  async getUsers(filters?: GetUsersFilters): Promise<PaginatedResponse<UserManagement>> {
+  async getUsers(
+    filters?: GetUsersFilters,
+  ): Promise<PaginatedResponse<UserManagement>> {
     const queryParams = new URLSearchParams();
-    
+
     if (filters?.role) {
       queryParams.append("role", filters.role);
     }
@@ -46,7 +48,7 @@ export const AdminService = {
    * Only accessible by motul_admin
    */
   async getInvitations(
-    filters?: GetInvitationsFilters
+    filters?: GetInvitationsFilters,
   ): Promise<PaginatedResponse<InvitationManagement>> {
     const queryParams = new URLSearchParams();
 
@@ -75,4 +77,3 @@ export const AdminService = {
     return data;
   },
 };
-

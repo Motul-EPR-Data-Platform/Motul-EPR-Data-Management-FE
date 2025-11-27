@@ -29,7 +29,10 @@ import { toast } from "sonner";
 import { InvitationService } from "@/lib/services/invitation.service";
 import { AdminService } from "@/lib/services/admin.service";
 import { mapFrontendRoleToBackend } from "@/lib/rbac/roleMapper";
-import { transformUsers, transformInvitations } from "@/lib/utils/userTransformers";
+import {
+  transformUsers,
+  transformInvitations,
+} from "@/lib/utils/userTransformers";
 
 export default function UsersPage() {
   const { userRole } = useAuth();
@@ -127,7 +130,7 @@ export default function UsersPage() {
       // Handle invitations
       if (invitationsResponse.status === "fulfilled") {
         const transformedInvitations = transformInvitations(
-          invitationsResponse.value.data
+          invitationsResponse.value.data,
         );
         setPendingInvites(transformedInvitations);
         setFilteredInvites(transformedInvitations);

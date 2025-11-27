@@ -33,14 +33,13 @@ export function CreateDefinitionDialog({
   const handleSubmit = async (dto: CreateDefinitionDTO) => {
     setIsLoading(true);
     try {
-      await toast.promise(
-        createDefinition(categoryKey, dto),
-        {
-          loading: "Đang tạo định nghĩa...",
-          success: "Tạo định nghĩa thành công",
-          error: (err) => err?.response?.data?.message || "Không thể tạo định nghĩa. Vui lòng thử lại.",
-        }
-      );
+      await toast.promise(createDefinition(categoryKey, dto), {
+        loading: "Đang tạo định nghĩa...",
+        success: "Tạo định nghĩa thành công",
+        error: (err) =>
+          err?.response?.data?.message ||
+          "Không thể tạo định nghĩa. Vui lòng thử lại.",
+      });
       onSuccess?.();
       onOpenChange(false);
     } catch (error) {
@@ -69,4 +68,3 @@ export function CreateDefinitionDialog({
     </Dialog>
   );
 }
-

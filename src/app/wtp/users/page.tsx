@@ -24,9 +24,11 @@ import { getAvailableRolesForInvitation } from "@/lib/rbac/permissions";
 import { InvitationService } from "@/lib/services/invitation.service";
 import { WtpService } from "@/lib/services/wtp.service";
 import { mapFrontendRoleToBackend } from "@/lib/rbac/roleMapper";
-import { transformUsers, transformInvitations } from "@/lib/utils/userTransformers";
+import {
+  transformUsers,
+  transformInvitations,
+} from "@/lib/utils/userTransformers";
 import { toast } from "sonner";
-
 
 export default function WTPUsersPage() {
   const { userRole, user } = useAuth();
@@ -70,7 +72,7 @@ export default function WTPUsersPage() {
       // Handle invitations
       if (invitationsResponse.status === "fulfilled") {
         const transformedInvitations = transformInvitations(
-          invitationsResponse.value.data
+          invitationsResponse.value.data,
         );
         setPendingInvites(transformedInvitations);
         setFilteredInvites(transformedInvitations);
@@ -106,13 +108,19 @@ export default function WTPUsersPage() {
     if (inviteSearchQuery) {
       filtered = filtered.filter(
         (invite) =>
-          invite.email.toLowerCase().includes(inviteSearchQuery.toLowerCase()) ||
-          invite.invitedBy.toLowerCase().includes(inviteSearchQuery.toLowerCase()),
+          invite.email
+            .toLowerCase()
+            .includes(inviteSearchQuery.toLowerCase()) ||
+          invite.invitedBy
+            .toLowerCase()
+            .includes(inviteSearchQuery.toLowerCase()),
       );
     }
 
     if (selectedInviteRole !== "all") {
-      filtered = filtered.filter((invite) => invite.role === selectedInviteRole);
+      filtered = filtered.filter(
+        (invite) => invite.role === selectedInviteRole,
+      );
     }
 
     setFilteredInvites(filtered);
@@ -143,7 +151,7 @@ export default function WTPUsersPage() {
           err?.response?.data?.message ||
           err?.message ||
           "Không thể gửi lời mời. Vui lòng thử lại.",
-      }
+      },
     );
   };
 
@@ -212,7 +220,11 @@ export default function WTPUsersPage() {
       title="Quản lý người dùng"
       subtitle="Manage user accounts and permissions"
     >
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList>
           <TabsTrigger value="users">Người dùng</TabsTrigger>
           <TabsTrigger value="pending">Lời mời đang chờ</TabsTrigger>
@@ -290,7 +302,10 @@ export default function WTPUsersPage() {
                 />
               </div>
 
-              <Select value={selectedInviteRole} onValueChange={setSelectedInviteRole}>
+              <Select
+                value={selectedInviteRole}
+                onValueChange={setSelectedInviteRole}
+              >
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Tất cả vai trò" />
                 </SelectTrigger>

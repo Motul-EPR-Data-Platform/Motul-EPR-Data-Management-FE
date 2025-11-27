@@ -1,4 +1,9 @@
-import { Category, FieldSchema, Definition, DefinitionBase } from "@/types/definition";
+import {
+  Category,
+  FieldSchema,
+  Definition,
+  DefinitionBase,
+} from "@/types/definition";
 import { CATEGORY_KEYS } from "@/constants/categoryKeys";
 
 /**
@@ -19,17 +24,17 @@ function transformFieldSchema(backendField: any): FieldSchema {
 /**
  * Map backend field types to frontend field types
  */
-function mapFieldType(backendType: string): FieldSchema['type'] {
-  const typeMap: Record<string, FieldSchema['type']> = {
-    text: 'string',
-    string: 'string',
-    number: 'number',
-    boolean: 'boolean',
-    date: 'date',
-    select: 'select',
-    textarea: 'textarea',
+function mapFieldType(backendType: string): FieldSchema["type"] {
+  const typeMap: Record<string, FieldSchema["type"]> = {
+    text: "string",
+    string: "string",
+    number: "number",
+    boolean: "boolean",
+    date: "date",
+    select: "select",
+    textarea: "textarea",
   };
-  return typeMap[backendType?.toLowerCase()] || 'string';
+  return typeMap[backendType?.toLowerCase()] || "string";
 }
 
 /**
@@ -39,15 +44,19 @@ export function transformCategory(backendCategory: any): Category {
   if (!backendCategory) {
     throw new Error("Cannot transform null or undefined category");
   }
-  
+
   return {
-    id: String(backendCategory.id || ""),   
+    id: String(backendCategory.id || ""),
     key: backendCategory.key,
     name: backendCategory.name,
     description: backendCategory.description || null,
     isActive: backendCategory.is_active ?? backendCategory.isActive ?? true,
     createdAt: backendCategory.created_at || backendCategory.createdAt,
-    schemaDefinition: (backendCategory.schema_definition || backendCategory.schemaDefinition || []).map(transformFieldSchema),
+    schemaDefinition: (
+      backendCategory.schema_definition ||
+      backendCategory.schemaDefinition ||
+      []
+    ).map(transformFieldSchema),
   };
 }
 
@@ -72,7 +81,7 @@ function extractDefinitionData(backendDefinition: any): any {
 
   // Find the nested definition data key (e.g., definition_waste_type, definition_contract_type)
   const definitionKeys = Object.keys(backendDefinition).filter((key) =>
-    key.startsWith("definition_")
+    key.startsWith("definition_"),
   );
 
   if (definitionKeys.length === 0) {
@@ -87,7 +96,9 @@ function extractDefinitionData(backendDefinition: any): any {
   const transformed: any = {};
   if (nestedData) {
     Object.keys(nestedData).forEach((key) => {
-      const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      const camelKey = key.replace(/_([a-z])/g, (_, letter) =>
+        letter.toUpperCase(),
+      );
       transformed[camelKey] = nestedData[key];
     });
   }
@@ -111,11 +122,15 @@ export function transformDefinition(backendDefinition: any): Definition {
     id: String(backendDefinition.id || ""),
     category: backendDefinition.category || "",
     status: (backendDefinition.status || "").toLowerCase(),
-    createdBy: backendDefinition.created_by || backendDefinition.createdBy || "",
-    approvedBy: backendDefinition.approved_by || backendDefinition.approvedBy || null,
-    approvedAt: backendDefinition.approved_at || backendDefinition.approvedAt || null,
+    createdBy:
+      backendDefinition.created_by || backendDefinition.createdBy || "",
+    approvedBy:
+      backendDefinition.approved_by || backendDefinition.approvedBy || null,
+    approvedAt:
+      backendDefinition.approved_at || backendDefinition.approvedAt || null,
     isActive: backendDefinition.is_active ?? backendDefinition.isActive ?? true,
-    createdAt: backendDefinition.created_at || backendDefinition.createdAt || "",
+    createdAt:
+      backendDefinition.created_at || backendDefinition.createdAt || "",
   };
 
   return {

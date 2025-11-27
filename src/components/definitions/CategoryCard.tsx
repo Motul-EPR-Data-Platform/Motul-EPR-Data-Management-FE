@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Category } from "@/types/definition";
 import { ChevronRight } from "lucide-react";
@@ -12,7 +18,10 @@ interface CategoryCardProps {
   definitionCount?: number;
 }
 
-export function CategoryCard({ category, definitionCount = 0 }: CategoryCardProps) {
+export function CategoryCard({
+  category,
+  definitionCount = 0,
+}: CategoryCardProps) {
   const router = useRouter();
   const { organization } = useAuth();
 
@@ -53,4 +62,3 @@ export function CategoryCard({ category, definitionCount = 0 }: CategoryCardProp
     </Card>
   );
 }
-

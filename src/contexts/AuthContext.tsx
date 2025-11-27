@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(userData);
       setUserRole(mappedRole);
-      
+
       // Store the full role in localStorage (keep role storage as requested)
       localStorage.setItem("userRole", mappedRole);
     } catch (error) {

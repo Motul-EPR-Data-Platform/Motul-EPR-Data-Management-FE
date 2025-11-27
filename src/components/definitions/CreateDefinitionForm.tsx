@@ -86,7 +86,9 @@ export function CreateDefinitionForm({
             </Label>
             <InputComponent
               id={field.name}
-              placeholder={field.placeholder || `Nhập ${field.label.toLowerCase()}`}
+              placeholder={
+                field.placeholder || `Nhập ${field.label.toLowerCase()}`
+              }
               value={value}
               onChange={(e) => handleFieldChange(field.name, e.target.value)}
               required={field.required}
@@ -107,10 +109,15 @@ export function CreateDefinitionForm({
             <Input
               id={field.name}
               type="number"
-              placeholder={field.placeholder || `Nhập ${field.label.toLowerCase()}`}
+              placeholder={
+                field.placeholder || `Nhập ${field.label.toLowerCase()}`
+              }
               value={value}
               onChange={(e) =>
-                handleFieldChange(field.name, e.target.value ? Number(e.target.value) : "")
+                handleFieldChange(
+                  field.name,
+                  e.target.value ? Number(e.target.value) : "",
+                )
               }
               required={field.required}
               disabled={isLoading}
@@ -147,10 +154,19 @@ export function CreateDefinitionForm({
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Label>
             <DatePicker
-              value={value instanceof Date ? value : value ? new Date(value) : undefined}
+              value={
+                value instanceof Date
+                  ? value
+                  : value
+                    ? new Date(value)
+                    : undefined
+              }
               onChange={(date) => {
                 // Convert Date to ISO string (yyyy-mm-dd) for form data
-                handleFieldChange(field.name, date ? date.toISOString().split("T")[0] : "");
+                handleFieldChange(
+                  field.name,
+                  date ? date.toISOString().split("T")[0] : "",
+                );
               }}
               placeholder={`Chọn ${field.label.toLowerCase()}`}
               disabled={isLoading}
@@ -173,8 +189,13 @@ export function CreateDefinitionForm({
               required={field.required}
               disabled={isLoading}
             >
-              <SelectTrigger id={field.name} className={error ? "border-red-500" : ""}>
-                <SelectValue placeholder={`Chọn ${field.label.toLowerCase()}`} />
+              <SelectTrigger
+                id={field.name}
+                className={error ? "border-red-500" : ""}
+              >
+                <SelectValue
+                  placeholder={`Chọn ${field.label.toLowerCase()}`}
+                />
               </SelectTrigger>
               <SelectContent>
                 {field.options?.map((option) => (
@@ -215,4 +236,3 @@ export function CreateDefinitionForm({
     </form>
   );
 }
-

@@ -45,26 +45,24 @@ export const ENDPOINTS = {
     USERS: "/users",
     PENDING_INVITATIONS: "/pending-invitations",
   },
-   DEFINITIONS: {
-      ROOT: "/definitions",
-  
-      // === Subcategories ===
-      CATEGORIES: "/categories",
-      WASTE_TYPES: "/waste-types",
-      CONTRACT_TYPES: "/contract-types",
-      EPR_ENTITIES: "/epr-entities",
-      CUSTOM: "/custom",
-  
-    },
-  } as const;
-  
-  // Helpers to compose full paths
-  export const path = {
-    auth: (p: string) => `${ENDPOINTS.AUTH.ROOT}${p}`,
-    invitations: (p: string) => `${ENDPOINTS.INVITATIONS.ROOT}${p}`,
-    admin: (p: string) => `${ENDPOINTS.ADMIN.ROOT}${p}`,
-    definitions: (p: string) => `${ENDPOINTS.DEFINITIONS.ROOT}${p}`,
-    recycler: (p: string) => `${ENDPOINTS.RECYCLER.ROOT}${p}`,
-    wtp: (p: string) => `${ENDPOINTS.WTP.ROOT}${p}`,
-  };
-  
+  DEFINITIONS: {
+    ROOT: "/definitions",
+
+    // === Subcategories ===
+    CATEGORIES: "/categories",
+    WASTE_TYPES: "/waste-types",
+    CONTRACT_TYPES: "/contract-types",
+    EPR_ENTITIES: "/epr-entities",
+    CUSTOM: "/custom",
+  },
+} as const;
+
+// Helpers to compose full paths
+export const path = {
+  auth: (p: string) => `${ENDPOINTS.AUTH.ROOT}${p}`,
+  invitations: (p: string) => `${ENDPOINTS.INVITATIONS.ROOT}${p}`,
+  admin: (p: string) => `${ENDPOINTS.ADMIN.ROOT}${p}`,
+  definitions: (p: string) => `${ENDPOINTS.DEFINITIONS.ROOT}${p}`,
+  recycler: (p: string) => `${ENDPOINTS.RECYCLER.ROOT}${p}`,
+  wtp: (p: string) => `${ENDPOINTS.WTP.ROOT}${p}`,
+};

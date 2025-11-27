@@ -17,13 +17,15 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 // Password update schema
-const passwordUpdateSchema = z.object({
-  newPassword: z.string().min(8, "Mật khẩu mới phải có ít nhất 8 ký tự"),
-  confirmPassword: z.string().min(1, "Xác nhận mật khẩu là bắt buộc"),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Mật khẩu mới và xác nhận mật khẩu không khớp",
-  path: ["confirmPassword"],
-});
+const passwordUpdateSchema = z
+  .object({
+    newPassword: z.string().min(8, "Mật khẩu mới phải có ít nhất 8 ký tự"),
+    confirmPassword: z.string().min(1, "Xác nhận mật khẩu là bắt buộc"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Mật khẩu mới và xác nhận mật khẩu không khớp",
+    path: ["confirmPassword"],
+  });
 
 type PasswordUpdateFormData = z.infer<typeof passwordUpdateSchema>;
 
@@ -49,16 +51,14 @@ export function ProfilePage() {
       const dto: UpdatePasswordDTO = {
         newPassword: data.newPassword,
       };
-      
-      await toast.promise(
-        AuthService.updatePassword(dto),
-        {
-          loading: "Đang cập nhật mật khẩu...",
-          success: "Cập nhật mật khẩu thành công",
-          error: (err) => err?.response?.data?.message || "Không thể cập nhật mật khẩu",
-        }
-      );
-      
+
+      await toast.promise(AuthService.updatePassword(dto), {
+        loading: "Đang cập nhật mật khẩu...",
+        success: "Cập nhật mật khẩu thành công",
+        error: (err) =>
+          err?.response?.data?.message || "Không thể cập nhật mật khẩu",
+      });
+
       // Reset form
       reset();
       setShowPasswordForm(false);
@@ -86,7 +86,7 @@ export function ProfilePage() {
       {/* User Information Section */}
       <div className="rounded-lg border bg-card p-6">
         <h2 className="text-xl font-semibold mb-6">Thông tin tài khoản</h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="grid gap-2">
             <Label className="text-muted-foreground">Họ và tên</Label>
@@ -117,14 +117,22 @@ export function ProfilePage() {
           {user.recyclerId && (
             <div className="grid gap-2">
               <Label className="text-muted-foreground">ID Nhà cung cấp</Label>
-              <Input value={user.recyclerId} disabled className="bg-muted font-mono text-sm" />
+              <Input
+                value={user.recyclerId}
+                disabled
+                className="bg-muted font-mono text-sm"
+              />
             </div>
           )}
 
           {user.wasteTransferPointId && (
             <div className="grid gap-2">
               <Label className="text-muted-foreground">ID Điểm tiếp nhận</Label>
-              <Input value={user.wasteTransferPointId} disabled className="bg-muted font-mono text-sm" />
+              <Input
+                value={user.wasteTransferPointId}
+                disabled
+                className="bg-muted font-mono text-sm"
+              />
             </div>
           )}
         </div>
@@ -140,10 +148,7 @@ export function ProfilePage() {
             </p>
           </div>
           {!showPasswordForm && (
-            <Button
-              variant="outline"
-              onClick={() => setShowPasswordForm(true)}
-            >
+            <Button variant="outline" onClick={() => setShowPasswordForm(true)}>
               <Lock className="h-4 w-4 mr-2" />
               Đổi mật khẩu
             </Button>
@@ -153,7 +158,7 @@ export function ProfilePage() {
         {showPasswordForm && (
           <form onSubmit={handleSubmit(onSubmitPassword)} className="space-y-4">
             <Separator />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
               <div className="grid gap-2">
                 <Label htmlFor="newPassword">
@@ -181,7 +186,9 @@ export function ProfilePage() {
                   </Button>
                 </div>
                 {errors.newPassword && (
-                  <p className="text-sm text-red-500">{errors.newPassword.message}</p>
+                  <p className="text-sm text-red-500">
+                    {errors.newPassword.message}
+                  </p>
                 )}
               </div>
 
@@ -211,7 +218,9 @@ export function ProfilePage() {
                   </Button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+                  <p className="text-sm text-red-500">
+                    {errors.confirmPassword.message}
+                  </p>
                 )}
               </div>
             </div>

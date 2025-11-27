@@ -28,7 +28,8 @@ export function PendingDefinitionTable({
   onReject,
   isMotulAdmin = false,
 }: PendingDefinitionTableProps) {
-  const [selectedDefinition, setSelectedDefinition] = useState<Definition | null>(null);
+  const [selectedDefinition, setSelectedDefinition] =
+    useState<Definition | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"approve" | "reject">("approve");
 
@@ -117,15 +118,15 @@ export function PendingDefinitionTable({
                       definition.status === "pending"
                         ? "default"
                         : definition.status === "approved"
-                        ? "default"
-                        : "destructive"
+                          ? "default"
+                          : "destructive"
                     }
                   >
                     {definition.status === "pending"
                       ? "Chờ duyệt"
                       : definition.status === "approved"
-                      ? "Đã duyệt"
-                      : "Đã từ chối"}
+                        ? "Đã duyệt"
+                        : "Đã từ chối"}
                   </Badge>
                 </TableCell>
                 {isMotulAdmin && definition.status === "pending" && (
@@ -171,4 +172,3 @@ export function PendingDefinitionTable({
     </>
   );
 }
-

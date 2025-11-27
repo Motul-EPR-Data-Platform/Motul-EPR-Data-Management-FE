@@ -40,9 +40,11 @@ export const RecyclerService = {
    * Get all users for recycler admin
    * GET /recycler/users
    */
-  async getUsers(filters?: GetUsersFilters): Promise<PaginatedResponse<UserManagement>> {
+  async getUsers(
+    filters?: GetUsersFilters,
+  ): Promise<PaginatedResponse<UserManagement>> {
     const queryParams = new URLSearchParams();
-    
+
     if (filters?.role) {
       queryParams.append("role", filters.role);
     }
@@ -75,7 +77,7 @@ export const RecyclerService = {
    * GET /recycler/pending-invitations
    */
   async getPendingInvitations(
-    filters?: GetInvitationsFilters
+    filters?: GetInvitationsFilters,
   ): Promise<PaginatedResponse<InvitationManagement>> {
     const queryParams = new URLSearchParams();
 
@@ -106,4 +108,3 @@ export const RecyclerService = {
     return data.data || data;
   },
 };
-

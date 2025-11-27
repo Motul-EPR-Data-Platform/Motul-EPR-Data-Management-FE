@@ -48,18 +48,22 @@ export function DefinitionTable({
     const data = definition.data as any;
     const baseFields = ["code", "name", "description", "id"];
     const additional: Record<string, any> = {};
-    
+
     // Handle null/undefined data
     if (!data || typeof data !== "object") {
       return additional;
     }
-    
+
     Object.keys(data).forEach((key) => {
-      if (!baseFields.includes(key) && data[key] !== null && data[key] !== undefined) {
+      if (
+        !baseFields.includes(key) &&
+        data[key] !== null &&
+        data[key] !== undefined
+      ) {
         additional[key] = data[key];
       }
     });
-    
+
     return additional;
   };
 
@@ -118,11 +122,7 @@ export function DefinitionTable({
                   ))}
                 <TableCell>
                   <Badge
-                    variant={
-                      definition.isActive
-                        ? "default"
-                        : "secondary"
-                    }
+                    variant={definition.isActive ? "default" : "secondary"}
                   >
                     {definition.isActive ? "Hoạt động" : "Không hoạt động"}
                   </Badge>
@@ -154,4 +154,3 @@ export function DefinitionTable({
     </div>
   );
 }
-

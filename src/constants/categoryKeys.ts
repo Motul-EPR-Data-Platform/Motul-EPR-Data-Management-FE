@@ -54,4 +54,3 @@ export function isStandardCategory(key: string): boolean {
     key === CATEGORY_ROUTE_KEYS.EPR_ENTITIES
   );
 }
-

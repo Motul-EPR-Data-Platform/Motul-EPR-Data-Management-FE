@@ -31,32 +31,35 @@ export const AuthService = {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
     // Session is stored in HTTP-only cookies by backend
     return data;
   },
 
-async registerRecyclerAdmin(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
-  const accessToken = dto.accessToken; // the token you passed earlier
-  const payload = { ...dto };
-  delete payload.accessToken; // remove it from body
+  async registerRecyclerAdmin(
+    dto: RegisterWithInviteDTO,
+  ): Promise<AuthResponse> {
+    const accessToken = dto.accessToken; // the token you passed earlier
+    const payload = { ...dto };
+    delete payload.accessToken; // remove it from body
 
-  const { data } = await api.post<AuthResponse>(
-    path.auth(ENDPOINTS.AUTH.REGISTER.RECYCLER_ADMIN),
-    payload,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
+    const { data } = await api.post<AuthResponse>(
+      path.auth(ENDPOINTS.AUTH.REGISTER.RECYCLER_ADMIN),
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       },
-    }
-  );
+    );
 
-  return data;
-},
+    return data;
+  },
 
-
-  async completeRecyclerAdminProfile(dto: CompleteRecyclerAdminProfileDTO): Promise<AppUser> {
+  async completeRecyclerAdminProfile(
+    dto: CompleteRecyclerAdminProfileDTO,
+  ): Promise<AppUser> {
     const response = await api.post<{ data: AppUser }>(
       path.auth(ENDPOINTS.AUTH.COMPLETE_PROFILE.RECYCLER_ADMIN),
       { recyclerProfile: dto },
@@ -77,13 +80,15 @@ async registerRecyclerAdmin(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
     // Session is stored in HTTP-only cookies by backend
     return data;
   },
 
-  async registerWasteTransferAdmin(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
+  async registerWasteTransferAdmin(
+    dto: RegisterWithInviteDTO,
+  ): Promise<AuthResponse> {
     const accessToken = dto.accessToken;
     const payload = { ...dto };
     delete payload.accessToken;
@@ -95,7 +100,7 @@ async registerRecyclerAdmin(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
     // Session is stored in HTTP-only cookies by backend
     return data;
@@ -112,7 +117,9 @@ async registerRecyclerAdmin(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
     return (response.data as any).data || response.data;
   },
 
-  async registerWasteTransfer(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
+  async registerWasteTransfer(
+    dto: RegisterWithInviteDTO,
+  ): Promise<AuthResponse> {
     const accessToken = dto.accessToken;
     const payload = { ...dto };
     delete payload.accessToken;
@@ -124,7 +131,7 @@ async registerRecyclerAdmin(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
     // Session is stored in HTTP-only cookies by backend
     return data;
@@ -156,23 +163,25 @@ async registerRecyclerAdmin(dto: RegisterWithInviteDTO): Promise<AuthResponse> {
   },
 
   async me(): Promise<AppUser> {
-    const response = await api.get<{ data: AppUser } | AppUser>(path.auth(ENDPOINTS.AUTH.ME));
-    
+    const response = await api.get<{ data: AppUser } | AppUser>(
+      path.auth(ENDPOINTS.AUTH.ME),
+    );
+
     // The API returns { data: AppUser }
     // Axios wraps it: axios response = { data: { data: AppUser } }
     // So we need: response.data.data
     // But if the API directly returns AppUser, we use response.data
     const apiResponse = response.data as any;
     const userData: AppUser = apiResponse?.data || apiResponse;
-    
+
     if (!userData) {
       throw new Error("Invalid user data: user data is missing");
     }
-    
+
     if (!userData.role) {
       throw new Error("Invalid user data: role is missing");
     }
-    
+
     return userData;
   },
 

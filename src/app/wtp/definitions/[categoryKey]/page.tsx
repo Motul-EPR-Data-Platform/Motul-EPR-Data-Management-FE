@@ -16,4 +16,3 @@ export function generateStaticParams() {
 export default function CategoryDetailPage() {
   return <CategoryDetailPageClient />;
 }
-

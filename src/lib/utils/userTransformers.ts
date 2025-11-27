@@ -11,8 +11,12 @@ import { mapBackendRoleToFrontend } from "@/lib/rbac/roleMapper";
  */
 export function transformUser(backendUser: any): User {
   // Backend may return vendorName or wasteTransferName instead of belongsTo
-  const belongsTo = backendUser.belongsTo || backendUser.vendorName || backendUser.wasteTransferName || null;
-  
+  const belongsTo =
+    backendUser.belongsTo ||
+    backendUser.vendorName ||
+    backendUser.wasteTransferName ||
+    null;
+
   return {
     id: backendUser.id,
     name: backendUser.fullName,
@@ -38,7 +42,7 @@ export function transformUsers(backendUsers: UserManagement[]): User[] {
  * Transform backend InvitationManagement to frontend PendingInvite
  */
 export function transformInvitation(
-  backendInvitation: InvitationManagement
+  backendInvitation: InvitationManagement,
 ): PendingInvite {
   const invitationDate =
     typeof backendInvitation.invitationDate === "string"
@@ -72,8 +76,7 @@ export function transformInvitation(
  * Transform array of backend InvitationManagement to frontend PendingInvite[]
  */
 export function transformInvitations(
-  backendInvitations: InvitationManagement[]
+  backendInvitations: InvitationManagement[],
 ): PendingInvite[] {
   return backendInvitations.map(transformInvitation);
 }
-

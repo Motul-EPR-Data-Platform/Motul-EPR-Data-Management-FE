@@ -15,9 +15,7 @@ export const WtpService = {
    * GET /wtp/profile/:id
    */
   async getProfile(id: string): Promise<WtpProfile> {
-    const { data } = await api.get(
-      path.wtp(ENDPOINTS.WTP.PROFILE(id)),
-    );
+    const { data } = await api.get(path.wtp(ENDPOINTS.WTP.PROFILE(id)));
     return data.data || data;
   },
 
@@ -29,10 +27,7 @@ export const WtpService = {
     id: string,
     dto: UpdateWtpProfileDTO,
   ): Promise<WtpProfile> {
-    const { data } = await api.put(
-      path.wtp(ENDPOINTS.WTP.PROFILE(id)),
-      dto,
-    );
+    const { data } = await api.put(path.wtp(ENDPOINTS.WTP.PROFILE(id)), dto);
     return data.data || data;
   },
 
@@ -40,9 +35,11 @@ export const WtpService = {
    * Get all users for waste transfer admin
    * GET /wtp/users
    */
-  async getUsers(filters?: GetUsersFilters): Promise<PaginatedResponse<UserManagement>> {
+  async getUsers(
+    filters?: GetUsersFilters,
+  ): Promise<PaginatedResponse<UserManagement>> {
     const queryParams = new URLSearchParams();
-    
+
     if (filters?.role) {
       queryParams.append("role", filters.role);
     }
@@ -75,7 +72,7 @@ export const WtpService = {
    * GET /wtp/pending-invitations
    */
   async getPendingInvitations(
-    filters?: GetInvitationsFilters
+    filters?: GetInvitationsFilters,
   ): Promise<PaginatedResponse<InvitationManagement>> {
     const queryParams = new URLSearchParams();
 
@@ -106,4 +103,3 @@ export const WtpService = {
     return data.data || data;
   },
 };
-

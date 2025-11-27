@@ -90,13 +90,12 @@ api.interceptors.response.use(
         const resp = await axios.post(
           `${API_BASE_URL}${path.auth(ENDPOINTS.AUTH.REFRESH)}`,
           {},
-          { 
+          {
             withCredentials: true, // Include cookies
-            headers: { "Content-Type": "application/json" } 
+            headers: { "Content-Type": "application/json" },
           },
         );
 
-       
         flush(); // Wake queued requests
         // Retry original request (cookies will be automatically included)
         return api(original);

@@ -14,7 +14,10 @@ import {
 } from "@/lib/validations/wtp";
 import { AuthService } from "@/lib/services/auth.service";
 import { WtpService } from "@/lib/services/wtp.service";
-import { CompleteWasteTransferAdminProfileDTO, UpdateWtpProfileDTO } from "@/types/auth";
+import {
+  CompleteWasteTransferAdminProfileDTO,
+  UpdateWtpProfileDTO,
+} from "@/types/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
@@ -44,7 +47,9 @@ export function WtpBusinessInfoForm({
   const isFormDisabled = !editable || isLoading;
 
   // Convert initial data dates from string to Date objects
-  const getInitialDate = (fieldName: keyof CompleteWtpAdminProfileFormData): Date | undefined => {
+  const getInitialDate = (
+    fieldName: keyof CompleteWtpAdminProfileFormData,
+  ): Date | undefined => {
     if (!initialData) return undefined;
     const value = initialData[fieldName];
     return parseDate(value as string | Date | undefined);
@@ -99,8 +104,12 @@ export function WtpBusinessInfoForm({
     setSuccess(false);
 
     try {
-      const formatedEnvPermitIssueDate =toDDMMYYYY(data.env_permit_issue_date instanceof Date);
-      const formatedEnvPermitExpiryDate = toDDMMYYYY(data.env_permit_expiry_date instanceof Date);
+      const formatedEnvPermitIssueDate = toDDMMYYYY(
+        data.env_permit_issue_date instanceof Date,
+      );
+      const formatedEnvPermitExpiryDate = toDDMMYYYY(
+        data.env_permit_expiry_date instanceof Date,
+      );
       // If in edit mode and profileId exists, use update endpoint
       if (isEditMode && profileId) {
         const dto: UpdateWtpProfileDTO = {
@@ -129,7 +138,6 @@ export function WtpBusinessInfoForm({
           }, 1500);
         }
       } else {
-
         // Initial profile completion - this shouldn't happen on business-info page
         // but keeping for compatibility
         const dto: CompleteWasteTransferAdminProfileDTO = {
@@ -301,7 +309,9 @@ export function WtpBusinessInfoForm({
 
         {/* Environmental Permit Issue Date */}
         <div className="grid gap-2">
-          <Label htmlFor="env_permit_issue_date">Ngày cấp giấy phép môi trường</Label>
+          <Label htmlFor="env_permit_issue_date">
+            Ngày cấp giấy phép môi trường
+          </Label>
           <DatePicker
             value={envPermitIssueDate}
             onChange={(date) => setValue("env_permit_issue_date", date)}
@@ -312,7 +322,9 @@ export function WtpBusinessInfoForm({
 
         {/* Environmental Permit Expiry Date */}
         <div className="grid gap-2">
-          <Label htmlFor="env_permit_expiry_date">Ngày hết hạn giấy phép môi trường</Label>
+          <Label htmlFor="env_permit_expiry_date">
+            Ngày hết hạn giấy phép môi trường
+          </Label>
           <DatePicker
             value={envPermitExpiryDate}
             onChange={(date) => setValue("env_permit_expiry_date", date)}
@@ -336,4 +348,3 @@ export function WtpBusinessInfoForm({
     </form>
   );
 }
-

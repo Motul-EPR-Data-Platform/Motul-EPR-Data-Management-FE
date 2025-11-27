@@ -40,7 +40,7 @@ export function AppSidebar() {
 
   const handleItemClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
-    itemUrl: string
+    itemUrl: string,
   ) => {
     // If profile needs completion and route is not allowed, show dialog
     if (needsProfileCompletion && !isAllowedRoute(itemUrl)) {

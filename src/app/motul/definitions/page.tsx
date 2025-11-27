@@ -29,7 +29,7 @@ export default function DefinitionsPage() {
 
       // Handle categories
       let categoriesData: any[] = [];
-      if (categoriesResult[0].status === 'fulfilled') {
+      if (categoriesResult[0].status === "fulfilled") {
         categoriesData = categoriesResult[0].value;
       } else {
         toast.error("Không thể tải danh mục");
@@ -53,9 +53,10 @@ export default function DefinitionsPage() {
     }
   };
 
-  const filteredCategories = categories.filter((cat) =>
-    cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    cat.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredCategories = categories.filter(
+    (cat) =>
+      cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cat.description?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   if (isLoading) {
@@ -90,7 +91,9 @@ export default function DefinitionsPage() {
         {filteredCategories.length === 0 ? (
           <div className="rounded-lg border bg-card p-6">
             <p className="text-center text-muted-foreground py-12">
-              {searchQuery ? "Không tìm thấy danh mục nào" : "Không có danh mục nào"}
+              {searchQuery
+                ? "Không tìm thấy danh mục nào"
+                : "Không có danh mục nào"}
             </p>
           </div>
         ) : (
@@ -104,4 +107,3 @@ export default function DefinitionsPage() {
     </PageLayout>
   );
 }
-

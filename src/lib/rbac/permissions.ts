@@ -1,6 +1,9 @@
 import { UserRole } from "@/types/user";
 import { Role } from "@/types/auth";
-import { getOrganizationFromBackendRole, getOrganizationFromFrontendRole } from "./roleMapper";
+import {
+  getOrganizationFromBackendRole,
+  getOrganizationFromFrontendRole,
+} from "./roleMapper";
 
 export type Permission =
   | "users.view"
@@ -76,7 +79,7 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "definitions.delete",
     "definitions.approve",
     "definitions.reject",
-    ],
+  ],
   "Motul User": [
     "users.view",
     "records.view",
@@ -178,7 +181,7 @@ export function getPermissionsForRole(role: UserRole | Role): Permission[] {
  */
 export function hasPermission(
   role: UserRole | Role | null | undefined,
-  permission: Permission
+  permission: Permission,
 ): boolean {
   if (!role) return false;
   const permissions = getPermissionsForRole(role);
@@ -190,7 +193,7 @@ export function hasPermission(
  */
 export function hasAnyPermission(
   role: UserRole | Role | null | undefined,
-  permissions: Permission[]
+  permissions: Permission[],
 ): boolean {
   if (!role) return false;
   return permissions.some((perm) => hasPermission(role, perm));
@@ -201,7 +204,7 @@ export function hasAnyPermission(
  */
 export function hasAllPermissions(
   role: UserRole | Role | null | undefined,
-  permissions: Permission[]
+  permissions: Permission[],
 ): boolean {
   if (!role) return false;
   return permissions.every((perm) => hasPermission(role, perm));
@@ -210,7 +213,9 @@ export function hasAllPermissions(
 /**
  * Get organization for a role
  */
-export function getOrganization(role: UserRole | Role): "motul" | "recycler" | "wtp" {
+export function getOrganization(
+  role: UserRole | Role,
+): "motul" | "recycler" | "wtp" {
   if (
     role === "motul_admin" ||
     role === "motul_reviewer" ||
@@ -231,7 +236,9 @@ export function getOrganization(role: UserRole | Role): "motul" | "recycler" | "
  * - Recycler Admin can only invite members (Recycler User)
  * - WTP Admin can only invite members (WTP User)
  */
-export function getAvailableRolesForInvitation(inviterRole: UserRole | Role | null | undefined): UserRole[] {
+export function getAvailableRolesForInvitation(
+  inviterRole: UserRole | Role | null | undefined,
+): UserRole[] {
   if (!inviterRole) return [];
 
   // Convert backend role to frontend role if needed
@@ -268,4 +275,3 @@ export function getAvailableRolesForInvitation(inviterRole: UserRole | Role | nu
   // Default: no roles available
   return [];
 }
-

@@ -65,7 +65,8 @@ export function CategoryDetailPageClient() {
       await toast.promise(DefinitionService.archive(id), {
         loading: "Đang lưu trữ...",
         success: "Lưu trữ định nghĩa thành công",
-        error: (err) => err?.response?.data?.message || "Không thể lưu trữ định nghĩa",
+        error: (err) =>
+          err?.response?.data?.message || "Không thể lưu trữ định nghĩa",
       });
       loadData();
     } catch (error) {
@@ -178,4 +179,3 @@ export function CategoryDetailPageClient() {
     </PageLayout>
   );
 }
-
