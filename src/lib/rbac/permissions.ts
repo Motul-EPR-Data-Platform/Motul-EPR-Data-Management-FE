@@ -88,7 +88,6 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "pending-registration.view",
     "reports.view",
     "definitions.view",
-    "definitions.create",
   ],
   "Recycler Admin": [
     "users.view",
@@ -111,9 +110,6 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "account.view",
     "account.edit",
     "definitions.view",
-    "definitions.create",
-    "definitions.edit",
-    "definitions.delete",
   ],
   "Recycler User": [
     "records.view",
@@ -125,7 +121,6 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "account.view",
     "account.edit",
     "definitions.view",
-    "definitions.create",
   ],
   "WTP Admin": [
     "users.view",
@@ -144,9 +139,6 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "account.view",
     "account.edit",
     "definitions.view",
-    "definitions.create",
-    "definitions.edit",
-    "definitions.delete",
   ],
   "WTP User": [
     "records.view",
@@ -157,7 +149,6 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "account.view",
     "account.edit",
     "definitions.view",
-    "definitions.create",
   ],
 };
 

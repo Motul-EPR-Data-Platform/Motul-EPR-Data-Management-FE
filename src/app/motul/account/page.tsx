@@ -3,7 +3,7 @@
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ProfilePage } from "@/components/profile/ProfilePage";
 
-export default function WTPAccountPage() {
+export default function MotulAccountPage() {
   return (
     <PageLayout
       breadcrumbs={[{ label: "Tài khoản" }]}
@@ -14,3 +14,4 @@ export default function WTPAccountPage() {
     </PageLayout>
   );
 }
+

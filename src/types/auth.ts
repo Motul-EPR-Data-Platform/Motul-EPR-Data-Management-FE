@@ -76,7 +76,7 @@ export type CompleteRecyclerAdminProfileDTO = {
 
 export type CompleteWasteTransferAdminProfileDTO = {
   waste_transfer_name: string;
-  location: {
+  location?: {
     code?: string;
     address: string;
     city?: string;
@@ -112,4 +112,71 @@ export type SendInvitationDTO = {
   email: string;
   role: Role; // the invited role
   metadata?: Record<string, unknown>; // e.g., recyclerId, wasteTransferPointId
+};
+
+// Recycler Profile Types
+export type RecyclerProfile = {
+  id: string;
+  vendorName: string;
+  googleMapLink?: string;
+  representative?: string;
+  taxCode?: string;
+  phone?: string;
+  contactPoint?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  businessRegNumber?: string;
+  businessRegIssueDate?: Date | string;
+  envPermitNumber?: string;
+  envPermitIssueDate?: Date | string;
+  envPermitExpiryDate?: Date | string;
+  location?: {
+    code?: string;
+    address?: string;
+    city?: string;
+    latitude?: number;
+    longitude?: number;
+  };
+};
+
+export type UpdateRecyclerProfileDTO = {
+  vendorName?: string;
+  googleMapLink?: string;
+  representative?: string;
+  taxCode?: string;
+  phone?: string;
+  contactPoint?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  businessRegNumber?: string;
+  businessRegIssueDate?: Date | string;
+  envPermitNumber?: string;
+  envPermitIssueDate?: Date | string;
+  envPermitExpiryDate?: Date | string;
+};
+
+// WTP Profile Types
+export type WtpProfile = {
+  id: string;
+  wasteTransferName: string;
+  phone?: string;
+  businessCode?: string;
+  contactPerson?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  envPermitNumber?: string;
+  envPermitIssueDate?: Date | string;
+  envPermitExpiryDate?: Date | string;
+};
+
+export type UpdateWtpProfileDTO = {
+  wasteTransferName?: string;
+  phone?: string;
+  businessCode?: string;
+  contactPerson?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  envPermitNumber?: string;
+  envPermitIssueDate?: Date | string;
+  envPermitExpiryDate?: Date | string;
 };

@@ -9,12 +9,15 @@ import { mapBackendRoleToFrontend } from "@/lib/rbac/roleMapper";
 /**
  * Transform backend UserManagement to frontend User
  */
-export function transformUser(backendUser: UserManagement): User {
+export function transformUser(backendUser: any): User {
+  // Backend may return vendorName or wasteTransferName instead of belongsTo
+  const belongsTo = backendUser.belongsTo || backendUser.vendorName || backendUser.wasteTransferName || null;
+  
   return {
     id: backendUser.id,
     name: backendUser.fullName,
     email: backendUser.email,
-    unit: backendUser.belongsTo,
+    unit: belongsTo,
     role: mapBackendRoleToFrontend(backendUser.role),
     status: backendUser.isActive ? "Active" : "Inactive",
     createdAt:

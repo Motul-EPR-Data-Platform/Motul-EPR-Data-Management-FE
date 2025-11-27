@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { parseDate, toDDMMYYYY } from "@/lib/utils/dateHelper";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -13,46 +14,27 @@ import {
   type CompleteRecyclerAdminProfileFormData,
 } from "@/lib/validations/recycler";
 import { AuthService } from "@/lib/services/auth.service";
-import { CompleteRecyclerAdminProfileDTO } from "@/types/auth";
+import { RecyclerService } from "@/lib/services/recycler.service";
+import { CompleteRecyclerAdminProfileDTO, UpdateRecyclerProfileDTO } from "@/types/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
-// Convert Date object or dd/mm/yyyy string to dd/mm/yyyy format (backend expects this format)
-function convertDateToDDMMYYYY(date: Date | string | undefined): string | undefined {
-  if (!date) return undefined;
-  
-  if (date instanceof Date) {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  }
-  
-  // If already in dd/mm/yyyy format, return as is
-  if (typeof date === "string" && date.includes("/")) {
-    return date;
-  }
-  
-  // If in ISO format (yyyy-mm-dd), convert to dd/mm/yyyy
-  if (typeof date === "string" && date.includes("-")) {
-    const [year, month, day] = date.split("-");
-    return `${day}/${month}/${year}`;
-  }
-  
-  return undefined;
-}
 
 interface BusinessInfoFormProps {
   initialData?: Partial<CompleteRecyclerAdminProfileFormData>;
   isEditMode?: boolean;
   editable?: boolean; // If false, all inputs are read-only
+  onSaveSuccess?: () => void; // Callback when save is successful
+  profileId?: string | null; // Profile ID for update operations
 }
 
 export function BusinessInfoForm({
   initialData,
   isEditMode = false,
   editable = true,
+  onSaveSuccess,
+  profileId,
 }: BusinessInfoFormProps) {
   const router = useRouter();
   const { refreshUser } = useAuth();
@@ -68,7 +50,7 @@ export function BusinessInfoForm({
     if (!dateStr) return undefined;
     if (dateStr instanceof Date) return dateStr;
     if (typeof dateStr !== "string") return undefined;
-    
+
     // Handle dd/mm/yyyy format
     const [day, month, year] = dateStr.split("/");
     if (day && month && year) {
@@ -76,7 +58,7 @@ export function BusinessInfoForm({
     }
     return undefined;
   };
-  
+
   // Convert initial data dates from string to Date objects
   const getInitialDate = (fieldName: keyof CompleteRecyclerAdminProfileFormData): Date | undefined => {
     if (!initialData) return undefined;
@@ -90,6 +72,7 @@ export function BusinessInfoForm({
     formState: { errors },
     setValue,
     watch,
+    reset,
   } = useForm<CompleteRecyclerAdminProfileFormData>({
     resolver: zodResolver(completeRecyclerAdminProfileSchema),
     defaultValues: {
@@ -115,9 +98,35 @@ export function BusinessInfoForm({
     },
   });
 
+  // Reset form when initialData changes (e.g., when profile is loaded)
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        vendor_name: initialData.vendor_name || "",
+        tax_code: initialData.tax_code || "",
+        representative: initialData.representative || "",
+        location: initialData.location || {
+          address: "",
+          city: "",
+          code: "",
+        },
+        business_reg_number: initialData.business_reg_number || "",
+        business_reg_issue_date: getInitialDate("business_reg_issue_date"),
+        phone: initialData.phone || "",
+        contact_email: initialData.contact_email || "",
+        contact_point: initialData.contact_point || "",
+        contact_phone: initialData.contact_phone || "",
+        google_map_link: initialData.google_map_link || "",
+        env_permit_number: initialData.env_permit_number || "",
+        env_permit_issue_date: getInitialDate("env_permit_issue_date"),
+        env_permit_expiry_date: getInitialDate("env_permit_expiry_date"),
+      });
+    }
+  }, [initialData, reset]);
+
   const envPermitFile = watch("env_permit_file");
   const businessRegFile = watch("business_reg_file");
-  
+
   // Watch date fields to get current values
   const businessRegIssueDate = watch("business_reg_issue_date");
   const envPermitIssueDate = watch("env_permit_issue_date");
@@ -129,50 +138,72 @@ export function BusinessInfoForm({
     setSuccess(false);
 
     try {
-      const dto: CompleteRecyclerAdminProfileDTO = {
-        vendorName: data.vendor_name,
-        taxCode: data.tax_code,
-        representative: data.representative,
-        location: {
-          address: data.location.address,
-          city: data.location.city || "",
-          code: data.location.code || "",
-          latitude: data.location.latitude,
-          longitude: data.location.longitude,
-        },
-        phone: data.phone,
-        contactEmail: data.contact_email,
-        contactPoint: data.contact_point,
-        contactPhone: data.contact_phone,
-        businessRegNumber: data.business_reg_number,
-        businessRegIssueDate: data.business_reg_issue_date
-          ? convertDateToDDMMYYYY(data.business_reg_issue_date)
-          : undefined,
-        googleMapLink: data.google_map_link,
-        envPermitNumber: data.env_permit_number,
-        envPermitIssueDate: data.env_permit_issue_date
-          ? convertDateToDDMMYYYY(data.env_permit_issue_date)
-          : undefined,
-        envPermitExpiryDate: data.env_permit_expiry_date
-          ? convertDateToDDMMYYYY(data.env_permit_expiry_date)
-          : undefined,
-      };
+      const formatedEnvPermitIssueDate =toDDMMYYYY(data.env_permit_issue_date instanceof Date);
+      const formatedEnvPermitExpiryDate = toDDMMYYYY(data.env_permit_expiry_date instanceof Date);
+      const formatedBusinessRegIssueDate = toDDMMYYYY(data.business_reg_issue_date instanceof Date);
+      // If in edit mode and profileId exists, use update endpoint
+      if (isEditMode && profileId) {
+        const dto: UpdateRecyclerProfileDTO = {
+          vendorName: data.vendor_name,
+          taxCode: data.tax_code,
+          representative: data.representative,
+          phone: data.phone,
+          contactEmail: data.contact_email,
+          contactPoint: data.contact_point,
+          contactPhone: data.contact_phone,
+          businessRegNumber: data.business_reg_number,
+          businessRegIssueDate: formatedBusinessRegIssueDate,
+          googleMapLink: data.google_map_link,
+          envPermitNumber: data.env_permit_number,
+          envPermitIssueDate: formatedEnvPermitIssueDate,
+          envPermitExpiryDate: formatedEnvPermitExpiryDate,
+        };
 
-      // Files are optional and handled elsewhere; not included in dto here.
+        await RecyclerService.updateProfile(profileId, dto);
+        setSuccess(true);
 
-      await AuthService.completeRecyclerAdminProfile(dto);
-      await refreshUser();
-
-      setSuccess(true);
-
-      // If in edit mode, reload page after showing success message
-      // This will exit edit mode and show updated data
-      if (isEditMode) {
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
+        // Call success callback if provided
+        if (onSaveSuccess) {
+          setTimeout(() => {
+            onSaveSuccess();
+          }, 1500);
+        } else {
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        }
       } else {
-        // If not in edit mode, redirect to dashboard
+        // Initial profile completion
+        const dto: CompleteRecyclerAdminProfileDTO = {
+          vendorName: data.vendor_name,
+          taxCode: data.tax_code,
+          representative: data.representative,
+          location: {
+            address: data.location.address,
+            city: data.location.city || "",
+            code: data.location.code || "",
+            latitude: data.location.latitude,
+            longitude: data.location.longitude,
+          },
+          phone: data.phone,
+          contactEmail: data.contact_email,
+          contactPoint: data.contact_point,
+          contactPhone: data.contact_phone,
+          businessRegNumber: formatedBusinessRegIssueDate,
+          googleMapLink: data.google_map_link,
+          envPermitNumber: data.env_permit_number,
+          envPermitIssueDate: formatedEnvPermitIssueDate,
+          envPermitExpiryDate: formatedEnvPermitExpiryDate,
+        };
+
+        // Files are optional and handled elsewhere; not included in dto here.
+
+        await AuthService.completeRecyclerAdminProfile(dto);
+        await refreshUser();
+
+        setSuccess(true);
+
+        // Redirect to dashboard
         setTimeout(() => {
           router.push("/recycler");
           router.refresh();

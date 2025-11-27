@@ -33,6 +33,18 @@ export const ENDPOINTS = {
     USERS: "/users",
     INVITATIONS: "/invitations",
   },
+  RECYCLER: {
+    ROOT: "/recycler-admin",
+    PROFILE: (id: string) => `/profile/${id}`,
+    USERS: "/users",
+    PENDING_INVITATIONS: "/pending-invitations",
+  },
+  WTP: {
+    ROOT: "/wtp-admin",
+    PROFILE: (id: string) => `/profile/${id}`,
+    USERS: "/users",
+    PENDING_INVITATIONS: "/pending-invitations",
+  },
    DEFINITIONS: {
       ROOT: "/definitions",
   
@@ -43,10 +55,6 @@ export const ENDPOINTS = {
       EPR_ENTITIES: "/epr-entities",
       CUSTOM: "/custom",
   
-      // === Common actions ===
-      APPROVE: (id: string) => `/${id}/approve`,
-      REJECT: (id: string) => `/${id}/reject`,
-      ARCHIVE: (id: string) => `/${id}`,
     },
   } as const;
   
@@ -56,5 +64,7 @@ export const ENDPOINTS = {
     invitations: (p: string) => `${ENDPOINTS.INVITATIONS.ROOT}${p}`,
     admin: (p: string) => `${ENDPOINTS.ADMIN.ROOT}${p}`,
     definitions: (p: string) => `${ENDPOINTS.DEFINITIONS.ROOT}${p}`,
+    recycler: (p: string) => `${ENDPOINTS.RECYCLER.ROOT}${p}`,
+    wtp: (p: string) => `${ENDPOINTS.WTP.ROOT}${p}`,
   };
   
