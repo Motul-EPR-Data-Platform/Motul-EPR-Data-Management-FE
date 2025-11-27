@@ -19,28 +19,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
-// Helper to parse date string to Date object
-const parseDate = (dateStr: string | Date | undefined): Date | undefined => {
-  if (!dateStr) return undefined;
-  if (dateStr instanceof Date) return dateStr;
-  if (typeof dateStr !== "string") return undefined;
-
-  // Handle ISO format
-  if (dateStr.includes("T") || dateStr.includes("-")) {
-    return new Date(dateStr);
-  }
-
-  // Handle dd/mm/yyyy format
-  if (dateStr.includes("/")) {
-    const [day, month, year] = dateStr.split("/");
-    if (day && month && year) {
-      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    }
-  }
-
-  return undefined;
-};
-
 interface BusinessInfoFormProps {
   initialData?: Partial<CompleteWtpAdminProfileFormData>;
   isEditMode?: boolean;
