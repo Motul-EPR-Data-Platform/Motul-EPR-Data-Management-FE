@@ -5,12 +5,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthService } from "@/lib/services/auth.service";
 import { UpdatePasswordDTO } from "@/types/auth";
 import { toast } from "sonner";
-import { Save, Lock, Eye, EyeOff } from "lucide-react";
+import { Save, Lock } from "lucide-react";
 import { z } from "zod";
 import { mapBackendRoleToFrontend } from "@/lib/rbac/roleMapper";
 import { Badge } from "@/components/ui/badge";
@@ -33,8 +34,6 @@ export function ProfilePage() {
   const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -164,27 +163,11 @@ export function ProfilePage() {
                 <Label htmlFor="newPassword">
                   Mật khẩu mới <span className="text-red-500">*</span>
                 </Label>
-                <div className="relative">
-                  <Input
-                    id="newPassword"
-                    type={showNewPassword ? "text" : "password"}
-                    {...register("newPassword")}
-                    className={errors.newPassword ? "border-red-500" : ""}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                  >
-                    {showNewPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
+                <PasswordInput
+                  id="newPassword"
+                  {...register("newPassword")}
+                  className={errors.newPassword ? "border-red-500" : ""}
+                />
                 {errors.newPassword && (
                   <p className="text-sm text-red-500">
                     {errors.newPassword.message}
@@ -196,27 +179,11 @@ export function ProfilePage() {
                 <Label htmlFor="confirmPassword">
                   Xác nhận mật khẩu mới <span className="text-red-500">*</span>
                 </Label>
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    {...register("confirmPassword")}
-                    className={errors.confirmPassword ? "border-red-500" : ""}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
+                <PasswordInput
+                  id="confirmPassword"
+                  {...register("confirmPassword")}
+                  className={errors.confirmPassword ? "border-red-500" : ""}
+                />
                 {errors.confirmPassword && (
                   <p className="text-sm text-red-500">
                     {errors.confirmPassword.message}

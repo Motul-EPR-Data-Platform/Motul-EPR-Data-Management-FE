@@ -12,6 +12,7 @@ import {
 } from "@/lib/validations/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
@@ -183,9 +184,8 @@ export function RegisterForm({ title, email, targetRole, accessToken }: Props) {
 
           <div>
             <Label htmlFor="password">Mật khẩu</Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               placeholder="••••••••"
               {...register("password")}
               disabled={isSubmitting}
@@ -199,9 +199,8 @@ export function RegisterForm({ title, email, targetRole, accessToken }: Props) {
 
           <div>
             <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
-            <Input
+            <PasswordInput
               id="confirmPassword"
-              type="password"
               placeholder="••••••••"
               {...register("confirmPassword")}
               disabled={isSubmitting}
