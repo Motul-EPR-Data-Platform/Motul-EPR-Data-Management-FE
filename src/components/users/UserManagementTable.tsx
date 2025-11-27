@@ -15,8 +15,8 @@ import { Pencil, Trash2 } from "lucide-react";
 
 interface UserManagementTableProps {
   users: User[];
-  onEdit?: (user: User) => void;
-  onDelete?: (user: User) => void;
+  onEdit: (user: User) => void;
+  onDelete: (user: User) => void;
 }
 
 export function UserManagementTable({
@@ -49,10 +49,11 @@ export function UserManagementTable({
   };
 
   return (
-    <div className="rounded-md border bg-card">
+    <div className="rounded-md border bg-white">
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>ID</TableHead>
             <TableHead>Tên</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Đơn vị</TableHead>
@@ -65,17 +66,15 @@ export function UserManagementTable({
         <TableBody>
           {users.length === 0 ? (
             <TableRow>
-              <TableCell
-                colSpan={7}
-                className="text-center text-muted-foreground py-8"
-              >
+              <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                 Không có dữ liệu
               </TableCell>
             </TableRow>
           ) : (
             users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.name}</TableCell>
+                <TableCell className="font-medium">{user.id}</TableCell>
+                <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.unit || "-"}</TableCell>
                 <TableCell>
@@ -99,35 +98,25 @@ export function UserManagementTable({
                     {user.status}
                   </Badge>
                 </TableCell>
-                <TableCell>
-                  {new Date(user.createdAt).toLocaleDateString("vi-VN", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                  })}
-                </TableCell>
+                <TableCell>{user.createdAt}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    {onEdit && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onEdit(user)}
-                        className="h-8 w-8"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {onDelete && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onDelete(user)}
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEdit(user)}
+                      className="h-8 w-8"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDelete(user)}
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -138,3 +127,4 @@ export function UserManagementTable({
     </div>
   );
 }
+
