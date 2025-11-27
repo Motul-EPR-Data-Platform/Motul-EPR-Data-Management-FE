@@ -76,7 +76,7 @@ export type CompleteRecyclerAdminProfileDTO = {
 
 export type CompleteWasteTransferAdminProfileDTO = {
   waste_transfer_name: string;
-  location: {
+  location?: {
     code?: string;
     address: string;
     city?: string;

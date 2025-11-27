@@ -1,5 +1,6 @@
 "use client";
 
+import { parseDate, toDDMMYYYY } from "@/lib/utils/dateHelper";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,12 +24,12 @@ const parseDate = (dateStr: string | Date | undefined): Date | undefined => {
   if (!dateStr) return undefined;
   if (dateStr instanceof Date) return dateStr;
   if (typeof dateStr !== "string") return undefined;
-  
+
   // Handle ISO format
   if (dateStr.includes("T") || dateStr.includes("-")) {
     return new Date(dateStr);
   }
-  
+
   // Handle dd/mm/yyyy format
   if (dateStr.includes("/")) {
     const [day, month, year] = dateStr.split("/");
@@ -36,7 +37,7 @@ const parseDate = (dateStr: string | Date | undefined): Date | undefined => {
       return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     }
   }
-  
+
   return undefined;
 };
 
@@ -120,6 +121,8 @@ export function WtpBusinessInfoForm({
     setSuccess(false);
 
     try {
+      const formatedEnvPermitIssueDate =toDDMMYYYY(data.env_permit_issue_date instanceof Date);
+      const formatedEnvPermitExpiryDate = toDDMMYYYY(data.env_permit_expiry_date instanceof Date);
       // If in edit mode and profileId exists, use update endpoint
       if (isEditMode && profileId) {
         const dto: UpdateWtpProfileDTO = {
@@ -130,21 +133,13 @@ export function WtpBusinessInfoForm({
           contactPhone: data.contact_phone,
           contactEmail: data.contact_email,
           envPermitNumber: data.env_permit_number,
-          envPermitIssueDate: data.env_permit_issue_date
-            ? (data.env_permit_issue_date instanceof Date
-                ? data.env_permit_issue_date
-                : parseDate(data.env_permit_issue_date as string))
-            : undefined,
-          envPermitExpiryDate: data.env_permit_expiry_date
-            ? (data.env_permit_expiry_date instanceof Date
-                ? data.env_permit_expiry_date
-                : parseDate(data.env_permit_expiry_date as string))
-            : undefined,
+          envPermitIssueDate: formatedEnvPermitIssueDate,
+          envPermitExpiryDate: formatedEnvPermitExpiryDate,
         };
 
         await WtpService.updateProfile(profileId, dto);
         setSuccess(true);
-        
+
         // Call success callback if provided
         if (onSaveSuccess) {
           setTimeout(() => {
@@ -156,6 +151,7 @@ export function WtpBusinessInfoForm({
           }, 1500);
         }
       } else {
+
         // Initial profile completion - this shouldn't happen on business-info page
         // but keeping for compatibility
         const dto: CompleteWasteTransferAdminProfileDTO = {
@@ -166,16 +162,8 @@ export function WtpBusinessInfoForm({
           contact_phone: data.contact_phone,
           contact_email: data.contact_email,
           env_permit_number: data.env_permit_number,
-          env_permit_issue_date: data.env_permit_issue_date
-            ? (data.env_permit_issue_date instanceof Date
-                ? `${String(data.env_permit_issue_date.getDate()).padStart(2, "0")}/${String(data.env_permit_issue_date.getMonth() + 1).padStart(2, "0")}/${data.env_permit_issue_date.getFullYear()}`
-                : data.env_permit_issue_date as string)
-            : undefined,
-          env_permit_expiry_date: data.env_permit_expiry_date
-            ? (data.env_permit_expiry_date instanceof Date
-                ? `${String(data.env_permit_expiry_date.getDate()).padStart(2, "0")}/${String(data.env_permit_expiry_date.getMonth() + 1).padStart(2, "0")}/${data.env_permit_expiry_date.getFullYear()}`
-                : data.env_permit_expiry_date as string)
-            : undefined,
+          env_permit_issue_date: formatedEnvPermitIssueDate,
+          env_permit_expiry_date: formatedEnvPermitExpiryDate,
           location: {
             address: "",
           },

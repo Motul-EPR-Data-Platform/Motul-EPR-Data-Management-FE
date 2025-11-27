@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { parseDate, toDDMMYYYY } from "@/lib/utils/dateHelper";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -19,30 +20,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
-// Convert Date object or dd/mm/yyyy string to dd/mm/yyyy format (backend expects this format)
-function convertDateToDDMMYYYY(date: Date | string | undefined): string | undefined {
-  if (!date) return undefined;
-  
-  if (date instanceof Date) {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  }
-  
-  // If already in dd/mm/yyyy format, return as is
-  if (typeof date === "string" && date.includes("/")) {
-    return date;
-  }
-  
-  // If in ISO format (yyyy-mm-dd), convert to dd/mm/yyyy
-  if (typeof date === "string" && date.includes("-")) {
-    const [year, month, day] = date.split("-");
-    return `${day}/${month}/${year}`;
-  }
-  
-  return undefined;
-}
 
 interface BusinessInfoFormProps {
   initialData?: Partial<CompleteRecyclerAdminProfileFormData>;
@@ -73,7 +50,7 @@ export function BusinessInfoForm({
     if (!dateStr) return undefined;
     if (dateStr instanceof Date) return dateStr;
     if (typeof dateStr !== "string") return undefined;
-    
+
     // Handle dd/mm/yyyy format
     const [day, month, year] = dateStr.split("/");
     if (day && month && year) {
@@ -81,7 +58,7 @@ export function BusinessInfoForm({
     }
     return undefined;
   };
-  
+
   // Convert initial data dates from string to Date objects
   const getInitialDate = (fieldName: keyof CompleteRecyclerAdminProfileFormData): Date | undefined => {
     if (!initialData) return undefined;
@@ -149,7 +126,7 @@ export function BusinessInfoForm({
 
   const envPermitFile = watch("env_permit_file");
   const businessRegFile = watch("business_reg_file");
-  
+
   // Watch date fields to get current values
   const businessRegIssueDate = watch("business_reg_issue_date");
   const envPermitIssueDate = watch("env_permit_issue_date");
@@ -161,6 +138,9 @@ export function BusinessInfoForm({
     setSuccess(false);
 
     try {
+      const formatedEnvPermitIssueDate =toDDMMYYYY(data.env_permit_issue_date instanceof Date);
+      const formatedEnvPermitExpiryDate = toDDMMYYYY(data.env_permit_expiry_date instanceof Date);
+      const formatedBusinessRegIssueDate = toDDMMYYYY(data.business_reg_issue_date instanceof Date);
       // If in edit mode and profileId exists, use update endpoint
       if (isEditMode && profileId) {
         const dto: UpdateRecyclerProfileDTO = {
@@ -172,28 +152,16 @@ export function BusinessInfoForm({
           contactPoint: data.contact_point,
           contactPhone: data.contact_phone,
           businessRegNumber: data.business_reg_number,
-          businessRegIssueDate: data.business_reg_issue_date
-            ? (data.business_reg_issue_date instanceof Date
-                ? data.business_reg_issue_date
-                : parseDate(data.business_reg_issue_date as string))
-            : undefined,
+          businessRegIssueDate: formatedBusinessRegIssueDate,
           googleMapLink: data.google_map_link,
           envPermitNumber: data.env_permit_number,
-          envPermitIssueDate: data.env_permit_issue_date
-            ? (data.env_permit_issue_date instanceof Date
-                ? data.env_permit_issue_date
-                : parseDate(data.env_permit_issue_date as string))
-            : undefined,
-          envPermitExpiryDate: data.env_permit_expiry_date
-            ? (data.env_permit_expiry_date instanceof Date
-                ? data.env_permit_expiry_date
-                : parseDate(data.env_permit_expiry_date as string))
-            : undefined,
+          envPermitIssueDate: formatedEnvPermitIssueDate,
+          envPermitExpiryDate: formatedEnvPermitExpiryDate,
         };
 
         await RecyclerService.updateProfile(profileId, dto);
         setSuccess(true);
-        
+
         // Call success callback if provided
         if (onSaveSuccess) {
           setTimeout(() => {
@@ -221,18 +189,11 @@ export function BusinessInfoForm({
           contactEmail: data.contact_email,
           contactPoint: data.contact_point,
           contactPhone: data.contact_phone,
-          businessRegNumber: data.business_reg_number,
-          businessRegIssueDate: data.business_reg_issue_date
-            ? convertDateToDDMMYYYY(data.business_reg_issue_date)
-            : undefined,
+          businessRegNumber: formatedBusinessRegIssueDate,
           googleMapLink: data.google_map_link,
           envPermitNumber: data.env_permit_number,
-          envPermitIssueDate: data.env_permit_issue_date
-            ? convertDateToDDMMYYYY(data.env_permit_issue_date)
-            : undefined,
-          envPermitExpiryDate: data.env_permit_expiry_date
-            ? convertDateToDDMMYYYY(data.env_permit_expiry_date)
-            : undefined,
+          envPermitIssueDate: formatedEnvPermitIssueDate,
+          envPermitExpiryDate: formatedEnvPermitExpiryDate,
         };
 
         // Files are optional and handled elsewhere; not included in dto here.
