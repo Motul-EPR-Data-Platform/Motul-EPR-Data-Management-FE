@@ -132,14 +132,22 @@ export default function RecyclerUsersPage() {
     const invitedRole: UserRole =
       role || (availableRoles.length > 0 ? availableRoles[0] : "Recycler User");
 
+    const backendRole = mapFrontendRoleToBackend(invitedRole);
+    
+    // Backend requires recyclerId at top level for recycler role
+    // Backend will override with inviter's recyclerId, but validation requires the field
+    const payload: any = {
+      email,
+      role: backendRole,
+    };
+    
+    if (backendRole === "recycler") {
+      // Send any value to pass validation - backend will use inviter's recyclerId anyway
+      payload.recyclerId = user?.recyclerId || user?.id || "";
+    }
+
     await toast.promise(
-      InvitationService.send({
-        email,
-        role: mapFrontendRoleToBackend(invitedRole),
-        metadata: {
-          recyclerId: user?.recyclerId || null,
-        },
-      }),
+      InvitationService.send(payload),
       {
         loading: `Đang gửi lời mời tới ${email}...`,
         success: () => {

@@ -75,23 +75,23 @@ export type CompleteRecyclerAdminProfileDTO = {
 };
 
 export type CompleteWasteTransferAdminProfileDTO = {
-  waste_transfer_name: string;
-  location?: {
-    code?: string;
+  wasteTransferName: string;
+  location: {
+    code: string;
     address: string;
-    city?: string;
+    city: string;
     latitude?: number;
     longitude?: number;
   };
-  business_code: string;
-  phone?: string;
-  contact_person?: string;
-  contact_phone?: string;
-  contact_email?: string;
-  recycler_id?: string;
-  env_permit_number?: string;
-  env_permit_issue_date?: string;
-  env_permit_expiry_date?: string;
+  businessCode: string;
+  phone?: string | null;
+  contactPerson?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  recyclerId?: string | null;
+  envPermitNumber?: string | null;
+  envPermitIssueDate?: Date | null;
+  envPermitExpiryDate?: Date | null;
 };
 
 export type ForgotPasswordDTO = {
@@ -111,7 +111,8 @@ export type UpdatePasswordDTO = {
 export type SendInvitationDTO = {
   email: string;
   role: Role; // the invited role
-  metadata?: Record<string, unknown>; // e.g., recyclerId, wasteTransferPointId
+  recyclerId?: string; // Required for recycler role
+  wasteTransferPointId?: string; // Required for waste_transfer role
 };
 
 // Recycler Profile Types
