@@ -111,7 +111,7 @@ export const AuthService = {
   ): Promise<AppUser> {
     const response = await api.post<{ data: AppUser }>(
       path.auth(ENDPOINTS.AUTH.COMPLETE_PROFILE.WASTE_TRANSFER_ADMIN),
-      dto,
+      { wasteTransferPointProfile: dto },
     );
     // Extract nested data if present, otherwise use response.data directly
     return (response.data as any).data || response.data;

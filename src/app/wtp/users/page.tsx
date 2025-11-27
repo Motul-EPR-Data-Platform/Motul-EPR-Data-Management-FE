@@ -132,14 +132,22 @@ export default function WTPUsersPage() {
     const invitedRole: UserRole =
       role || (availableRoles.length > 0 ? availableRoles[0] : "WTP User");
 
+    const backendRole = mapFrontendRoleToBackend(invitedRole);
+    
+    // Backend requires wasteTransferPointId at top level for waste_transfer role
+    // Backend will override with inviter's wasteTransferPointId, but validation requires the field
+    const payload: any = {
+      email,
+      role: backendRole,
+    };
+    
+    if (backendRole === "waste_transfer") {
+      // Send any value to pass validation - backend will use inviter's wasteTransferPointId anyway
+      payload.wasteTransferPointId = user?.wasteTransferPointId || user?.id || "";
+    }
+
     await toast.promise(
-      InvitationService.send({
-        email,
-        role: mapFrontendRoleToBackend(invitedRole),
-        metadata: {
-          wasteTransferPointId: user?.wasteTransferPointId || null,
-        },
-      }),
+      InvitationService.send(payload),
       {
         loading: `Đang gửi lời mời tới ${email}...`,
         success: () => {
