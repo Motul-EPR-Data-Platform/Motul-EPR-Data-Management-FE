@@ -55,6 +55,10 @@ export const ENDPOINTS = {
     EPR_ENTITIES: "/epr-entities",
     CUSTOM: "/custom",
   },
+  WASTE_OWNERS: {
+    ROOT: "/waste-owners",
+    BY_ID: (id: string) => `/waste-owners/${id}`,
+  },
 } as const;
 
 // Helpers to compose full paths
@@ -65,4 +69,5 @@ export const path = {
   definitions: (p: string) => `${ENDPOINTS.DEFINITIONS.ROOT}${p}`,
   recycler: (p: string) => `${ENDPOINTS.RECYCLER.ROOT}${p}`,
   wtp: (p: string) => `${ENDPOINTS.WTP.ROOT}${p}`,
+  wasteOwners: (p: string) => p, // Waste owners endpoints are already full paths
 };
