@@ -59,6 +59,15 @@ export const ENDPOINTS = {
     ROOT: "/waste-owners",
     BY_ID: (id: string) => `/waste-owners/${id}`,
   },
+  COLLECTION_RECORDS: {
+    ROOT: "/collection-records",
+    DRAFT: "/draft",
+    BY_ID: (id: string) => `/collection-records/${id}`,
+    DRAFT_BY_ID: (id: string) => `/collection-records/${id}/draft`,
+    SUBMIT: (id: string) => `/collection-records/${id}/submit`,
+    APPROVE: (id: string) => `/collection-records/${id}/approve`,
+    REJECT: (id: string) => `/collection-records/${id}/reject`,
+  },
 } as const;
 
 // Helpers to compose full paths
@@ -70,4 +79,5 @@ export const path = {
   recycler: (p: string) => `${ENDPOINTS.RECYCLER.ROOT}${p}`,
   wtp: (p: string) => `${ENDPOINTS.WTP.ROOT}${p}`,
   wasteOwners: (p: string) => p, // Waste owners endpoints are already full paths
+  collectionRecords: (p: string) => p, // Collection records endpoints are already full paths
 };
