@@ -62,11 +62,21 @@ export const ENDPOINTS = {
   COLLECTION_RECORDS: {
     ROOT: "/collection-records",
     DRAFT: "/draft",
-    BY_ID: (id: string) => `/collection-records/${id}`,
-    DRAFT_BY_ID: (id: string) => `/collection-records/${id}/draft`,
-    SUBMIT: (id: string) => `/collection-records/${id}/submit`,
-    APPROVE: (id: string) => `/collection-records/${id}/approve`,
-    REJECT: (id: string) => `/collection-records/${id}/reject`,
+    BY_ID: (id: string) => `/${id}`,
+    DRAFT_BY_ID: (id: string) => `/${id}/draft`,
+    SUBMIT: (id: string) => `/${id}/submit`,
+    APPROVE: (id: string) => `/${id}/approve`,
+    REJECT: (id: string) => `/${id}/reject`,
+    REJECTION_DETAILS: (id: string) => `/${id}/rejection-details`,
+    ADMIN_UPDATE: (id: string) => `/${id}/admin-update`,
+    FILES: (id: string) => `/${id}/files`,
+    UPLOAD: (id: string) => `/${id}/upload`,
+    UPLOAD_MULTIPLE: (id: string) => `/${id}/upload-multiple`,
+  },
+  LOCATIONS: {
+    ROOT: "/location",
+    AUTOCOMPLETE: "/autocomplete",
+    BY_REF_ID: (refId: string) => `/${refId}`,
   },
 } as const;
 
@@ -79,5 +89,6 @@ export const path = {
   recycler: (p: string) => `${ENDPOINTS.RECYCLER.ROOT}${p}`,
   wtp: (p: string) => `${ENDPOINTS.WTP.ROOT}${p}`,
   wasteOwners: (p: string) => p, // Waste owners endpoints are already full paths
-  collectionRecords: (p: string) => p, // Collection records endpoints are already full paths
+  collectionRecords: (p: string) => `${ENDPOINTS.COLLECTION_RECORDS.ROOT}${p}`, // Prepend ROOT to collection records paths
+  locations: (p: string) => p, // Location endpoints are already full paths
 };

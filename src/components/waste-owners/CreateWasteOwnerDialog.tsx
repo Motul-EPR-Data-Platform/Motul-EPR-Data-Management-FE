@@ -37,20 +37,19 @@ export function CreateWasteOwnerDialog({
           ? "Số CCCD là bắt buộc"
           : "Mã số thuế là bắt buộc";
     }
-    if (!data.contactPerson.trim()) {
+    if (!data.contactPerson || !data.contactPerson.trim()) {
       newErrors.contactPerson = "Người liên hệ là bắt buộc";
     }
-    if (!data.phone.trim()) {
+    if (!data.phone || !data.phone.trim()) {
       newErrors.phone = "Số điện thoại là bắt buộc";
     }
-    if (!data.email.trim()) {
+    if (!data.email || !data.email.trim()) {
       newErrors.email = "Email là bắt buộc";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    } else if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
       newErrors.email = "Email không hợp lệ";
     }
-    if (!data.location.refId.trim()) {
-      newErrors.locationRefId = "Địa chỉ chi tiết là bắt buộc";
-    }
+    // TODO: Add location validation back when location becomes required
+    // Location is temporarily optional - no validation needed
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

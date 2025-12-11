@@ -57,7 +57,7 @@ export function AppSidebar() {
       <Sidebar collapsible="icon" className="z-40 relative">
         <SidebarHeader>
           <div className="p-4 flex justify-center">
-            <div className="h-8 w-32 bg-gray-200 animate-pulse rounded" />
+            <div className="h-10 w-10 bg-gray-200 animate-pulse rounded-lg" />
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -75,8 +75,11 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="z-40 relative">
       <SidebarHeader>
         <div className="p-4 flex justify-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={config.logo} alt="Logo" className="h-8" />
+          <div className="h-10 w-10 rounded-lg bg-red-600 flex items-center justify-center">
+            <span className="text-white font-semibold text-lg">
+              {config.initials}
+            </span>
+          </div>
         </div>
       </SidebarHeader>
 

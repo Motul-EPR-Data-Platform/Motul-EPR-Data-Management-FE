@@ -9,16 +9,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CreateDraftDTO } from "@/types/record";
+import { CreateDraftFormData } from "@/types/record";
 
 interface Step1WasteSourceInfoProps {
-  formData: Partial<CreateDraftDTO>;
+  formData: Partial<CreateDraftFormData>;
   errors?: Record<string, string>;
-  onChange: (field: keyof CreateDraftDTO, value: any) => void;
+  onChange: (field: keyof CreateDraftFormData, value: any) => void;
   disabled?: boolean;
   wasteOwners?: Array<{ id: string; name: string }>;
   contractTypes?: Array<{ id: string; name: string; code: string }>;
-  wasteSources?: Array<{ id: string; name: string }>;
 }
 
 export function Step1WasteSourceInfo({
@@ -28,7 +27,6 @@ export function Step1WasteSourceInfo({
   disabled = false,
   wasteOwners = [],
   contractTypes = [],
-  wasteSources = [],
 }: Step1WasteSourceInfoProps) {
   return (
     <div className="space-y-6">
@@ -71,7 +69,7 @@ export function Step1WasteSourceInfo({
 
         {/* Classification (Contract Type) */}
         <div className="grid gap-2">
-          <Label htmlFor="contractTypeId">Phân loại</Label>
+          <Label htmlFor="contractTypeId">Phân loại hợp đồng</Label>
           <Select
             value={formData.contractTypeId || ""}
             onValueChange={(value) =>
@@ -80,14 +78,28 @@ export function Step1WasteSourceInfo({
             disabled={disabled}
           >
             <SelectTrigger id="contractTypeId">
-              <SelectValue placeholder="Dropdown: HĐXL, HĐLK, TG-CG" />
+              <SelectValue placeholder="Tìm hoặc chọn từ danh sách...." />
             </SelectTrigger>
             <SelectContent>
-              {contractTypes.map((type) => (
-                <SelectItem key={type.id} value={type.id}>
-                  {type.name} ({type.code})
-                </SelectItem>
-              ))}
+              {contractTypes.length > 0 ? (
+                contractTypes.map((type) => {
+                  // Ensure we have a display name - prefer name, then code, never show ID
+                  const displayName = type.name || type.code || "Unknown";
+                  const displayCode = type.code && type.name && type.code !== type.name 
+                    ? ` (${type.code})` 
+                    : "";
+                  
+                  return (
+                    <SelectItem key={type.id} value={String(type.id)}>
+                      {displayName}{displayCode}
+                    </SelectItem>
+                  );
+                })
+              ) : (
+                <div className="px-2 py-1.5 text-sm text-muted-foreground text-center">
+                  Không có dữ liệu
+                </div>
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -105,14 +117,16 @@ export function Step1WasteSourceInfo({
             disabled={disabled}
           >
             <SelectTrigger id="wasteSourceId">
-              <SelectValue placeholder="Dropdown" />
+              <SelectValue placeholder="Tìm hoặc chọn từ danh sách...." />
             </SelectTrigger>
             <SelectContent>
-              {wasteSources.map((source) => (
-                <SelectItem key={source.id} value={source.id}>
-                  {source.name}
-                </SelectItem>
-              ))}
+              <SelectItem value="17 02 02">17 02 02</SelectItem>
+              <SelectItem value="17 02 03">17 02 03</SelectItem>
+              <SelectItem value="17 02 04">17 02 04</SelectItem>
+              <SelectItem value="17 02 02 | 17 02 03">17 02 02 | 17 02 03</SelectItem>
+              <SelectItem value="17 02 03 | 17 02 04">17 02 03 | 17 02 04</SelectItem>
+              <SelectItem value="17 02 02 | 17 02 04">17 02 02 | 17 02 04</SelectItem>
+              <SelectItem value="17 02 02 | 17 02 03 | 17 02 04">17 02 02 | 17 02 03 | 17 02 04</SelectItem>
             </SelectContent>
           </Select>
         </div>

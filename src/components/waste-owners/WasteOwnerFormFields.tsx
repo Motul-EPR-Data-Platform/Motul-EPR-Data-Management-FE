@@ -18,10 +18,10 @@ interface WasteOwnerFormFieldsProps {
   wasteOwnerType: WasteOwnerType;
   name: string;
   businessCode: string;
-  contactPerson: string;
-  phone: string;
-  email: string;
-  locationRefId: string;
+  contactPerson?: string;
+  phone?: string;
+  email?: string;
+  locationRefId?: string;
   isActive?: boolean;
   
   // Form state
@@ -145,13 +145,13 @@ export function WasteOwnerFormFields({
 
       {/* Location Field */}
       <div className="grid gap-2">
-        <Label htmlFor="locationRefId">Địa chỉ chi tiết *</Label>
+        {/* TODO: Make location required again after backend implementation is complete */}
+        <Label htmlFor="locationRefId">Địa chỉ chi tiết</Label>
         <Input
           id="locationRefId"
           placeholder="Số nhà, tên đường, Phường/Xã, Tỉnh/Thành phố..."
-          value={locationRefId}
+          value={locationRefId || ""}
           onChange={(e) => onLocationRefIdChange?.(e.target.value)}
-          required
           disabled={disabled}
           className={errors.locationRefId ? "border-red-500" : ""}
         />
@@ -165,7 +165,7 @@ export function WasteOwnerFormFields({
         <Label htmlFor="contactPerson">Người liên hệ *</Label>
         <Input
           id="contactPerson"
-          value={contactPerson}
+          value={contactPerson || ""}
           onChange={(e) => onContactPersonChange?.(e.target.value)}
           required
           disabled={disabled}
@@ -181,7 +181,7 @@ export function WasteOwnerFormFields({
         <Label htmlFor="phone">Số điện thoại *</Label>
         <Input
           id="phone"
-          value={phone}
+          value={phone || ""}
           onChange={(e) => onPhoneChange?.(e.target.value)}
           required
           disabled={disabled}
@@ -196,7 +196,7 @@ export function WasteOwnerFormFields({
         <Input
           id="email"
           type="email"
-          value={email}
+          value={email || ""}
           onChange={(e) => onEmailChange?.(e.target.value)}
           required
           disabled={disabled}

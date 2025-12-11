@@ -10,13 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CreateDraftDTO } from "@/types/record";
+import { CreateDraftFormData } from "@/types/record";
 import { DocumentUpload, DocumentFile } from "@/components/records/DocumentUpload";
 
 interface Step3WarehouseRecyclingProps {
-  formData: Partial<CreateDraftDTO>;
+  formData: Partial<CreateDraftFormData>;
   errors?: Record<string, string>;
-  onChange: (field: keyof CreateDraftDTO, value: any) => void;
+  onChange: (field: keyof CreateDraftFormData, value: any) => void;
   disabled?: boolean;
   recycledDate?: Date;
   onRecycledDateChange?: (date: Date) => void;

@@ -49,10 +49,10 @@ export function WasteOwnerForm({
     wasteOwnerType: WasteOwnerType;
     name: string;
     businessCode: string;
-    contactPerson: string;
-    phone: string;
-    email: string;
-    locationRefId: string;
+    contactPerson?: string;
+    phone?: string;
+    email?: string;
+    locationRefId?: string;
     isActive?: boolean;
   }>({
     wasteOwnerType: "business",
@@ -72,9 +72,9 @@ export function WasteOwnerForm({
         wasteOwnerType: initialData.wasteOwnerType,
         name: initialData.name,
         businessCode: initialData.businessCode,
-        contactPerson: initialData.contactPerson,
-        phone: initialData.phone,
-        email: initialData.email,
+        contactPerson: initialData.contactPerson || "",
+        phone: initialData.phone || "",
+        email: initialData.email || "",
         locationRefId: initialData.location?.refId || "",
         isActive: initialData.isActive,
       });
@@ -89,21 +89,27 @@ export function WasteOwnerForm({
       const createData: CreateWasteOwnerDTO = {
         name: formData.name,
         businessCode: formData.businessCode,
-        contactPerson: formData.contactPerson,
-        phone: formData.phone,
-        email: formData.email,
+        contactPerson: formData.contactPerson || null,
+        phone: formData.phone || null,
+        email: formData.email || null,
         wasteOwnerType: formData.wasteOwnerType,
-        location: {
-          refId: formData.locationRefId,
-        },
+        // TODO: Make location required again after backend implementation is complete
+        // Only include location if locationRefId is provided (temporary - location is optional)
+        ...(formData.locationRefId && formData.locationRefId.trim()
+          ? {
+              location: {
+                refId: formData.locationRefId,
+              },
+            }
+          : {}),
       };
       await onSubmit(createData);
     } else if (isEditMode) {
       const updateData: UpdateWasteOwnerDTO = {
         name: formData.name,
-        contactPerson: formData.contactPerson,
-        phone: formData.phone,
-        email: formData.email,
+        contactPerson: formData.contactPerson || null,
+        phone: formData.phone || null,
+        email: formData.email || null,
         wasteOwnerType: formData.wasteOwnerType,
         isActive: formData.isActive,
         location: formData.locationRefId
@@ -125,10 +131,10 @@ export function WasteOwnerForm({
           wasteOwnerType={formData.wasteOwnerType}
           name={formData.name}
           businessCode={formData.businessCode}
-          contactPerson={formData.contactPerson}
-          phone={formData.phone}
-          email={formData.email}
-          locationRefId={formData.locationRefId}
+          contactPerson={formData.contactPerson || ""}
+          phone={formData.phone || ""}
+          email={formData.email || ""}
+          locationRefId={formData.locationRefId || ''}
           isActive={formData.isActive}
           disabled={isViewMode || isLoading}
           errors={errors}

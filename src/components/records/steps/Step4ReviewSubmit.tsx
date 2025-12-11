@@ -1,13 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CreateDraftDTO } from "@/types/record";
+import { CreateDraftFormData } from "@/types/record";
 import { ChevronDown, ChevronUp, Edit } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
 
 interface Step4ReviewSubmitProps {
-  formData: Partial<CreateDraftDTO>;
+  formData: Partial<CreateDraftFormData>;
   onEditStep: (step: number) => void;
   wasteOwnerName?: string;
   contractTypeName?: string;

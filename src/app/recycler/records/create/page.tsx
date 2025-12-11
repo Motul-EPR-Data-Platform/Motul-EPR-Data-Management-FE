@@ -11,11 +11,12 @@ import { Step3WarehouseRecycling } from "@/components/records/steps/Step3Warehou
 import { Step4ReviewSubmit } from "@/components/records/steps/Step4ReviewSubmit";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { CreateDraftDTO } from "@/types/record";
+import { CreateDraftDTO, CreateDraftFormData } from "@/types/record";
 import { CollectionRecordService } from "@/lib/services/collection-record.service";
 import { DocumentFile } from "@/components/records/DocumentUpload";
 import { WasteOwnerService } from "@/lib/services/waste-owner.service";
 import { DefinitionService } from "@/lib/services/definition.service";
+import { transformDefinitions } from "@/lib/utils/definitionUtils/definitionTransformers";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -30,7 +31,7 @@ export default function CreateCollectionRecordPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<Partial<CreateDraftDTO>>({});
+  const [formData, setFormData] = useState<Partial<CreateDraftFormData>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [draftId, setDraftId] = useState<string | null>(null);
 
@@ -38,6 +39,9 @@ export default function CreateCollectionRecordPage() {
   const [collectionDate, setCollectionDate] = useState<Date>(new Date());
   const [recycledDate, setRecycledDate] = useState<Date | undefined>();
   const [locationRefId, setLocationRefId] = useState<string>("");
+  const [latitude, setLatitude] = useState<number>(10.8231);
+  const [longitude, setLongitude] = useState<number>(106.6297);
+  const [fullAddress, setFullAddress] = useState<string>(""); // Full address string from location service
   const [address, setAddress] = useState<{
     houseNumber?: string;
     street?: string;
@@ -54,9 +58,6 @@ export default function CreateCollectionRecordPage() {
   >([]);
   const [contractTypes, setContractTypes] = useState<
     Array<{ id: string; name: string; code: string }>
-  >([]);
-  const [wasteSources, setWasteSources] = useState<
-    Array<{ id: string; name: string }>
   >([]);
 
   // Load dropdown data
@@ -81,20 +82,60 @@ export default function CreateCollectionRecordPage() {
       }
 
       if (contractTypesRes.status === "fulfilled") {
-        setContractTypes(
-          contractTypesRes.value.map((ct: any) => ({
-            id: ct.id || ct.data?.code,
-            name: ct.data?.name || ct.name,
-            code: ct.data?.code || ct.code,
-          })),
-        );
+        // Debug: Log the raw response to see the structure
+        console.log("Raw contract types response:", contractTypesRes.value);
+        
+        // Use the transformer utility which handles nested structure
+        const transformedDefinitions = transformDefinitions(contractTypesRes.value);
+        console.log("Transformed definitions:", transformedDefinitions);
+        
+        // Map to the format needed for the dropdown
+        const transformed = transformedDefinitions.map((def) => {
+          // The transformer extracts data into def.data
+          // For contract types, data should have name and code
+          const contractData = def.data;
+          
+          console.log("Definition:", def.id, "Data:", contractData, "Full def:", def);
+          
+          // Extract name and code
+          const name = contractData?.name || contractData?.code || "";
+          const code = contractData?.code || "";
+          
+          // If still no name, check the original raw data
+          if (!name && contractTypesRes.value) {
+            const original = contractTypesRes.value.find((ct: any) => String(ct.id) === String(def.id));
+            if (original) {
+              const originalName = original.definition_contract_type?.name || 
+                                  original.data?.name || 
+                                  original.name;
+              const originalCode = original.definition_contract_type?.code || 
+                                  original.data?.code || 
+                                  original.code;
+              
+              return {
+                id: def.id,
+                name: originalName || originalCode || "Unknown",
+                code: originalCode || "",
+              };
+            }
+          }
+          
+          return {
+            id: def.id, // Use the definition ID as the value
+            name: name || "Unknown", // Should have name from nested data
+            code: code,
+          };
+        });
+        
+        setContractTypes(transformed);
+        console.log("Final contract types for dropdown:", transformed);
       }
     } catch (error) {
       console.error("Error loading dropdown data:", error);
     }
   };
 
-  const handleFieldChange = (field: keyof CreateDraftDTO, value: any) => {
+  const handleFieldChange = (field: keyof CreateDraftFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user changes field
     if (errors[field as string]) {
@@ -162,6 +203,7 @@ export default function CreateCollectionRecordPage() {
       setCollectionDate(new Date());
       setRecycledDate(undefined);
       setLocationRefId("");
+      setFullAddress("");
       setAddress({});
       setEvidenceFiles([]);
       setQualityDocuments([]);
@@ -172,24 +214,45 @@ export default function CreateCollectionRecordPage() {
   const handleSaveDraft = async () => {
     setIsLoading(true);
     try {
+      // Helper function to convert Date to dd/mm/yyyy format
+      const formatDateDDMMYYYY = (date: Date): string => {
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+      };
+
+      // Transform form data to backend DTO format
       const draftData: CreateDraftDTO = {
-        submissionMonth: format(collectionDate, "yyyy-MM"),
+        // Backend expects dates in dd/mm/yyyy format
+        submissionMonth: formatDateDDMMYYYY(new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1)),
         collectedVolumeKg: formData.collectedVolumeKg || null,
-        deliveryDate: collectionDate.toISOString().split("T")[0],
+        deliveryDate: formatDateDDMMYYYY(collectionDate),
         stockpiled: formData.stockpiled || null,
         stockpileVolumeKg: formData.stockpileVolumeKg || null,
-        recycledDate: recycledDate
-          ? recycledDate.toISOString().split("T")[0]
-          : null,
+        recycledDate: recycledDate ? formatDateDDMMYYYY(recycledDate) : null,
         recycledVolumeKg: formData.recycledVolumeKg || null,
-        wasteOwnerId: formData.wasteOwnerId || null,
+        // Backend expects array - convert single ID to array
+        // Must be an array even if empty (backend RPC function expects array format)
+        wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
         contractTypeId: formData.contractTypeId || null,
-        wasteSourceId: formData.wasteSourceId || null,
-        pickupLocation: locationRefId ? { refId: locationRefId } : null,
+        // Backend expects UUID for wasteSourceId, but we're using waste codes
+        // Only send if it looks like a UUID, otherwise omit it
+        wasteSourceId: formData.wasteSourceId && 
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(formData.wasteSourceId)
+          ? formData.wasteSourceId 
+          : undefined,
+        // Backend expects address string, not refId
+        pickupLocation: locationRefId && fullAddress
+          ? { address: fullAddress }
+          : locationRefId
+            ? { address: locationRefId } // Fallback to refId if full address not available
+            : undefined,
         collectedPricePerKg: formData.collectedPricePerKg || null,
       };
 
       if (draftId) {
+        // For update, use the same DTO structure
         await CollectionRecordService.updateDraft(draftId, draftData);
         toast.success("Đã cập nhật bản nháp");
       } else {
@@ -253,8 +316,8 @@ export default function CreateCollectionRecordPage() {
   };
 
   const getSelectedWasteSourceName = () => {
-    const source = wasteSources.find((ws) => ws.id === formData.wasteSourceId);
-    return source?.name;
+    // Hazardous waste codes are now hardcoded values
+    return formData.wasteSourceId || undefined;
   };
 
   const completedSteps = Array.from(
@@ -301,7 +364,6 @@ export default function CreateCollectionRecordPage() {
               onChange={handleFieldChange}
               wasteOwners={wasteOwners}
               contractTypes={contractTypes}
-              wasteSources={wasteSources}
             />
           )}
 
@@ -316,8 +378,11 @@ export default function CreateCollectionRecordPage() {
               onLocationRefIdChange={setLocationRefId}
               address={address}
               onAddressChange={setAddress}
-              latitude={10.8231}
-              longitude={106.6297}
+              latitude={latitude}
+              longitude={longitude}
+              onLatitudeChange={setLatitude}
+              onLongitudeChange={setLongitude}
+              onFullAddressChange={setFullAddress}
               evidenceFiles={evidenceFiles}
               onEvidenceFilesChange={setEvidenceFiles}
             />

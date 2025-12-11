@@ -64,7 +64,8 @@ export interface CollectionRecordDetail extends CollectionRecord {
   } | null;
 }
 
-export interface CreateDraftDTO {
+// Frontend form data structure (for internal use)
+export interface CreateDraftFormData {
   submissionMonth: string; // ISO date string (YYYY-MM)
   collectedVolumeKg?: number | null;
   deliveryDate?: string | null; // ISO date string
@@ -73,16 +74,35 @@ export interface CreateDraftDTO {
   stockpileVolumeKg?: number | null;
   recycledDate?: string | null; // ISO date string
   recycledVolumeKg?: number | null;
-  wasteOwnerId?: string | null;
+  wasteOwnerId?: string | null; // Single ID from form
   contractTypeId?: string | null;
   wasteSourceId?: string | null;
-  pickupLocation?: {
-    refId: string;
-  } | null;
+  pickupLocationRefId?: string | null; // refId from location autocomplete
   collectedPricePerKg?: number | null;
   expiresAt?: string | null; // ISO date string
 }
 
+// Backend DTO structure (matches ICreateDraftInput)
+export interface CreateDraftDTO {
+  submissionMonth?: string; // Date string in dd/mm/yyyy format
+  collectedVolumeKg?: number | null;
+  deliveryDate?: string | null; // Date string in dd/mm/yyyy format
+  vehiclePlate?: string | null;
+  stockpiled?: boolean | null;
+  stockpileVolumeKg?: number | null;
+  recycledDate?: string | null; // Date string in dd/mm/yyyy format
+  recycledVolumeKg?: number | null;
+  wasteOwnerIds?: string[]; // Backend expects array - optional, but should be included when waste owners are selected
+  contractTypeId?: string | null;
+  wasteSourceId?: string | null;
+  pickupLocation?: {
+    address: string; // Backend expects address, not refId
+  } | null;
+  collectedPricePerKg?: number | null;
+  expiresAt?: string | null; // Date string in dd/mm/yyyy format
+}
+
+// Backend DTO structure for update (matches IUpdateDraftInput)
 export interface UpdateDraftDTO {
   submissionMonth?: string; // ISO date string (YYYY-MM)
   collectedVolumeKg?: number | null;
@@ -92,11 +112,11 @@ export interface UpdateDraftDTO {
   stockpileVolumeKg?: number | null;
   recycledDate?: string | null; // ISO date string
   recycledVolumeKg?: number | null;
-  wasteOwnerId?: string | null;
+  wasteOwnerIds?: string[]; // Backend expects array
   contractTypeId?: string | null;
   wasteSourceId?: string | null;
   pickupLocation?: {
-    refId: string;
+    address: string; // Backend expects address, not refId
   } | null;
   collectedPricePerKg?: number | null;
   expiresAt?: string | null; // ISO date string

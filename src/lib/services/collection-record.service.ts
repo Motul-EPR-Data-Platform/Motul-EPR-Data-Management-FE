@@ -18,9 +18,23 @@ export const CollectionRecordService = {
    * POST /api/collection-records/draft
    */
   async createDraft(dto: CreateDraftDTO): Promise<CollectionRecord> {
+    // Backend expects dates in dd/mm/yyyy format (already formatted in DTO)
+    // Ensure wasteOwnerIds is always an array (backend RPC function expects array)
+    const payload = {
+      ...dto,
+      // Backend does: p_waste_owner_ids: data.wasteOwnerIds || null
+      // So empty array [] stays as [], but backend RPC should handle it
+      // When array has values like ["id1"], it should create junction records
+      wasteOwnerIds: Array.isArray(dto.wasteOwnerIds) ? dto.wasteOwnerIds : [],
+    };
+    
+    console.log('Creating draft with payload:', JSON.stringify(payload, null, 2));
+    console.log('wasteOwnerIds value:', payload.wasteOwnerIds);
+    console.log('wasteOwnerIds type:', typeof payload.wasteOwnerIds, Array.isArray(payload.wasteOwnerIds));
+    
     const { data } = await api.post(
       path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.DRAFT),
-      dto,
+      payload,
     );
     return data.data || data;
   },
@@ -75,7 +89,7 @@ export const CollectionRecordService = {
       ? `${ENDPOINTS.COLLECTION_RECORDS.ROOT}?${queryString}`
       : ENDPOINTS.COLLECTION_RECORDS.ROOT;
 
-    const { data } = await api.get(path.collectionRecords(url));
+    const { data } = await api.get(url);
     return data;
   },
 

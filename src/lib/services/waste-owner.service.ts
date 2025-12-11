@@ -7,6 +7,8 @@ import {
   GetWasteOwnersFilters,
   WasteOwnerResponse,
   WasteOwnersListResponse,
+  toBackendWasteOwnerType,
+  fromBackendWasteOwnerType,
 } from "@/types/waste-owner";
 
 export const WasteOwnerService = {
@@ -17,11 +19,30 @@ export const WasteOwnerService = {
   async createWasteOwner(
     dto: CreateWasteOwnerDTO,
   ): Promise<WasteOwnerWithLocation> {
+    // Convert frontend wasteOwnerType to backend enum value
+    const backendDto: any = {
+      ...dto,
+      wasteOwnerType: toBackendWasteOwnerType(dto.wasteOwnerType),
+      // Convert empty strings to null for optional fields
+      contactPerson: dto.contactPerson || null,
+      phone: dto.phone || null,
+      email: dto.email || null,
+    };
+    // TODO: Make location required again after backend implementation is complete
+    // Only include location if it's provided (temporary - location is optional)
+    if (dto.location?.refId) {
+      backendDto.location = dto.location;
+    }
     const { data } = await api.post(
       path.wasteOwners(ENDPOINTS.WASTE_OWNERS.ROOT),
-      dto,
+      backendDto,
     );
-    return data.data || data;
+    // Convert backend response back to frontend format
+    const result = data.data || data;
+    if (result.wasteOwnerType) {
+      result.wasteOwnerType = fromBackendWasteOwnerType(result.wasteOwnerType);
+    }
+    return result;
   },
 
   /**
@@ -37,7 +58,8 @@ export const WasteOwnerService = {
       queryParams.append("isActive", String(filters.isActive));
     }
     if (filters?.wasteOwnerType) {
-      queryParams.append("wasteOwnerType", filters.wasteOwnerType);
+      // Convert frontend type to backend type for query
+      queryParams.append("wasteOwnerType", toBackendWasteOwnerType(filters.wasteOwnerType));
     }
 
     const queryString = queryParams.toString();
@@ -46,6 +68,13 @@ export const WasteOwnerService = {
       : ENDPOINTS.WASTE_OWNERS.ROOT;
 
     const { data } = await api.get(path.wasteOwners(url));
+    // Convert backend types to frontend types
+    if (data.data && Array.isArray(data.data)) {
+      data.data = data.data.map((item: any) => ({
+        ...item,
+        wasteOwnerType: fromBackendWasteOwnerType(item.wasteOwnerType),
+      }));
+    }
     return data;
   },
 
@@ -57,7 +86,12 @@ export const WasteOwnerService = {
     const { data } = await api.get(
       path.wasteOwners(ENDPOINTS.WASTE_OWNERS.BY_ID(id)),
     );
-    return data.data || data;
+    const result = data.data || data;
+    // Convert backend type to frontend type
+    if (result.wasteOwnerType) {
+      result.wasteOwnerType = fromBackendWasteOwnerType(result.wasteOwnerType);
+    }
+    return result;
   },
 
   /**
@@ -68,11 +102,31 @@ export const WasteOwnerService = {
     id: string,
     dto: UpdateWasteOwnerDTO,
   ): Promise<WasteOwnerWithLocation> {
+    // Convert frontend wasteOwnerType to backend enum value if provided
+    const backendDto: any = { ...dto };
+    if (dto.wasteOwnerType) {
+      backendDto.wasteOwnerType = toBackendWasteOwnerType(dto.wasteOwnerType);
+    }
+    // Convert empty strings to null for optional fields
+    if (dto.contactPerson !== undefined) {
+      backendDto.contactPerson = dto.contactPerson || null;
+    }
+    if (dto.phone !== undefined) {
+      backendDto.phone = dto.phone || null;
+    }
+    if (dto.email !== undefined) {
+      backendDto.email = dto.email || null;
+    }
     const { data } = await api.patch(
       path.wasteOwners(ENDPOINTS.WASTE_OWNERS.BY_ID(id)),
-      dto,
+      backendDto,
     );
-    return data.data || data;
+    const result = data.data || data;
+    // Convert backend type to frontend type
+    if (result.wasteOwnerType) {
+      result.wasteOwnerType = fromBackendWasteOwnerType(result.wasteOwnerType);
+    }
+    return result;
   },
 
   /**

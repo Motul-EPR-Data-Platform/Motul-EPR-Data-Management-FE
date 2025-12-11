@@ -3,13 +3,15 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
-import { CreateDraftDTO } from "@/types/record";
+import { CreateDraftFormData } from "@/types/record";
 import { DocumentUpload, DocumentFile } from "@/components/records/DocumentUpload";
+import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
+import { LocationService } from "@/lib/services/location.service";
 
 interface Step2CollectionDetailsProps {
-  formData: Partial<CreateDraftDTO>;
+  formData: Partial<CreateDraftFormData>;
   errors?: Record<string, string>;
-  onChange: (field: keyof CreateDraftDTO, value: any) => void;
+  onChange: (field: keyof CreateDraftFormData, value: any) => void;
   disabled?: boolean;
   collectionDate: Date;
   onCollectionDateChange: (date: Date) => void;
@@ -23,8 +25,11 @@ interface Step2CollectionDetailsProps {
     province?: string;
   };
   onAddressChange?: (address: any) => void;
+  onFullAddressChange?: (address: string) => void;
   latitude?: number;
   longitude?: number;
+  onLatitudeChange?: (lat: number) => void;
+  onLongitudeChange?: (lng: number) => void;
   evidenceFiles?: DocumentFile[];
   onEvidenceFilesChange?: (files: DocumentFile[]) => void;
 }
@@ -40,8 +45,11 @@ export function Step2CollectionDetails({
   onLocationRefIdChange,
   address,
   onAddressChange,
+  onFullAddressChange,
   latitude,
   longitude,
+  onLatitudeChange,
+  onLongitudeChange,
   evidenceFiles = [],
   onEvidenceFilesChange,
 }: Step2CollectionDetailsProps) {
@@ -140,22 +148,35 @@ export function Step2CollectionDetails({
             <div className="space-y-4">
               <Label>Địa chỉ thu gom chi tiết</Label>
               <div className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="locationRefId">
-                    Số nhà, tên đường <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="locationRefId"
-                    value={locationRefId || ""}
-                    onChange={(e) => onLocationRefIdChange(e.target.value)}
-                    placeholder="123 XXX"
-                    disabled={disabled}
-                    className={errors.locationRefId ? "border-red-500" : ""}
-                  />
-                  {errors.locationRefId && (
-                    <p className="text-sm text-red-500">{errors.locationRefId}</p>
-                  )}
-                </div>
+                <LocationAutocomplete
+                  value={locationRefId || ""}
+                  onSelect={async (result) => {
+                    onLocationRefIdChange(result.refId);
+                    // Fetch full location details to populate address and coordinates
+                    try {
+                      const locationDetails = await LocationService.getLocationByRefId(result.refId);
+                      // Store the full address string for backend
+                      onFullAddressChange?.(locationDetails.address);
+                      onAddressChange?.({
+                        ...address,
+                        province: locationDetails.city,
+                        // Note: district and ward would need to be parsed from address or fetched separately
+                      });
+                      // Update GPS coordinates if available
+                      if (locationDetails.latitude && locationDetails.longitude) {
+                        onLatitudeChange?.(locationDetails.latitude);
+                        onLongitudeChange?.(locationDetails.longitude);
+                      }
+                    } catch (error) {
+                      console.error("Failed to fetch location details:", error);
+                    }
+                  }}
+                  label="Số nhà, tên đường"
+                  placeholder="Tìm hoặc chọn từ danh sách...."
+                  required
+                  disabled={disabled}
+                  error={errors.locationRefId}
+                />
                 <div className="grid gap-2">
                   <Label htmlFor="ward">
                     Phường/Xã <span className="text-red-500">*</span>

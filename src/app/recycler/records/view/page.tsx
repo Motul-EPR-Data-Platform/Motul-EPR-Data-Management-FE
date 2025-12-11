@@ -1,0 +1,217 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { CollectionRecordService } from "@/lib/services/collection-record.service";
+import { CollectionRecordDetail } from "@/types/record";
+import { toast } from "sonner";
+import {
+  WasteSourceInfoSection,
+  CollectionDetailsSection,
+  StorageRecyclingSection,
+  EvidenceSection,
+} from "@/components/records/RecordDetailSections";
+import { RecordOverviewCard } from "@/components/records/RecordOverviewCard";
+import { RecordApprovalActions } from "@/components/records/RecordApprovalActions";
+import { useAuth } from "@/contexts/AuthContext";
+import { Badge } from "@/components/ui/badge";
+
+const getStatusBadgeVariant = (
+  status: string,
+): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" => {
+  switch (status) {
+    case "approved":
+      return "success";
+    case "pending":
+      return "warning";
+    case "rejected":
+      return "destructive";
+    case "draft":
+      return "outline";
+    default:
+      return "outline";
+  }
+};
+
+const getStatusLabel = (status: string): string => {
+  switch (status) {
+    case "approved":
+      return "Đã được phê duyệt";
+    case "pending":
+      return "Chờ duyệt";
+    case "rejected":
+      return "Bị từ chối";
+    case "draft":
+      return "Bản nháp";
+    default:
+      return status;
+  }
+};
+
+export default function RecordDetailPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { userRole } = useAuth();
+  const recordId = searchParams.get("id");
+  const [record, setRecord] = useState<CollectionRecordDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const isAdmin = userRole === "Motul Admin" || userRole === "MOTUL_ADMIN";
+
+  useEffect(() => {
+    if (recordId) {
+      loadRecord();
+    } else {
+      toast.error("Không tìm thấy ID bản ghi");
+      router.push("/recycler/my-records");
+    }
+  }, [recordId]);
+
+  const loadRecord = async () => {
+    if (!recordId) return;
+    
+    setIsLoading(true);
+    try {
+      const data = await CollectionRecordService.getRecordById(recordId);
+      setRecord(data);
+    } catch (error: any) {
+      console.error("Error loading record:", error);
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Không thể tải thông tin bản ghi",
+      );
+      router.push("/recycler/my-records");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleApprovalChange = () => {
+    // Reload record after approval/rejection
+    loadRecord();
+  };
+
+  if (isLoading) {
+    return (
+      <PageLayout
+        breadcrumbs={[{ label: "Bản ghi của tôi" }, { label: "Chi tiết bản ghi" }]}
+        title="Chi tiết bản ghi"
+        subtitle="Đang tải..."
+      >
+        <div className="rounded-lg border bg-card p-6">
+          <p className="text-center text-muted-foreground py-12">Đang tải...</p>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (!record) {
+    return (
+      <PageLayout
+        breadcrumbs={[{ label: "Bản ghi của tôi" }, { label: "Chi tiết bản ghi" }]}
+        title="Chi tiết bản ghi"
+        subtitle="Không tìm thấy bản ghi"
+      >
+        <div className="rounded-lg border bg-card p-6">
+          <p className="text-center text-muted-foreground py-12">
+            Không tìm thấy bản ghi
+          </p>
+          <div className="flex justify-center mt-4">
+            <Button onClick={() => router.push("/recycler/my-records")}>
+              Quay lại danh sách
+            </Button>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  return (
+    <PageLayout
+      breadcrumbs={[
+        { label: "Bản ghi của tôi", href: "/recycler/my-records" },
+        { label: "Chi tiết bản ghi" },
+      ]}
+      title={`Xem xét Bản ghi: ${record.id}`}
+      subtitle={`Được nộp bởi ${record.wasteOwner?.name || "N/A"}`}
+    >
+      <div className="space-y-6">
+        {/* Back Button and Status Badge */}
+        <div className="flex justify-between items-center">
+          <Button
+            variant="ghost"
+            onClick={() => router.push("/recycler/my-records")}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Quay lại Dashboard
+          </Button>
+          <Badge variant={getStatusBadgeVariant(record.status)}>
+            {getStatusLabel(record.status)}
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content - Left Side */}
+          <div className="lg:col-span-2 space-y-6">
+            <WasteSourceInfoSection record={record} />
+            <CollectionDetailsSection record={record} />
+            <StorageRecyclingSection record={record} />
+            <EvidenceSection record={record} />
+          </div>
+
+          {/* Sidebar - Right Side */}
+          <div className="space-y-6">
+            <RecordOverviewCard record={record} />
+            {/* Only show approval actions for admin users */}
+            {isAdmin && (
+              <RecordApprovalActions
+                record={record}
+                onApprovalChange={handleApprovalChange}
+              />
+            )}
+            {/* Approval Certificate Card - Placeholder */}
+            {record.status === "approved" && record.approval?.eprId && (
+              <div className="rounded-lg border bg-white p-4">
+                <h3 className="font-semibold mb-3">Giấy chứng nhận Chấp thuận</h3>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-sm text-muted-foreground">EPR ID</p>
+                    <p className="font-medium">{record.approval.eprId}</p>
+                  </div>
+                  {record.approval.comment && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Ghi chú</p>
+                      <p className="font-medium text-sm">{record.approval.comment}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm text-muted-foreground">Ngày phê duyệt</p>
+                    <p className="font-medium text-sm">
+                      {new Date(record.approval.approvedAt).toLocaleDateString("vi-VN")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Rejection Details - Show for rejected records */}
+            {record.status === "rejected" && record.rejection && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                <h3 className="font-semibold mb-3 text-red-900">Lý do từ chối</h3>
+                <p className="text-sm text-red-800">{record.rejection.comment}</p>
+                <p className="text-xs text-red-600 mt-2">
+                  Từ chối vào:{" "}
+                  {new Date(record.rejection.rejectedAt).toLocaleDateString("vi-VN")}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </PageLayout>
+  );
+}
+
