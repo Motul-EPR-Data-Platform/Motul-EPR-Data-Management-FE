@@ -12,6 +12,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { WasteOwnerType } from "@/types/waste-owner";
 import { getBusinessCodeLabel, getNameLabel, getWasteOwnerTypeLabel, getWasteOwnerTypeBadgeVariant } from "./wasteOwnerUtils";
+import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
+import { LocationService } from "@/lib/services/location.service";
 
 interface WasteOwnerFormFieldsProps {
   // Form data
@@ -21,7 +23,7 @@ interface WasteOwnerFormFieldsProps {
   contactPerson?: string;
   phone?: string;
   email?: string;
-  locationRefId?: string;
+  address?: string;
   isActive?: boolean;
   
   // Form state
@@ -39,7 +41,7 @@ interface WasteOwnerFormFieldsProps {
   onContactPersonChange?: (value: string) => void;
   onPhoneChange?: (value: string) => void;
   onEmailChange?: (value: string) => void;
-  onLocationRefIdChange?: (value: string) => void;
+  onAddressChange?: (value: string) => void;
   onActiveChange?: (value: boolean) => void;
 }
 
@@ -50,7 +52,7 @@ export function WasteOwnerFormFields({
   contactPerson,
   phone,
   email,
-  locationRefId,
+  address,
   isActive,
   disabled = false,
   errors = {},
@@ -64,7 +66,7 @@ export function WasteOwnerFormFields({
   onContactPersonChange,
   onPhoneChange,
   onEmailChange,
-  onLocationRefIdChange,
+  onAddressChange,
   onActiveChange,
 }: WasteOwnerFormFieldsProps) {
   return (
@@ -143,21 +145,27 @@ export function WasteOwnerFormFields({
         )}
       </div>
 
-      {/* Location Field */}
+      {/* Address Field */}
       <div className="grid gap-2">
-        {/* TODO: Make location required again after backend implementation is complete */}
-        <Label htmlFor="locationRefId">Địa chỉ chi tiết</Label>
-        <Input
-          id="locationRefId"
-          placeholder="Số nhà, tên đường, Phường/Xã, Tỉnh/Thành phố..."
-          value={locationRefId || ""}
-          onChange={(e) => onLocationRefIdChange?.(e.target.value)}
+        <LocationAutocomplete
+          value={address || ""}
+          onSelect={async (result) => {
+            // Fetch full location details to get complete address
+            try {
+              const locationDetails = await LocationService.getLocationByRefId(result.refId);
+              // Store the full address string for backend
+              onAddressChange?.(locationDetails.address);
+            } catch (error) {
+              console.error("Failed to fetch location details:", error);
+              // Fallback to display address if fetch fails
+              onAddressChange?.(result.display);
+            }
+          }}
+          label="Địa chỉ chi tiết"
+          placeholder="Tìm hoặc chọn từ danh sách...."
           disabled={disabled}
-          className={errors.locationRefId ? "border-red-500" : ""}
+          error={errors.address}
         />
-        {errors.locationRefId && (
-          <p className="text-sm text-red-500">{errors.locationRefId}</p>
-        )}
       </div>
 
       {/* Contact Person Field */}

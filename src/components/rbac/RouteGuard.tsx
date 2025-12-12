@@ -7,7 +7,6 @@ import { canAccessRoute } from "@/lib/rbac/routePermissions";
 import { usePathname } from "next/navigation";
 import { hasPermission } from "@/lib/rbac/permissions";
 import { Permission } from "@/lib/rbac/permissions";
-import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -23,8 +22,6 @@ export function RouteGuard({
   const router = useRouter();
   const pathname = usePathname();
   const { userRole, isLoading, isAuthenticated } = useAuth();
-  const { needsProfileCompletion, isAllowedRoute, getProfileCompletionUrl } =
-    useProfileCompletion();
 
   // Redirect if not authenticated (useEffect runs after render, but we prevent rendering children)
   useEffect(() => {
@@ -34,13 +31,6 @@ export function RouteGuard({
     if (!isAuthenticated) {
       const redirectUrl = `/login?redirect=${encodeURIComponent(pathname || "")}`;
       router.replace(redirectUrl);
-      return;
-    }
-
-    // Check if profile needs completion for recycler/WTP users
-    if (needsProfileCompletion && pathname && !isAllowedRoute(pathname)) {
-      const profileUrl = getProfileCompletionUrl();
-      router.replace(profileUrl);
       return;
     }
 
@@ -80,9 +70,6 @@ export function RouteGuard({
     pathname,
     router,
     requiredPermission,
-    needsProfileCompletion,
-    isAllowedRoute,
-    getProfileCompletionUrl,
   ]);
 
   // Show loading state while checking auth - THIS PREVENTS CHILDREN FROM RENDERING
@@ -97,15 +84,6 @@ export function RouteGuard({
   // DON'T RENDER CHILDREN if not authenticated - prevents flash of content
   // The useEffect above will handle the redirect
   if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  // Check if profile needs completion for recycler/WTP users
-  if (needsProfileCompletion && pathname && !isAllowedRoute(pathname)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
