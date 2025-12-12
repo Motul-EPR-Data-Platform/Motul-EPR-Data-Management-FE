@@ -68,7 +68,7 @@ export interface CreateWasteOwnerDTO {
   wasteOwnerType: WasteOwnerType;
   // TODO: Make location required again after backend implementation is complete
   location?: {
-    refId: string;
+    address: string;
   };
 }
 
@@ -80,7 +80,7 @@ export interface UpdateWasteOwnerDTO {
   isActive?: boolean;
   wasteOwnerType?: WasteOwnerType;
   location?: {
-    refId: string;
+    address: string;
   };
 }
 

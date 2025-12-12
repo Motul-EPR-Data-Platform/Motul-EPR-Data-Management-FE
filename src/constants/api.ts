@@ -1,5 +1,5 @@
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL1 ?? "http://localhost:3001/api";
 
 // Canonical endpoint map, mirroring backend routers
 export const ENDPOINTS = {

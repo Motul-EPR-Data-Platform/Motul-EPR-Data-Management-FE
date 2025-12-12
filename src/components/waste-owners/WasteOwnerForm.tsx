@@ -52,7 +52,7 @@ export function WasteOwnerForm({
     contactPerson?: string;
     phone?: string;
     email?: string;
-    locationRefId?: string;
+    address?: string;
     isActive?: boolean;
   }>({
     wasteOwnerType: "business",
@@ -61,7 +61,7 @@ export function WasteOwnerForm({
     contactPerson: "",
     phone: "+84 ",
     email: "",
-    locationRefId: "",
+    address: "",
     isActive: true,
   });
 
@@ -75,7 +75,7 @@ export function WasteOwnerForm({
         contactPerson: initialData.contactPerson || "",
         phone: initialData.phone || "",
         email: initialData.email || "",
-        locationRefId: initialData.location?.refId || "",
+        address: initialData.location?.address || "",
         isActive: initialData.isActive,
       });
     }
@@ -93,12 +93,11 @@ export function WasteOwnerForm({
         phone: formData.phone || null,
         email: formData.email || null,
         wasteOwnerType: formData.wasteOwnerType,
-        // TODO: Make location required again after backend implementation is complete
-        // Only include location if locationRefId is provided (temporary - location is optional)
-        ...(formData.locationRefId && formData.locationRefId.trim()
+        // Only include location if address is provided
+        ...(formData.address && formData.address.trim()
           ? {
               location: {
-                refId: formData.locationRefId,
+                address: formData.address,
               },
             }
           : {}),
@@ -112,8 +111,8 @@ export function WasteOwnerForm({
         email: formData.email || null,
         wasteOwnerType: formData.wasteOwnerType,
         isActive: formData.isActive,
-        location: formData.locationRefId
-          ? { refId: formData.locationRefId }
+        location: formData.address
+          ? { address: formData.address }
           : undefined,
       };
       await onSubmit(updateData);
@@ -134,7 +133,7 @@ export function WasteOwnerForm({
           contactPerson={formData.contactPerson || ""}
           phone={formData.phone || ""}
           email={formData.email || ""}
-          locationRefId={formData.locationRefId || ''}
+          address={formData.address || ""}
           isActive={formData.isActive}
           disabled={isViewMode || isLoading}
           errors={errors}
@@ -160,8 +159,8 @@ export function WasteOwnerForm({
           onEmailChange={(value) =>
             setFormData((prev) => ({ ...prev, email: value }))
           }
-          onLocationRefIdChange={(value) =>
-            setFormData((prev) => ({ ...prev, locationRefId: value }))
+          onAddressChange={(value) =>
+            setFormData((prev) => ({ ...prev, address: value }))
           }
           onActiveChange={(value) =>
             setFormData((prev) => ({ ...prev, isActive: value }))

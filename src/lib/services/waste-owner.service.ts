@@ -24,19 +24,20 @@ export const WasteOwnerService = {
       ...dto,
       wasteOwnerType: toBackendWasteOwnerType(dto.wasteOwnerType),
       // Convert empty strings to null for optional fields
+      location:{
+        address: dto.location?.address || null,
+      },
       contactPerson: dto.contactPerson || null,
       phone: dto.phone || null,
       email: dto.email || null,
     };
     // TODO: Make location required again after backend implementation is complete
     // Only include location if it's provided (temporary - location is optional)
-    if (dto.location?.refId) {
-      backendDto.location = dto.location;
-    }
     const { data } = await api.post(
       path.wasteOwners(ENDPOINTS.WASTE_OWNERS.ROOT),
       backendDto,
     );
+    console.log("Create Waste Owner Response:", data);
     // Convert backend response back to frontend format
     const result = data.data || data;
     if (result.wasteOwnerType) {
