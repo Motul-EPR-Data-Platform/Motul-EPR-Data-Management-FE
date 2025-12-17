@@ -78,6 +78,11 @@ export const ENDPOINTS = {
     AUTOCOMPLETE: "/autocomplete",
     BY_REF_ID: (refId: string) => `/${refId}`,
   },
+  FILES: {
+    ROOT: "/files",
+    BY_ID: (id: string) => `/${id}`,
+    DOWNLOAD: (id: string) => `/${id}/download`,
+  },
 } as const;
 
 // Helpers to compose full paths
@@ -91,4 +96,5 @@ export const path = {
   wasteOwners: (p: string) => p, // Waste owners endpoints are already full paths
   collectionRecords: (p: string) => `${ENDPOINTS.COLLECTION_RECORDS.ROOT}${p}`, // Prepend ROOT to collection records paths
   locations: (p: string) => p, // Location endpoints are already full paths
+  files: (p: string) => `${ENDPOINTS.FILES.ROOT}${p}`, // Prepend ROOT to file paths
 };

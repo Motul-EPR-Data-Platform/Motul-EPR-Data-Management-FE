@@ -52,15 +52,26 @@ export default function MyRecordsPage() {
       const response = await CollectionRecordService.getAllRecords();
       const allRecords = response.data || [];
 
-      setRecords(allRecords);
+      // Ensure all records have normalized status
+      const normalizedRecords = allRecords.map((r) => {
+        // Additional normalization check (in case service didn't normalize)
+        let status = r.status;
+        if (status === "SUBMITTED") status = "pending";
+        else if (status === "APPROVED") status = "approved";
+        else if (status === "REJECTED") status = "rejected";
+        else if (status === "DRAFT") status = "draft";
+        return { ...r, status };
+      });
 
-      // Calculate status counts
+      setRecords(normalizedRecords);
+
+      // Calculate status counts after normalization
       const counts: StatusCounts = {
-        total: allRecords.length,
-        pending: allRecords.filter((r) => r.status === "pending").length,
-        approved: allRecords.filter((r) => r.status === "approved").length,
-        rejected: allRecords.filter((r) => r.status === "rejected").length,
-        draft: allRecords.filter((r) => r.status === "draft").length,
+        total: normalizedRecords.length,
+        pending: normalizedRecords.filter((r) => r.status === "pending").length,
+        approved: normalizedRecords.filter((r) => r.status === "approved").length,
+        rejected: normalizedRecords.filter((r) => r.status === "rejected").length,
+        draft: normalizedRecords.filter((r) => r.status === "draft").length,
       };
       setStatusCounts(counts);
     } catch (error: any) {
@@ -86,14 +97,18 @@ export default function MyRecordsPage() {
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (r) =>
+      filtered = filtered.filter((r) => {
+        // Handle both wasteOwner (singular) and wasteOwners (array)
+        const wasteOwner = r.wasteOwner || (r.wasteOwners && r.wasteOwners.length > 0 ? r.wasteOwners[0] : null);
+        
+        return (
           r.id.toLowerCase().includes(query) ||
-          r.wasteOwner?.name?.toLowerCase().includes(query) ||
-          r.wasteOwner?.businessCode?.toLowerCase().includes(query) ||
+          wasteOwner?.name?.toLowerCase().includes(query) ||
+          wasteOwner?.businessCode?.toLowerCase().includes(query) ||
           r.contractType?.name?.toLowerCase().includes(query) ||
-          r.contractType?.code?.toLowerCase().includes(query),
-      );
+          r.contractType?.code?.toLowerCase().includes(query)
+        );
+      });
     }
 
     setFilteredRecords(filtered);
@@ -107,12 +122,9 @@ export default function MyRecordsPage() {
   const handleEditRecord = (record: CollectionRecordDetail) => {
     // Only allow editing drafts
     if (record.status === "draft") {
-      // TODO: Navigate to edit page when implemented
-      // For now, redirect to create page with draft ID
-      toast.info(`Chỉnh sửa bản nháp ${record.id.slice(0, 8)}...`);
-      // router.push(`/recycler/records/${record.id}/edit`);
-      // Or redirect to create page with draft pre-filled
-      router.push(`/recycler/records/create?draftId=${record.id}`);
+      router.push(`/recycler/records/edit?id=${record.id}`);
+    } else {
+      toast.info("Chỉ có thể chỉnh sửa bản nháp");
     }
   };
 

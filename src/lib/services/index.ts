@@ -6,4 +6,5 @@ export { RecyclerService } from "./recycler.service";
 export { WtpService } from "./wtp.service";
 export { WasteOwnerService } from "./waste-owner.service";
 export { CollectionRecordService } from "./collection-record.service";
+export { FileRecordService } from "./file-record.service";
 export { LocationService } from "./location.service";

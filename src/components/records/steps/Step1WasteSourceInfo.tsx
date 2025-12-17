@@ -18,6 +18,7 @@ interface Step1WasteSourceInfoProps {
   disabled?: boolean;
   wasteOwners?: Array<{ id: string; name: string }>;
   contractTypes?: Array<{ id: string; name: string; code: string }>;
+  wasteTypes?: Array<{ id: string; name: string; code?: string; hazCode?: string }>;
 }
 
 export function Step1WasteSourceInfo({
@@ -27,6 +28,7 @@ export function Step1WasteSourceInfo({
   disabled = false,
   wasteOwners = [],
   contractTypes = [],
+  wasteTypes = [],
 }: Step1WasteSourceInfoProps) {
   return (
     <div className="space-y-6">
@@ -104,10 +106,10 @@ export function Step1WasteSourceInfo({
           </Select>
         </div>
 
-        {/* Hazardous Waste Code */}
+        {/* Waste Type Category (Waste Source) */}
         <div className="grid gap-2">
           <Label htmlFor="wasteSourceId">
-            Mã chất thải nguy hại (Mã CTNH)
+            Loại chất thải (Nguồn thải) <span className="text-red-500">*</span>
           </Label>
           <Select
             value={formData.wasteSourceId || ""}
@@ -116,19 +118,36 @@ export function Step1WasteSourceInfo({
             }
             disabled={disabled}
           >
-            <SelectTrigger id="wasteSourceId">
+            <SelectTrigger
+              id="wasteSourceId"
+              className={errors.wasteSourceId ? "border-red-500" : ""}
+            >
               <SelectValue placeholder="Tìm hoặc chọn từ danh sách...." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="17 02 02">17 02 02</SelectItem>
-              <SelectItem value="17 02 03">17 02 03</SelectItem>
-              <SelectItem value="17 02 04">17 02 04</SelectItem>
-              <SelectItem value="17 02 02 | 17 02 03">17 02 02 | 17 02 03</SelectItem>
-              <SelectItem value="17 02 03 | 17 02 04">17 02 03 | 17 02 04</SelectItem>
-              <SelectItem value="17 02 02 | 17 02 04">17 02 02 | 17 02 04</SelectItem>
-              <SelectItem value="17 02 02 | 17 02 03 | 17 02 04">17 02 02 | 17 02 03 | 17 02 04</SelectItem>
+              {wasteTypes.length > 0 ? (
+                wasteTypes.map((wasteType) => {
+                  // Display name with code and hazCode if available
+                  const displayName = wasteType.name || "Unknown";
+                  const codePart = wasteType.code ? ` (${wasteType.code})` : "";
+                  const hazCodePart = wasteType.hazCode ? ` - ${wasteType.hazCode}` : "";
+                  
+                  return (
+                    <SelectItem key={wasteType.id} value={wasteType.id}>
+                      {displayName}{codePart}{hazCodePart}
+                    </SelectItem>
+                  );
+                })
+              ) : (
+                <div className="px-2 py-1.5 text-sm text-muted-foreground text-center">
+                  Không có dữ liệu
+                </div>
+              )}
             </SelectContent>
           </Select>
+          {errors.wasteSourceId && (
+            <p className="text-sm text-red-500">{errors.wasteSourceId}</p>
+          )}
         </div>
 
         {/* Waste Generation Source */}

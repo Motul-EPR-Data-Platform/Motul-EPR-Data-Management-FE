@@ -52,7 +52,7 @@ const getStatusLabel = (status: string): string => {
   }
 };
 
-export default function RecordDetailPage() {
+export default function MotulRecordDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { userRole } = useAuth();
@@ -60,14 +60,14 @@ export default function RecordDetailPage() {
   const [record, setRecord] = useState<CollectionRecordDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const isAdmin = userRole === "Motul Admin" || userRole === "MOTUL_ADMIN";
+  const isAdmin = userRole === "Motul Admin";
 
   useEffect(() => {
     if (recordId) {
       loadRecord();
     } else {
       toast.error("Không tìm thấy ID bản ghi");
-      router.push("/recycler/my-records");
+      router.push("/motul/pending-registration");
     }
   }, [recordId]);
 
@@ -85,21 +85,29 @@ export default function RecordDetailPage() {
           error?.message ||
           "Không thể tải thông tin bản ghi",
       );
-      router.push("/recycler/my-records");
+      router.push("/motul/pending-registration");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleApprovalChange = () => {
+  const handleApprovalChange = async () => {
     // Reload record after approval/rejection
-    loadRecord();
+    await loadRecord();
+    // After approval/rejection, the record status will change
+    // Navigate back to pending list after a short delay to show success message
+    setTimeout(() => {
+      router.push("/motul/pending-registration");
+    }, 1500);
   };
 
   if (isLoading) {
     return (
       <PageLayout
-        breadcrumbs={[{ label: "Bản ghi của tôi" }, { label: "Chi tiết bản ghi" }]}
+        breadcrumbs={[
+          { label: "Đăng ký chờ duyệt", href: "/motul/pending-registration" },
+          { label: "Chi tiết bản ghi" },
+        ]}
         title="Chi tiết bản ghi"
         subtitle="Đang tải..."
       >
@@ -113,7 +121,10 @@ export default function RecordDetailPage() {
   if (!record) {
     return (
       <PageLayout
-        breadcrumbs={[{ label: "Bản ghi của tôi" }, { label: "Chi tiết bản ghi" }]}
+        breadcrumbs={[
+          { label: "Đăng ký chờ duyệt", href: "/motul/pending-registration" },
+          { label: "Chi tiết bản ghi" },
+        ]}
         title="Chi tiết bản ghi"
         subtitle="Không tìm thấy bản ghi"
       >
@@ -122,7 +133,7 @@ export default function RecordDetailPage() {
             Không tìm thấy bản ghi
           </p>
           <div className="flex justify-center mt-4">
-            <Button onClick={() => router.push("/recycler/my-records")}>
+            <Button onClick={() => router.push("/motul/pending-registration")}>
               Quay lại danh sách
             </Button>
           </div>
@@ -134,7 +145,7 @@ export default function RecordDetailPage() {
   return (
     <PageLayout
       breadcrumbs={[
-        { label: "Bản ghi của tôi", href: "/recycler/my-records" },
+        { label: "Đăng ký chờ duyệt", href: "/motul/pending-registration" },
         { label: "Chi tiết bản ghi" },
       ]}
       title={`Xem xét Bản ghi: ${record.id}`}
@@ -145,10 +156,10 @@ export default function RecordDetailPage() {
         <div className="flex justify-between items-center">
           <Button
             variant="ghost"
-            onClick={() => router.push("/recycler/my-records")}
+            onClick={() => router.push("/motul/pending-registration")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Quay lại Dashboard
+            Quay lại danh sách
           </Button>
           <Badge variant={getStatusBadgeVariant(record.status)}>
             {getStatusLabel(record.status)}
@@ -161,7 +172,7 @@ export default function RecordDetailPage() {
             <RecordOverviewCard record={record} />
             {/* Approval/Rejection Decision Section */}
             <ApprovalDecisionSection record={record} />
-            {/* Only show approval actions for admin users */}
+            {/* Show approval actions for admin users on pending records */}
             {isAdmin && (
               <RecordApprovalActions
                 record={record}

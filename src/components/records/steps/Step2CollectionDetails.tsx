@@ -7,6 +7,7 @@ import { CreateDraftFormData } from "@/types/record";
 import { DocumentUpload, DocumentFile } from "@/components/records/DocumentUpload";
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { LocationService } from "@/lib/services/location.service";
+import { FileType } from "@/types/file-record";
 
 interface Step2CollectionDetailsProps {
   formData: Partial<CreateDraftFormData>;
@@ -99,6 +100,53 @@ export function Step2CollectionDetails({
           />
           {errors.collectedVolumeKg && (
             <p className="text-sm text-red-500">{errors.collectedVolumeKg}</p>
+          )}
+        </div>
+
+        {/* Vehicle Plate */}
+        <div className="grid gap-2">
+          <Label htmlFor="vehiclePlate">
+            Biển số xe <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="vehiclePlate"
+            type="text"
+            value={formData.vehiclePlate || ""}
+            onChange={(e) =>
+              onChange("vehiclePlate", e.target.value || null)
+            }
+            placeholder="Nhập biển số xe"
+            disabled={disabled}
+            className={errors.vehiclePlate ? "border-red-500" : ""}
+          />
+          {errors.vehiclePlate && (
+            <p className="text-sm text-red-500">{errors.vehiclePlate}</p>
+          )}
+        </div>
+
+        {/* Collected Price Per Kg */}
+        <div className="grid gap-2">
+          <Label htmlFor="collectedPricePerKg">
+            Giá thu gom (VNĐ/kg)
+          </Label>
+          <Input
+            id="collectedPricePerKg"
+            type="number"
+            step="0.01"
+            min="0"
+            value={formData.collectedPricePerKg || ""}
+            onChange={(e) =>
+              onChange(
+                "collectedPricePerKg",
+                e.target.value ? parseFloat(e.target.value) : null,
+              )
+            }
+            placeholder="0.00"
+            disabled={disabled}
+            className={errors.collectedPricePerKg ? "border-red-500" : ""}
+          />
+          {errors.collectedPricePerKg && (
+            <p className="text-sm text-red-500">{errors.collectedPricePerKg}</p>
           )}
         </div>
 
@@ -245,6 +293,14 @@ export function Step2CollectionDetails({
             ]}
             disabled={disabled}
             maxSizeMB={10}
+            category={FileType.EVIDENCE_PHOTO}
+            documentTypeToCategory={(docType) => {
+              // All evidence document types map to EVIDENCE_PHOTO
+              if (["phieu-can", "bien-ban-giao-nhan", "bien-so-xe", "khac"].includes(docType)) {
+                return FileType.EVIDENCE_PHOTO;
+              }
+              return FileType.EVIDENCE_PHOTO;
+            }}
           />
         </div>
       </div>

@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/select";
 import { CreateDraftFormData } from "@/types/record";
 import { DocumentUpload, DocumentFile } from "@/components/records/DocumentUpload";
+import { FileType } from "@/types/file-record";
+import { FileUpload } from "@/components/ui/file-upload";
 
 interface Step3WarehouseRecyclingProps {
   formData: Partial<CreateDraftFormData>;
@@ -22,6 +24,8 @@ interface Step3WarehouseRecyclingProps {
   onRecycledDateChange?: (date: Date) => void;
   qualityDocuments?: DocumentFile[];
   onQualityDocumentsChange?: (files: DocumentFile[]) => void;
+  recycledPhoto?: File | null;
+  onRecycledPhotoChange?: (file: File | null) => void;
 }
 
 export function Step3WarehouseRecycling({
@@ -33,6 +37,8 @@ export function Step3WarehouseRecycling({
   onRecycledDateChange,
   qualityDocuments = [],
   onQualityDocumentsChange,
+  recycledPhoto,
+  onRecycledPhotoChange,
 }: Step3WarehouseRecyclingProps) {
   return (
     <div className="space-y-6">
@@ -138,6 +144,30 @@ export function Step3WarehouseRecycling({
           )}
         </div>
 
+        {/* Recycled Photo Upload */}
+        <div className="space-y-2">
+          <Label htmlFor="recycledPhoto">
+            Ảnh sản phẩm đã tái chế <span className="text-red-500">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground mb-2">
+            Tải lên ảnh sản phẩm sau khi tái chế (JPEG, PNG, WebP)
+          </p>
+          <FileUpload
+            id="recycledPhoto"
+            label=""
+            maxSize={10}
+            value={recycledPhoto || null}
+            onChange={(file) => onRecycledPhotoChange?.(file || null)}
+            error={errors.recycledPhoto}
+            required
+            disabled={disabled}
+            category={FileType.RECYCLED_PHOTO}
+          />
+          {errors.recycledPhoto && (
+            <p className="text-sm text-red-500">{errors.recycledPhoto}</p>
+          )}
+        </div>
+
         {/* Quality Documents Upload */}
         <div className="space-y-2">
           <Label>Tải lên tài liệu chất lượng</Label>
@@ -156,6 +186,17 @@ export function Step3WarehouseRecycling({
             ]}
             disabled={disabled}
             maxSizeMB={10}
+            documentTypeToCategory={(docType) => {
+              // Map quality document types to their respective categories
+              if (docType === "chat-luong-truoc-tai-che") {
+                return FileType.QUALITY_METRICS;
+              }
+              if (docType === "chat-luong-sau-tai-che") {
+                return FileType.OUTPUT_QUALITY_METRICS;
+              }
+              // Default fallback
+              return FileType.QUALITY_METRICS;
+            }}
           />
         </div>
       </div>

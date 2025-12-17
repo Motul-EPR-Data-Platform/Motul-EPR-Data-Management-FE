@@ -59,6 +59,14 @@ function flush(newAccess?: string) {
 // No need to manually attach Authorization header
 api.interceptors.request.use(async (config) => {
   // Cookies are automatically included with withCredentials: true
+  
+  // For FormData, remove Content-Type header to let browser set it with boundary
+  if (config.data instanceof FormData) {
+    if (config.headers) {
+      delete (config.headers as any)["Content-Type"];
+    }
+  }
+  
   return config;
 });
 

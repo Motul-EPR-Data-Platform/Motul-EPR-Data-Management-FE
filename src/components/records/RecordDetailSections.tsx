@@ -42,6 +42,9 @@ const formatDateTime = (dateString: string | null | undefined): string => {
 };
 
 export function WasteSourceInfoSection({ record }: RecordDetailSectionsProps) {
+  // Handle both wasteOwner (singular) and wasteOwners (array) from backend
+  const wasteOwner = record.wasteOwner || (record.wasteOwners && record.wasteOwners.length > 0 ? record.wasteOwners[0] : null);
+  
   return (
     <Card>
       <CardHeader>
@@ -54,7 +57,7 @@ export function WasteSourceInfoSection({ record }: RecordDetailSectionsProps) {
               Tên Chủ nguồn thải
             </p>
             <p className="font-medium">
-              {record.wasteOwner?.name || "-"}
+              {wasteOwner?.name || "-"}
             </p>
           </div>
           <div>
@@ -62,7 +65,7 @@ export function WasteSourceInfoSection({ record }: RecordDetailSectionsProps) {
               Mã định danh (MST/CCCD)
             </p>
             <p className="font-medium">
-              {record.wasteOwner?.businessCode || "-"}
+              {wasteOwner?.businessCode || "-"}
             </p>
           </div>
           <div>
@@ -122,6 +125,16 @@ export function CollectionDetailsSection({
             <p className="font-medium">
               {record.collectedVolumeKg
                 ? `${record.collectedVolumeKg.toLocaleString("vi-VN")} kg`
+                : "-"}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground mb-1">
+              Giá thu gom (VNĐ/kg)
+            </p>
+            <p className="font-medium">
+              {record.collectedPricePerKg
+                ? `${record.collectedPricePerKg.toLocaleString("vi-VN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} VNĐ/kg`
                 : "-"}
             </p>
           </div>
@@ -258,4 +271,5 @@ export function EvidenceSection({ record }: RecordDetailSectionsProps) {
     </Card>
   );
 }
+
 

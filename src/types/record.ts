@@ -1,6 +1,7 @@
 import { Location } from "./waste-owner";
+import { ICollectionRecordFiles } from "./file-record";
 
-export type RecordStatus = "draft" | "pending" | "approved" | "rejected";
+export type RecordStatus = "draft" | "pending" | "submitted" | "approved" | "rejected";
 
 export interface CollectionRecord {
   readonly id: string;
@@ -19,6 +20,8 @@ export interface CollectionRecord {
   wasteSourceId?: string | null;
   pickupLocationId?: string | null;
   collectedPricePerKg?: number | null;
+  eprId?: string | null; // EPR entity ID (set when approved)
+  acceptanceDate?: string | null; // ISO date string (set when approved)
   status: RecordStatus;
   expiresAt?: string | null; // ISO date string
   submittedAt?: string | null; // ISO date string
@@ -35,10 +38,15 @@ export interface CollectionRecordDetail extends CollectionRecord {
     id: string;
     name: string;
     businessCode: string;
-    contactPerson: string;
-    phone: string;
-    email: string;
+    contactPerson?: string;
+    phone?: string;
+    email?: string;
   } | null;
+  wasteOwners?: Array<{
+    id: string;
+    name: string;
+    businessCode: string;
+  }>;
   contractType?: {
     id: string;
     name: string;
@@ -56,12 +64,23 @@ export interface CollectionRecordDetail extends CollectionRecord {
     comment?: string | null;
     approvedAt: string;
   } | null;
+  approvals?: Array<{
+    id: string;
+    comment?: string | null;
+    approver: {
+      id: string;
+      fullName: string;
+    };
+    decision: "APPROVED" | "REJECTED";
+    decidedAt: string;
+  }>;
   rejection?: {
     id: string;
     rejectorId: string;
     comment: string;
     rejectedAt: string;
   } | null;
+  files?: ICollectionRecordFiles;
 }
 
 // Frontend form data structure (for internal use)
@@ -124,7 +143,9 @@ export interface UpdateDraftDTO {
 
 export interface ApprovalDTO {
   eprId: string;
+  acceptanceDate: string; // Date in "dd/mm/yyyy" format
   comment?: string | null;
+  file?: File; // Acceptance document (PDF/Word) - required
 }
 
 export interface RejectionDTO {
@@ -132,9 +153,11 @@ export interface RejectionDTO {
 }
 
 export interface GetRecordsFilters {
-  status?: RecordStatus;
+  status?: RecordStatus | "SUBMITTED"; // Backend uses "SUBMITTED", frontend uses "submitted" or "pending"
   recyclerId?: string;
   submissionMonth?: string; // ISO date string (YYYY-MM)
+  page?: number;
+  limit?: number;
 }
 
 export interface CollectionRecordResponse {
@@ -143,9 +166,19 @@ export interface CollectionRecordResponse {
   data: CollectionRecord | CollectionRecordDetail;
 }
 
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
 export interface CollectionRecordsListResponse {
   success: boolean;
-  count: number;
+  count?: number; // Legacy field, use pagination.total instead
   data: CollectionRecordDetail[];
+  pagination?: PaginationInfo;
 }
 

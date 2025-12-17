@@ -62,6 +62,9 @@ const formatDate = (dateString: string | null | undefined): string => {
 };
 
 export function RecordOverviewCard({ record }: RecordOverviewCardProps) {
+  // Handle both wasteOwner (singular) and wasteOwners (array) from backend
+  const wasteOwner = record.wasteOwner || (record.wasteOwners && record.wasteOwners.length > 0 ? record.wasteOwners[0] : null);
+  
   return (
     <Card className="border-red-500">
       <CardHeader>
@@ -81,10 +84,10 @@ export function RecordOverviewCard({ record }: RecordOverviewCardProps) {
         <div>
           <p className="text-sm text-muted-foreground mb-1">Đơn vị tái chế</p>
           <p className="font-medium">
-            {record.wasteOwner?.name || "N/A"}
-            {record.wasteOwner?.email && (
+            {wasteOwner?.name || "N/A"}
+            {wasteOwner && "email" in wasteOwner && wasteOwner.email && (
               <span className="text-muted-foreground text-sm ml-2">
-                ({record.wasteOwner.email})
+                ({wasteOwner.email})
               </span>
             )}
           </p>
