@@ -159,5 +159,33 @@ export const FileRecordService = {
     );
     return data.data || data;
   },
+
+  /**
+   * Replace file at specific position
+   * PUT /api/collection-records/:recordId/upload/:position
+   */
+  async replaceFileByPosition(
+    recordId: string,
+    category: FileType,
+    position: number,
+    file: File
+  ): Promise<IFileUploadResponse> {
+    // Validate file type based on category
+    const validation = validateFileType(category, file);
+    if (!validation.valid) {
+      throw new Error(validation.error || "Invalid file type");
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("category", category);
+
+    const { data } = await api.put(
+      path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.REPLACE_FILE(recordId, position)),
+      formData
+    );
+    
+    return data.data || data;
+  },
 };
 

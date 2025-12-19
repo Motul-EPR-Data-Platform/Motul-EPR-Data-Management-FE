@@ -64,6 +64,9 @@ export default function CreateCollectionRecordPage() {
   const [wasteTypes, setWasteTypes] = useState<
     Array<{ id: string; name: string; code?: string; hazCode?: string }>
   >([]);
+  const [hazTypes, setHazTypes] = useState<
+    Array<{ id: string; code: string; name?: string; haz_code?: string }>
+  >([]);
 
   // Load dropdown data
   useEffect(() => {
@@ -72,10 +75,11 @@ export default function CreateCollectionRecordPage() {
 
   const loadDropdownData = async () => {
     try {
-      const [wasteOwnersRes, contractTypesRes, wasteTypesRes] = await Promise.allSettled([
+      const [wasteOwnersRes, contractTypesRes, wasteTypesRes, hazTypesRes] = await Promise.allSettled([
         WasteOwnerService.getAllWasteOwners({ isActive: true }),
         DefinitionService.getActiveContractTypes(),
         DefinitionService.getActiveWasteTypes(),
+        DefinitionService.getActiveHazTypes(),
       ]);
 
       if (wasteOwnersRes.status === "fulfilled") {
@@ -182,6 +186,23 @@ export default function CreateCollectionRecordPage() {
         
         setWasteTypes(transformed);
         console.log("Final waste types for dropdown:", transformed);
+      }
+
+      if (hazTypesRes.status === "fulfilled") {
+        const transformedDefinitions = transformDefinitions(hazTypesRes.value);
+        const transformed = transformedDefinitions
+          .map((def) => {
+            const hazTypeData = def.data as any;
+            return {
+              id: def.id,
+              code: hazTypeData?.code || "",
+              name: hazTypeData?.name || hazTypeData?.code || "",
+              haz_code: hazTypeData?.hazCode || hazTypeData?.haz_code || hazTypeData?.code || "",
+            };
+          })
+          .filter((hazType) => hazType.id && hazType.id.trim() !== ""); // Filter out any with empty IDs
+        setHazTypes(transformed);
+        console.log("Final HAZ types for dropdown:", transformed);
       }
     } catch (error) {
       console.error("Error loading dropdown data:", error);
@@ -400,6 +421,7 @@ export default function CreateCollectionRecordPage() {
         contractTypeId: formData.contractTypeId || null,
         // Backend expects UUID for wasteSourceId (waste type ID)
         wasteSourceId: formData.wasteSourceId || null,
+        hazCodeId: formData.hazCodeId || null,
         // Backend expects address string, not refId
         pickupLocation: locationRefId && fullAddress
           ? { address: fullAddress }
@@ -521,7 +543,7 @@ export default function CreateCollectionRecordPage() {
         );
         setIsLoading(false);
         return;
-      }
+    }
     }
 
     // Submit the record
@@ -628,6 +650,7 @@ export default function CreateCollectionRecordPage() {
               onFullAddressChange={setFullAddress}
               evidenceFiles={evidenceFiles}
               onEvidenceFilesChange={setEvidenceFiles}
+              hazTypes={hazTypes}
             />
           )}
 

@@ -10,6 +10,7 @@ export function generateStaticParams() {
     { categoryKey: CATEGORY_KEYS.WASTE_TYPE },
     { categoryKey: CATEGORY_KEYS.CONTRACT_TYPE },
     { categoryKey: CATEGORY_KEYS.EPR_ENTITY },
+    { categoryKey: CATEGORY_KEYS.HAZ_TYPE },
   ];
 }
 

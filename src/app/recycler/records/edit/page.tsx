@@ -91,6 +91,9 @@ export default function EditCollectionRecordPage() {
   const [wasteTypes, setWasteTypes] = useState<
     Array<{ id: string; name: string; code?: string; hazCode?: string }>
   >([]);
+  const [hazTypes, setHazTypes] = useState<
+    Array<{ id: string; code: string; name?: string; haz_code?: string }>
+  >([]);
 
   // Load record data and dropdown data
   useEffect(() => {
@@ -106,10 +109,11 @@ export default function EditCollectionRecordPage() {
     setIsLoadingRecord(true);
     try {
       // Load dropdown data and record data in parallel
-      const [wasteOwnersRes, contractTypesRes, wasteTypesRes, recordRes] = await Promise.allSettled([
+      const [wasteOwnersRes, contractTypesRes, wasteTypesRes, hazTypesRes, recordRes] = await Promise.allSettled([
         WasteOwnerService.getAllWasteOwners({ isActive: true }),
         DefinitionService.getActiveContractTypes(),
         DefinitionService.getActiveWasteTypes(),
+        DefinitionService.getActiveHazTypes(),
         recordId ? CollectionRecordService.getRecordById(recordId) : Promise.resolve(null),
       ]);
 
@@ -150,6 +154,22 @@ export default function EditCollectionRecordPage() {
         setWasteTypes(transformed);
       }
 
+      if (hazTypesRes.status === "fulfilled") {
+        const transformedDefinitions = transformDefinitions(hazTypesRes.value);
+        const transformed = transformedDefinitions
+          .map((def) => {
+            const hazTypeData = def.data as any;
+            return {
+              id: def.id,
+              code: hazTypeData?.code || "",
+              name: hazTypeData?.name || hazTypeData?.code || "",
+              haz_code: hazTypeData?.hazCode || hazTypeData?.haz_code || hazTypeData?.code || "",
+            };
+          })
+          .filter((hazType) => hazType.id && hazType.id.trim() !== ""); // Filter out any with empty IDs
+        setHazTypes(transformed);
+      }
+
       // Load and prefill record data
       if (recordRes.status === "fulfilled" && recordRes.value) {
         const record = recordRes.value;
@@ -166,6 +186,7 @@ export default function EditCollectionRecordPage() {
           wasteOwnerId,
           contractTypeId: record.contractTypeId || null,
           wasteSourceId: record.wasteSourceId || null,
+          hazCodeId: (record as any).hazCodeId || null,
           collectedVolumeKg: record.collectedVolumeKg || null,
           vehiclePlate: record.vehiclePlate || null,
           stockpiled: record.stockpiled || null,
@@ -390,6 +411,7 @@ export default function EditCollectionRecordPage() {
         wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
         contractTypeId: formData.contractTypeId || null,
         wasteSourceId: formData.wasteSourceId || null,
+        hazCodeId: formData.hazCodeId || null,
         pickupLocation: locationRefId && fullAddress
           ? { address: fullAddress }
           : locationRefId
@@ -461,6 +483,7 @@ export default function EditCollectionRecordPage() {
         wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
         contractTypeId: formData.contractTypeId || null,
         wasteSourceId: formData.wasteSourceId || null,
+        hazCodeId: formData.hazCodeId || null,
         pickupLocation: locationRefId && fullAddress
           ? { address: fullAddress }
           : locationRefId
@@ -590,6 +613,7 @@ export default function EditCollectionRecordPage() {
               onFullAddressChange={setFullAddress}
               evidenceFiles={evidenceFiles}
               onEvidenceFilesChange={setEvidenceFiles}
+              hazTypes={hazTypes}
             />
           )}
 

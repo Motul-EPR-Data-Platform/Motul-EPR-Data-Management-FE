@@ -107,7 +107,7 @@ export default function MyRecordsPage() {
           wasteOwner?.businessCode?.toLowerCase().includes(query) ||
           r.contractType?.name?.toLowerCase().includes(query) ||
           r.contractType?.code?.toLowerCase().includes(query)
-        );
+      );
       });
     }
 

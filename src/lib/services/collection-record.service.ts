@@ -16,6 +16,7 @@ import {
   IFileUploadInput,
   IFileUploadResponse,
   ICollectionRecordFiles,
+  ICollectionRecordFilesWithPreview,
   FileType,
 } from "@/types/file-record";
 
@@ -252,6 +253,25 @@ export const CollectionRecordService = {
   },
 
   /**
+   * Get all files for a collection record with signed URLs for preview
+   * GET /api/collection-records/:recordId/files/preview?expiresIn=3600
+   */
+  async getRecordFilesWithPreview(
+    recordId: string,
+    expiresIn: number = 3600,
+  ): Promise<ICollectionRecordFilesWithPreview> {
+    const { data } = await api.get(
+      path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.FILES_PREVIEW(recordId)),
+      {
+        params: {
+          expiresIn,
+        },
+      },
+    );
+    return data.data || data;
+  },
+
+  /**
    * Delete a file from a collection record
    * DELETE /api/files/:fileId
    */
@@ -265,6 +285,19 @@ export const CollectionRecordService = {
    */
   async getFileDownloadUrl(fileId: string): Promise<string> {
     return FileRecordService.getDownloadUrl(fileId);
+  },
+
+  /**
+   * Replace file at specific position
+   * PUT /api/collection-records/:recordId/upload/:position
+   */
+  async replaceFileByPosition(
+    recordId: string,
+    category: FileType,
+    position: number,
+    file: File,
+  ): Promise<IFileUploadResponse> {
+    return FileRecordService.replaceFileByPosition(recordId, category, position, file);
   },
 };
 

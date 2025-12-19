@@ -147,6 +147,27 @@ export const DefinitionService = {
 
   /**
    * --------------------
+   * HAZ Type APIs
+   * --------------------
+   */
+
+  async createHazType(dto: CreateDefinitionDTO): Promise<DefinitionResponse> {
+    const { data } = await api.post(
+      path.definitions(ENDPOINTS.DEFINITIONS.HAZ_TYPES),
+      dto,
+    );
+    return data;
+  },
+
+  async getActiveHazTypes(): Promise<any[]> {
+    const { data } = await api.get(
+      path.definitions(ENDPOINTS.DEFINITIONS.HAZ_TYPES),
+    );
+    return data.data;
+  },
+
+  /**
+   * --------------------
    * Custom Category APIs
    * --------------------
    */

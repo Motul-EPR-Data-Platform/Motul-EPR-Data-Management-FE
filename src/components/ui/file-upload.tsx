@@ -102,9 +102,9 @@ export function FileUpload({
     } else {
       // Fallback to basic MIME type validation
       const acceptedTypes = acceptString.split(",").map((type) => type.trim());
-      if (!acceptedTypes.some((type) => file.type.match(type))) {
+    if (!acceptedTypes.some((type) => file.type.match(type))) {
         alert("File không hợp lệ. Vui lòng chọn file đúng định dạng.");
-        return false;
+      return false;
       }
     }
 

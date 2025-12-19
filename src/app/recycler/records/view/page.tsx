@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { CollectionRecordService } from "@/lib/services/collection-record.service";
 import { CollectionRecordDetail } from "@/types/record";
+import { ICollectionRecordFilesWithPreview } from "@/types/file-record";
 import { toast } from "sonner";
 import {
   WasteSourceInfoSection,
@@ -58,6 +59,7 @@ export default function RecordDetailPage() {
   const { userRole } = useAuth();
   const recordId = searchParams.get("id");
   const [record, setRecord] = useState<CollectionRecordDetail | null>(null);
+  const [filesWithPreview, setFilesWithPreview] = useState<ICollectionRecordFilesWithPreview | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const isAdmin = userRole === "Motul Admin" || userRole === "MOTUL_ADMIN";
@@ -76,8 +78,15 @@ export default function RecordDetailPage() {
     
     setIsLoading(true);
     try {
-      const data = await CollectionRecordService.getRecordById(recordId);
-      setRecord(data);
+      const [recordData, filesData] = await Promise.all([
+        CollectionRecordService.getRecordById(recordId),
+        CollectionRecordService.getRecordFilesWithPreview(recordId, 3600).catch((err) => {
+          console.warn("Failed to load files with preview:", err);
+          return null;
+        }),
+      ]);
+      setRecord(recordData);
+      setFilesWithPreview(filesData);
     } catch (error: any) {
       console.error("Error loading record:", error);
       toast.error(
@@ -168,14 +177,14 @@ export default function RecordDetailPage() {
                 onApprovalChange={handleApprovalChange}
               />
             )}
-          </div>
+                  </div>
 
           {/* Main Content - Left Side on desktop, appears second on mobile */}
           <div className="lg:col-span-2 lg:order-1 space-y-6">
             <WasteSourceInfoSection record={record} />
             <CollectionDetailsSection record={record} />
             <StorageRecyclingSection record={record} />
-            <EvidenceSection record={record} />
+            <EvidenceSection record={record} filesWithPreview={filesWithPreview} />
           </div>
         </div>
       </div>

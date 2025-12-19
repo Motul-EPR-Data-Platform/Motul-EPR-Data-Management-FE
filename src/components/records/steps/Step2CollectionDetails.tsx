@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CreateDraftFormData } from "@/types/record";
 import { DocumentUpload, DocumentFile } from "@/components/records/DocumentUpload";
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
@@ -33,6 +34,7 @@ interface Step2CollectionDetailsProps {
   onLongitudeChange?: (lng: number) => void;
   evidenceFiles?: DocumentFile[];
   onEvidenceFilesChange?: (files: DocumentFile[]) => void;
+  hazTypes?: Array<{ id: string; code: string; name?: string; haz_code?: string }>;
 }
 
 export function Step2CollectionDetails({
@@ -53,6 +55,7 @@ export function Step2CollectionDetails({
   onLongitudeChange,
   evidenceFiles = [],
   onEvidenceFilesChange,
+  hazTypes = [],
 }: Step2CollectionDetailsProps) {
   return (
     <div className="space-y-6">
@@ -121,6 +124,47 @@ export function Step2CollectionDetails({
           />
           {errors.vehiclePlate && (
             <p className="text-sm text-red-500">{errors.vehiclePlate}</p>
+          )}
+        </div>
+
+        {/* HAZ Code */}
+        <div className="grid gap-2">
+          <Label htmlFor="hazCodeId">
+            Mã HAZ
+          </Label>
+          <Select
+            value={formData.hazCodeId || "__none__"}
+            onValueChange={(value) =>
+              onChange("hazCodeId", value === "__none__" ? null : value)
+            }
+            disabled={disabled}
+          >
+            <SelectTrigger
+              id="hazCodeId"
+              className={errors.hazCodeId ? "border-red-500" : ""}
+            >
+              <SelectValue placeholder="Chọn mã HAZ" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">Không chọn</SelectItem>
+              {hazTypes
+                .filter((hazType) => hazType.id && hazType.id.trim() !== "") // Filter out empty IDs
+                .map((hazType) => {
+                  const hazCode = hazType.haz_code || hazType.code || "";
+                  const displayName = hazType.name || hazType.code || hazType.haz_code || "Unknown";
+                  const displayText = hazCode && hazCode !== displayName 
+                    ? `${displayName} (${hazCode})` 
+                    : displayName;
+                  return (
+                    <SelectItem key={hazType.id} value={hazType.id}>
+                      {displayText}
+                    </SelectItem>
+                  );
+                })}
+            </SelectContent>
+          </Select>
+          {errors.hazCodeId && (
+            <p className="text-sm text-red-500">{errors.hazCodeId}</p>
           )}
         </div>
 
@@ -195,82 +239,35 @@ export function Step2CollectionDetails({
             {/* Right Column - Detailed Address */}
             <div className="space-y-4">
               <Label>Địa chỉ thu gom chi tiết</Label>
-              <div className="space-y-4">
-                <LocationAutocomplete
-                  value={locationRefId || ""}
-                  onSelect={async (result) => {
-                    onLocationRefIdChange(result.refId);
-                    // Fetch full location details to populate address and coordinates
-                    try {
-                      const locationDetails = await LocationService.getLocationByRefId(result.refId);
-                      // Store the full address string for backend
-                      onFullAddressChange?.(locationDetails.address);
-                      onAddressChange?.({
-                        ...address,
-                        province: locationDetails.city,
-                        // Note: district and ward would need to be parsed from address or fetched separately
-                      });
-                      // Update GPS coordinates if available
-                      if (locationDetails.latitude && locationDetails.longitude) {
-                        onLatitudeChange?.(locationDetails.latitude);
-                        onLongitudeChange?.(locationDetails.longitude);
-                      }
-                    } catch (error) {
-                      console.error("Failed to fetch location details:", error);
+              <LocationAutocomplete
+                value={locationRefId || ""}
+                onSelect={async (result) => {
+                  onLocationRefIdChange(result.refId);
+                  // Fetch full location details to populate address and coordinates
+                  try {
+                    const locationDetails = await LocationService.getLocationByRefId(result.refId);
+                    // Store the full address string for backend
+                    onFullAddressChange?.(locationDetails.address);
+                    onAddressChange?.({
+                      ...address,
+                      province: locationDetails.city,
+                      // Note: district and ward would need to be parsed from address or fetched separately
+                    });
+                    // Update GPS coordinates if available
+                    if (locationDetails.latitude && locationDetails.longitude) {
+                      onLatitudeChange?.(locationDetails.latitude);
+                      onLongitudeChange?.(locationDetails.longitude);
                     }
-                  }}
-                  label="Số nhà, tên đường"
-                  placeholder="Tìm hoặc chọn từ danh sách...."
-                  required
-                  disabled={disabled}
-                  error={errors.locationRefId}
-                />
-                <div className="grid gap-2">
-                  <Label htmlFor="ward">
-                    Phường/Xã <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="ward"
-                    value={address?.ward || ""}
-                    onChange={(e) =>
-                      onAddressChange?.({ ...address, ward: e.target.value })
-                    }
-                    placeholder="Phường .."
-                    disabled={disabled}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="district">
-                    Quận <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="district"
-                    value={address?.district || ""}
-                    onChange={(e) =>
-                      onAddressChange?.({ ...address, district: e.target.value })
-                    }
-                    placeholder="Quận 1"
-                    disabled={disabled}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="province">
-                    Tỉnh/Thành phố <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="province"
-                    value={address?.province || ""}
-                    onChange={(e) =>
-                      onAddressChange?.({ ...address, province: e.target.value })
-                    }
-                    placeholder="Thành phố .."
-                    disabled={disabled}
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-gray-500">
-                Địa chỉ có ở để hiển thị
-              </p>
+                  } catch (error) {
+                    console.error("Failed to fetch location details:", error);
+                  }
+                }}
+                label="Số nhà, tên đường"
+                placeholder="Tìm hoặc chọn từ danh sách...."
+                required
+                disabled={disabled}
+                error={errors.locationRefId}
+              />
             </div>
           </div>
         </div>

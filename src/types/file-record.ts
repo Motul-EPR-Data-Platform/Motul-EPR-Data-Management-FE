@@ -49,6 +49,21 @@ export interface ICollectionRecordFiles {
   qualityMetrics: IFile | null;
 }
 
+// File with signed URL for preview
+export interface IFileWithSignedUrl extends IFile {
+  signedUrl: string;
+}
+
+// Collection record files with signed URLs for preview
+export interface ICollectionRecordFilesWithPreview {
+  evidencePhotos: IFileWithSignedUrl[];
+  stockpilePhoto: IFileWithSignedUrl | null;
+  recycledPhoto: IFileWithSignedUrl | null;
+  acceptanceDoc: IFileWithSignedUrl | null;
+  outputQualityMetrics: IFileWithSignedUrl | null;
+  qualityMetrics: IFileWithSignedUrl | null;
+}
+
 // File validation result
 export interface IFileValidationResult {
   valid: boolean;

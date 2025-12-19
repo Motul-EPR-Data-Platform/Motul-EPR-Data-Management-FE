@@ -53,6 +53,7 @@ export const ENDPOINTS = {
     WASTE_TYPES: "/waste-types",
     CONTRACT_TYPES: "/contract-types",
     EPR_ENTITIES: "/epr-entities",
+    HAZ_TYPES: "/haz-types",
     CUSTOM: "/custom",
   },
   WASTE_OWNERS: {
@@ -70,8 +71,10 @@ export const ENDPOINTS = {
     REJECTION_DETAILS: (id: string) => `/${id}/rejection-details`,
     ADMIN_UPDATE: (id: string) => `/${id}/admin-update`,
     FILES: (id: string) => `/${id}/files`,
+    FILES_PREVIEW: (id: string) => `/${id}/files/preview`,
     UPLOAD: (id: string) => `/${id}/upload`,
     UPLOAD_MULTIPLE: (id: string) => `/${id}/upload-multiple`,
+    REPLACE_FILE: (id: string, position: number) => `/${id}/upload/${position}`,
   },
   LOCATIONS: {
     ROOT: "/location",

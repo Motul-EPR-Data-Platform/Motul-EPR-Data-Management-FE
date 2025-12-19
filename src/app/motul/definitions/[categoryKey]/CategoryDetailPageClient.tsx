@@ -8,7 +8,7 @@ import { CreateDefinitionDialog } from "@/components/definitions/CreateDefinitio
 import { DefinitionService } from "@/lib/services/definition.service";
 import { getDefinitionsByCategory } from "@/lib/utils/definitionUtils/definitionHelpers";
 import { transformCategory } from "@/lib/utils/definitionUtils/definitionTransformers";
-import { Category, Definition } from "@/types/definition";
+import { Category, Definition, FieldSchema } from "@/types/definition";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermission } from "@/hooks/usePermission";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import { DashboardSkeleton } from "@/components/skeleton/DashboardSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
+import { CATEGORY_KEYS, CATEGORY_ROUTE_KEYS, routeKeyToBackendKey, isStandardCategory } from "@/constants/categoryKeys";
 
 export function CategoryDetailPageClient() {
   const params = useParams();
@@ -37,16 +38,75 @@ export function CategoryDetailPageClient() {
     loadData();
   }, [categoryKey]);
 
+  /**
+   * Get default schema for standard categories that don't have a registry entry
+   */
+  const getDefaultCategorySchema = (key: string): Category | null => {
+    const backendKey = routeKeyToBackendKey(key);
+    
+    if (backendKey === CATEGORY_KEYS.HAZ_TYPE || key === CATEGORY_ROUTE_KEYS.HAZ_TYPES) {
+      return {
+        id: "haz_type_default",
+        key: CATEGORY_KEYS.HAZ_TYPE,
+        name: "Mã HAZ",
+        description: "Quản lý các mã HAZ (Hazardous)",
+        isActive: true,
+        schemaDefinition: [
+          {
+            name: "code",
+            type: "string",
+            label: "Mã",
+            required: true,
+            placeholder: "Nhập mã HAZ",
+          },
+          {
+            name: "haz_code",
+            type: "string",
+            label: "Mã HAZ",
+            required: true,
+            placeholder: "Nhập mã HAZ (ví dụ: H01, H02)",
+          },
+          {
+            name: "description",
+            type: "textarea",
+            label: "Mô tả",
+            required: false,
+            placeholder: "Nhập mô tả (tùy chọn)",
+          },
+        ] as FieldSchema[],
+      };
+    }
+    
+    return null;
+  };
+
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [categoryData, definitionsData] = await Promise.all([
-        DefinitionService.getCategoryByKey(categoryKey),
-        getDefinitionsByCategory(categoryKey),
-      ]);
+      const backendKey = routeKeyToBackendKey(categoryKey);
+      let categoryData: any = null;
+      
+      // Try to fetch category from registry
+      try {
+        categoryData = await DefinitionService.getCategoryByKey(backendKey);
+      } catch (error: any) {
+        // If category not found and it's a standard category, use default schema
+        if (isStandardCategory(categoryKey) || isStandardCategory(backendKey)) {
+          const defaultCategory = getDefaultCategorySchema(categoryKey);
+          if (defaultCategory) {
+            categoryData = defaultCategory;
+          }
+        } else {
+          throw error; // Re-throw if it's not a standard category
+        }
+      }
+
+      const definitionsData = await getDefinitionsByCategory(categoryKey);
 
       // Transform backend snake_case to frontend camelCase
-      const transformedCategory = transformCategory(categoryData);
+      const transformedCategory = categoryData.id === "haz_type_default" 
+        ? categoryData 
+        : transformCategory(categoryData);
       setCategory(transformedCategory);
       setDefinitions(definitionsData);
     } catch (error: any) {

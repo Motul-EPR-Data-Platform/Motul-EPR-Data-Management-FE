@@ -96,6 +96,7 @@ export interface CreateDraftFormData {
   wasteOwnerId?: string | null; // Single ID from form
   contractTypeId?: string | null;
   wasteSourceId?: string | null;
+  hazCodeId?: string | null; // HAZ code definition ID
   pickupLocationRefId?: string | null; // refId from location autocomplete
   collectedPricePerKg?: number | null;
   expiresAt?: string | null; // ISO date string
@@ -114,6 +115,7 @@ export interface CreateDraftDTO {
   wasteOwnerIds?: string[]; // Backend expects array - optional, but should be included when waste owners are selected
   contractTypeId?: string | null;
   wasteSourceId?: string | null;
+  hazCodeId?: string | null; // HAZ code definition ID
   pickupLocation?: {
     address: string; // Backend expects address, not refId
   } | null;
@@ -133,6 +135,7 @@ export interface UpdateDraftDTO {
   recycledVolumeKg?: number | null;
   wasteOwnerIds?: string[]; // Backend expects array
   contractTypeId?: string | null;
+  hazCodeId?: string | null; // HAZ code definition ID
   wasteSourceId?: string | null;
   pickupLocation?: {
     address: string; // Backend expects address, not refId
