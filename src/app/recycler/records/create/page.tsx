@@ -210,7 +210,12 @@ export default function CreateCollectionRecordPage() {
   };
 
   const handleFieldChange = (field: keyof CreateDraftFormData, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    console.log("handleFieldChange:", { field, value, currentFormData: formData });
+    setFormData((prev) => {
+      const updated = { ...prev, [field]: value };
+      console.log("Updated formData:", updated);
+      return updated;
+    });
     // Clear error when user changes field
     if (errors[field as string]) {
       setErrors((prev) => {
@@ -344,7 +349,7 @@ export default function CreateCollectionRecordPage() {
       uploadPromises.push(
         CollectionRecordService.uploadFile(recordId, {
           file: recycledPhoto,
-          category: FileType.RECYCLED_PHOTO,
+          category: FileType.STOCKPILE_PHOTO,
         })
       );
     }
@@ -411,7 +416,7 @@ export default function CreateCollectionRecordPage() {
         collectedVolumeKg: formData.collectedVolumeKg || null,
         deliveryDate: formatDateDDMMYYYY(collectionDate),
         vehiclePlate: formData.vehiclePlate || null,
-        stockpiled: formData.stockpiled || null,
+        stockpiled: formData.stockpiled ?? false,
         stockpileVolumeKg: formData.stockpileVolumeKg || null,
         recycledDate: recycledDate ? formatDateDDMMYYYY(recycledDate) : null,
         recycledVolumeKg: formData.recycledVolumeKg || null,
@@ -421,15 +426,19 @@ export default function CreateCollectionRecordPage() {
         contractTypeId: formData.contractTypeId || null,
         // Backend expects UUID for wasteSourceId (waste type ID)
         wasteSourceId: formData.wasteSourceId || null,
-        hazCodeId: formData.hazCodeId || null,
-        // Backend expects address string, not refId
-        pickupLocation: locationRefId && fullAddress
-          ? { address: fullAddress }
-          : locationRefId
-            ? { address: locationRefId } // Fallback to refId if full address not available
-            : undefined,
+        // Explicitly set hazWasteId - use null if undefined, empty string, or null
+        hazWasteId: (formData.hazCodeId && formData.hazCodeId.trim() !== "") ? formData.hazCodeId : null,
+        pickupLocationId: locationRefId || null,
         collectedPricePerKg: formData.collectedPricePerKg || null,
       };
+
+      console.log("Saving draft with hazWasteId:", {
+        formDataHazCodeId: formData.hazCodeId,
+        formDataHazCodeIdType: typeof formData.hazCodeId,
+        hazWasteId: draftData.hazWasteId,
+        fullFormData: JSON.stringify(formData, null, 2),
+        fullDraftData: JSON.stringify(draftData, null, 2),
+      });
 
       let currentDraftId = draftId;
       
@@ -445,7 +454,7 @@ export default function CreateCollectionRecordPage() {
       }
 
       // Upload files after draft is created/updated
-      if (currentDraftId && (evidenceFiles.length > 0 || qualityDocuments.length > 0)) {
+      if (currentDraftId && (evidenceFiles.length > 0 || qualityDocuments.length > 0 || recycledPhoto)) {
         try {
           await uploadFilesForRecord(currentDraftId);
           toast.success("Đã tải lên tài liệu");
@@ -501,18 +510,15 @@ export default function CreateCollectionRecordPage() {
           collectedVolumeKg: formData.collectedVolumeKg || null,
           deliveryDate: formatDateDDMMYYYY(collectionDate),
           vehiclePlate: formData.vehiclePlate || null,
-          stockpiled: formData.stockpiled || null,
+          stockpiled: formData.stockpiled ?? false,
           stockpileVolumeKg: formData.stockpileVolumeKg || null,
           recycledDate: recycledDate ? formatDateDDMMYYYY(recycledDate) : null,
           recycledVolumeKg: formData.recycledVolumeKg || null,
           wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
           contractTypeId: formData.contractTypeId || null,
           wasteSourceId: formData.wasteSourceId || null,
-          pickupLocation: locationRefId && fullAddress
-            ? { address: fullAddress }
-            : locationRefId
-              ? { address: locationRefId }
-              : undefined,
+          hazWasteId: (formData.hazCodeId && formData.hazCodeId.trim() !== "") ? formData.hazCodeId : null,
+          pickupLocationId: locationRefId || null,
           collectedPricePerKg: formData.collectedPricePerKg || null,
         };
 

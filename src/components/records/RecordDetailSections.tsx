@@ -456,9 +456,9 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
               <div>
                 <p className="text-sm font-medium mb-2">Chất lượng sau tái chế</p>
                 <div className="flex items-center justify-between p-3 border rounded-md">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-muted-foreground" />
-                    <div>
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <div>
                       <p className="font-medium text-sm">{outputQualityMetrics.fileName}</p>
                       <p className="text-xs text-muted-foreground">
                         {formatFileSize(outputQualityMetrics.fileSize)}
@@ -496,9 +496,9 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                     size="sm"
                     onClick={() => handlePreview(qualityMetrics.signedUrl, qualityMetrics.fileName)}
                   >
-                    <Download className="h-4 w-4 mr-2" />
-                    Xem
-                  </Button>
+                  <Download className="h-4 w-4 mr-2" />
+                  Xem
+                </Button>
                 </div>
               </div>
             )}

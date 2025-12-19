@@ -144,7 +144,7 @@ export function Step4ReviewSubmit({
           <ReviewField
             label="Vị trí GPS"
             value={
-              formData.pickupLocation?.refId
+              formData.pickupLocationRefId
                 ? "10.823100, 106.629700"
                 : undefined
             }

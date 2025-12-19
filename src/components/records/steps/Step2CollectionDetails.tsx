@@ -133,15 +133,21 @@ export function Step2CollectionDetails({
             Mã HAZ
           </Label>
           <Select
-            value={formData.hazCodeId || "__none__"}
-            onValueChange={(value) =>
-              onChange("hazCodeId", value === "__none__" ? null : value)
-            }
+            value={formData.hazCodeId ? String(formData.hazCodeId) : "__none__"}
+            onValueChange={(value) => {
+              const newValue = value === "__none__" ? null : value;
+              console.log("HAZ Code dropdown changed:", { 
+                selectedValue: value, 
+                newValue, 
+                currentFormDataHazCodeId: formData.hazCodeId 
+              });
+              onChange("hazCodeId", newValue);
+            }}
             disabled={disabled}
           >
             <SelectTrigger
-              id="hazCodeId"
-              className={errors.hazCodeId ? "border-red-500" : ""}
+              id="hazWasteId"
+              className={errors.hazWasteId ? "border-red-500" : ""}
             >
               <SelectValue placeholder="Chọn mã HAZ" />
             </SelectTrigger>

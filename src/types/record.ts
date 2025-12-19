@@ -16,6 +16,7 @@ export interface CollectionRecord {
   recycledDate?: string | null; // ISO date string
   recycledVolumeKg?: number | null;
   wasteOwnerId?: string | null;
+  hazWasteId?: string | null;
   contractTypeId?: string | null;
   wasteSourceId?: string | null;
   pickupLocationId?: string | null;
@@ -115,10 +116,8 @@ export interface CreateDraftDTO {
   wasteOwnerIds?: string[]; // Backend expects array - optional, but should be included when waste owners are selected
   contractTypeId?: string | null;
   wasteSourceId?: string | null;
-  hazCodeId?: string | null; // HAZ code definition ID
-  pickupLocation?: {
-    address: string; // Backend expects address, not refId
-  } | null;
+  hazWasteId?: string | null; // HAZ code definition ID
+  pickupLocationId?: string | null; // Backend expects refId
   collectedPricePerKg?: number | null;
   expiresAt?: string | null; // Date string in dd/mm/yyyy format
 }
@@ -135,11 +134,9 @@ export interface UpdateDraftDTO {
   recycledVolumeKg?: number | null;
   wasteOwnerIds?: string[]; // Backend expects array
   contractTypeId?: string | null;
-  hazCodeId?: string | null; // HAZ code definition ID
+  hazWasteId?: string | null; // HAZ code definition ID
   wasteSourceId?: string | null;
-  pickupLocation?: {
-    address: string; // Backend expects address, not refId
-  } | null;
+  pickupLocationId?: string | null; // Backend expects refId
   collectedPricePerKg?: number | null;
   expiresAt?: string | null; // ISO date string
 }

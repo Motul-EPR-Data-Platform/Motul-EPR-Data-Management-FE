@@ -161,7 +161,7 @@ export function Step3WarehouseRecycling({
             error={errors.recycledPhoto}
             required
             disabled={disabled}
-            category={FileType.RECYCLED_PHOTO}
+            category={FileType.STOCKPILE_PHOTO}
           />
           {errors.recycledPhoto && (
             <p className="text-sm text-red-500">{errors.recycledPhoto}</p>

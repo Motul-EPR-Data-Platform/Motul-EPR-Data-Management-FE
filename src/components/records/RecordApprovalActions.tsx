@@ -101,6 +101,22 @@ export function RecordApprovalActions({
       // Format date as dd/mm/yyyy
       const formattedDate = format(acceptanceDate, "dd/MM/yyyy");
 
+      // Verify file is present
+      if (!approvalDocument) {
+        toast.error("Vui lòng tải lên tài liệu chấp thuận");
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("Approving record with file:", {
+        recordId: record.id,
+        eprId,
+        acceptanceDate: formattedDate,
+        fileName: approvalDocument.name,
+        fileSize: approvalDocument.size,
+        fileType: approvalDocument.type,
+      });
+
       // Approve the record with all required fields including file
       await CollectionRecordService.approveRecord(record.id, {
         eprId,

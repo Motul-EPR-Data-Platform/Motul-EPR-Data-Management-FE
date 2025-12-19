@@ -55,6 +55,8 @@ export const CollectionRecordService = {
     id: string,
     dto: UpdateDraftDTO,
   ): Promise<CollectionRecord> {
+    console.log('Updating draft with payload:', JSON.stringify(dto, null, 2));
+    console.log('hazWasteId in payload:', dto.hazWasteId);
     const { data } = await api.put(
       path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.DRAFT_BY_ID(id)),
       dto,
@@ -197,6 +199,15 @@ export const CollectionRecordService = {
       formData.append("comment", dto.comment);
     }
     formData.append("file", dto.file);
+
+    console.log("Uploading approval document:", {
+      recordId: id,
+      fileName: dto.file.name,
+      fileSize: dto.file.size,
+      fileType: dto.file.type,
+      eprId: dto.eprId,
+      acceptanceDate: dto.acceptanceDate,
+    });
 
     const { data } = await api.post(
       path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.APPROVE(id)),

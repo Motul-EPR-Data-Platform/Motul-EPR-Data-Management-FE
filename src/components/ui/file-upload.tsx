@@ -75,6 +75,11 @@ export function FileUpload({
       const file = files[0];
       if (validateFile(file)) {
         onChange?.(file);
+      } else {
+        // Reset input value so user can select the same file again
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       }
     }
   };
@@ -87,6 +92,11 @@ export function FileUpload({
       const file = files[0];
       if (validateFile(file)) {
         onChange?.(file);
+      } else {
+        // Reset input value so user can select the same file again
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       }
     }
   };

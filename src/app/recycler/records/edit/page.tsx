@@ -133,7 +133,7 @@ export default function EditCollectionRecordPage() {
           const contractData = def.data as any;
           return {
             id: def.id,
-            name: contractData?.name || def.name || "Unknown",
+            name: contractData?.name || "",
             code: contractData?.code || "",
           };
         });
@@ -146,7 +146,7 @@ export default function EditCollectionRecordPage() {
           const wasteTypeData = def.data as any;
           return {
             id: def.id,
-            name: wasteTypeData?.name || def.name || "Unknown",
+            name: wasteTypeData?.name || "",
             code: wasteTypeData?.code || "",
             hazCode: wasteTypeData?.hazCode || null,
           };
@@ -404,19 +404,15 @@ export default function EditCollectionRecordPage() {
         collectedVolumeKg: formData.collectedVolumeKg || null,
         deliveryDate: formatDateDDMMYYYY(collectionDate),
         vehiclePlate: formData.vehiclePlate || null,
-        stockpiled: formData.stockpiled || null,
+        stockpiled: formData.stockpiled ?? false,
         stockpileVolumeKg: formData.stockpileVolumeKg || null,
         recycledDate: recycledDate ? formatDateDDMMYYYY(recycledDate) : null,
         recycledVolumeKg: formData.recycledVolumeKg || null,
         wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
         contractTypeId: formData.contractTypeId || null,
         wasteSourceId: formData.wasteSourceId || null,
-        hazCodeId: formData.hazCodeId || null,
-        pickupLocation: locationRefId && fullAddress
-          ? { address: fullAddress }
-          : locationRefId
-            ? { address: locationRefId }
-            : undefined,
+        hazWasteId: formData.hazCodeId || null,
+        pickupLocationId: locationRefId || null,
         collectedPricePerKg: formData.collectedPricePerKg || null,
       };
 
@@ -476,19 +472,15 @@ export default function EditCollectionRecordPage() {
         collectedVolumeKg: formData.collectedVolumeKg || null,
         deliveryDate: formatDateDDMMYYYY(collectionDate),
         vehiclePlate: formData.vehiclePlate || null,
-        stockpiled: formData.stockpiled || null,
+        stockpiled: formData.stockpiled ?? false,
         stockpileVolumeKg: formData.stockpileVolumeKg || null,
         recycledDate: recycledDate ? formatDateDDMMYYYY(recycledDate) : null,
         recycledVolumeKg: formData.recycledVolumeKg || null,
         wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
         contractTypeId: formData.contractTypeId || null,
         wasteSourceId: formData.wasteSourceId || null,
-        hazCodeId: formData.hazCodeId || null,
-        pickupLocation: locationRefId && fullAddress
-          ? { address: fullAddress }
-          : locationRefId
-            ? { address: locationRefId }
-            : undefined,
+        hazWasteId: formData.hazCodeId || null,
+        pickupLocationId: locationRefId || null,
         collectedPricePerKg: formData.collectedPricePerKg || null,
       };
 
