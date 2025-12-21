@@ -19,6 +19,7 @@ interface Step2CollectionDetailsProps {
   onCollectionDateChange: (date: Date) => void;
   locationRefId?: string;
   onLocationRefIdChange: (refId: string) => void;
+  fullAddress?: string; // Full address string to display
   address?: {
     houseNumber?: string;
     street?: string;
@@ -46,6 +47,7 @@ export function Step2CollectionDetails({
   onCollectionDateChange,
   locationRefId,
   onLocationRefIdChange,
+  fullAddress,
   address,
   onAddressChange,
   onFullAddressChange,
@@ -246,13 +248,13 @@ export function Step2CollectionDetails({
             <div className="space-y-4">
               <Label>Địa chỉ thu gom chi tiết</Label>
               <LocationAutocomplete
-                value={locationRefId || ""}
+                value={fullAddress || ""}
                 onSelect={async (result) => {
                   onLocationRefIdChange(result.refId);
                   // Fetch full location details to populate address and coordinates
                   try {
                     const locationDetails = await LocationService.getLocationByRefId(result.refId);
-                    // Store the full address string for backend
+                    // Store the full address string for backend and display
                     onFullAddressChange?.(locationDetails.address);
                     onAddressChange?.({
                       ...address,

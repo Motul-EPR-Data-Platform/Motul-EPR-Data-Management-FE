@@ -12,6 +12,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { WasteOwnerType } from "@/types/waste-owner";
 import { getBusinessCodeLabel, getNameLabel, getWasteOwnerTypeLabel, getWasteOwnerTypeBadgeVariant } from "./wasteOwnerUtils";
+import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
+import { LocationService } from "@/lib/services/location.service";
 
 interface WasteOwnerFormFieldsProps {
   // Form data
@@ -22,6 +24,7 @@ interface WasteOwnerFormFieldsProps {
   phone?: string;
   email?: string;
   locationRefId?: string;
+  fullAddress?: string; // Full address string to display
   isActive?: boolean;
   
   // Form state
@@ -40,6 +43,7 @@ interface WasteOwnerFormFieldsProps {
   onPhoneChange?: (value: string) => void;
   onEmailChange?: (value: string) => void;
   onLocationRefIdChange?: (value: string) => void;
+  onFullAddressChange?: (value: string) => void;
   onActiveChange?: (value: boolean) => void;
 }
 
@@ -51,6 +55,7 @@ export function WasteOwnerFormFields({
   phone,
   email,
   locationRefId,
+  fullAddress,
   isActive,
   disabled = false,
   errors = {},
@@ -65,6 +70,7 @@ export function WasteOwnerFormFields({
   onPhoneChange,
   onEmailChange,
   onLocationRefIdChange,
+  onFullAddressChange,
   onActiveChange,
 }: WasteOwnerFormFieldsProps) {
   return (
@@ -145,15 +151,25 @@ export function WasteOwnerFormFields({
 
       {/* Location Field */}
       <div className="grid gap-2">
-        {/* TODO: Make location required again after backend implementation is complete */}
-        <Label htmlFor="locationRefId">Địa chỉ chi tiết</Label>
-        <Input
-          id="locationRefId"
-          placeholder="Số nhà, tên đường, Phường/Xã, Tỉnh/Thành phố..."
-          value={locationRefId || ""}
-          onChange={(e) => onLocationRefIdChange?.(e.target.value)}
+        <LocationAutocomplete
+          value={fullAddress || ""}
+          onSelect={async (result) => {
+            onLocationRefIdChange?.(result.refId);
+            // Fetch full location details to populate address
+            try {
+              const locationDetails = await LocationService.getLocationByRefId(result.refId);
+              // Store the full address string for display
+              onFullAddressChange?.(locationDetails.address);
+            } catch (error) {
+              console.error("Failed to fetch location details:", error);
+              // Still set the display address from the result
+              onFullAddressChange?.(result.address);
+            }
+          }}
+          label="Địa chỉ chi tiết"
+          placeholder="Tìm hoặc chọn từ danh sách...."
           disabled={disabled}
-          className={errors.locationRefId ? "border-red-500" : ""}
+          error={errors.locationRefId}
         />
         {errors.locationRefId && (
           <p className="text-sm text-red-500">{errors.locationRefId}</p>

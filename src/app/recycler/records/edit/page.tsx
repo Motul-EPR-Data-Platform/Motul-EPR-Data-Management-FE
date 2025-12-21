@@ -596,6 +596,7 @@ export default function EditCollectionRecordPage() {
               onCollectionDateChange={setCollectionDate}
               locationRefId={locationRefId}
               onLocationRefIdChange={setLocationRefId}
+              fullAddress={fullAddress}
               address={address}
               onAddressChange={setAddress}
               latitude={latitude}

@@ -53,6 +53,7 @@ export function WasteOwnerForm({
     phone?: string;
     email?: string;
     locationRefId?: string;
+    fullAddress?: string; // Full address string for display
     isActive?: boolean;
   }>({
     wasteOwnerType: "business",
@@ -62,6 +63,7 @@ export function WasteOwnerForm({
     phone: "+84 ",
     email: "",
     locationRefId: "",
+    fullAddress: "",
     isActive: true,
   });
 
@@ -76,6 +78,7 @@ export function WasteOwnerForm({
         phone: initialData.phone || "",
         email: initialData.email || "",
         locationRefId: initialData.location?.refId || "",
+        fullAddress: initialData.location?.address || "",
         isActive: initialData.isActive,
       });
     }
@@ -135,6 +138,7 @@ export function WasteOwnerForm({
           phone={formData.phone || ""}
           email={formData.email || ""}
           locationRefId={formData.locationRefId || ''}
+          fullAddress={formData.fullAddress || ''}
           isActive={formData.isActive}
           disabled={isViewMode || isLoading}
           errors={errors}
@@ -162,6 +166,9 @@ export function WasteOwnerForm({
           }
           onLocationRefIdChange={(value) =>
             setFormData((prev) => ({ ...prev, locationRefId: value }))
+          }
+          onFullAddressChange={(value) =>
+            setFormData((prev) => ({ ...prev, fullAddress: value }))
           }
           onActiveChange={(value) =>
             setFormData((prev) => ({ ...prev, isActive: value }))
