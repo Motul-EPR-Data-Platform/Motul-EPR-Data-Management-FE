@@ -81,20 +81,20 @@ export function Step3WarehouseRecycling({
         {/* Stockpile Volume and Photo (if stockpiled) */}
         {formData.stockpiled === true && (
           <>
-            <div className="grid gap-2">
-              <Label htmlFor="stockpileVolumeKg">Khối lượng lưu kho (kg)</Label>
-              <Input
-                id="stockpileVolumeKg"
-                type="number"
-                value={formData.stockpileVolumeKg || ""}
-                onChange={(e) =>
-                  onChange(
-                    "stockpileVolumeKg",
-                    e.target.value ? parseFloat(e.target.value) : null,
-                  )
-                }
-                placeholder="0"
-                disabled={disabled}
+          <div className="grid gap-2">
+            <Label htmlFor="stockpileVolumeKg">Khối lượng lưu kho (kg)</Label>
+            <Input
+              id="stockpileVolumeKg"
+              type="number"
+              value={formData.stockpileVolumeKg || ""}
+              onChange={(e) =>
+                onChange(
+                  "stockpileVolumeKg",
+                  e.target.value ? parseFloat(e.target.value) : null,
+                )
+              }
+              placeholder="0"
+              disabled={disabled}
                 className={errors.stockpileVolumeKg ? "border-red-500" : ""}
               />
               {errors.stockpileVolumeKg && (
@@ -124,7 +124,7 @@ export function Step3WarehouseRecycling({
               {errors.stockpilePhoto && (
                 <p className="text-sm text-red-500">{errors.stockpilePhoto}</p>
               )}
-            </div>
+          </div>
           </>
         )}
 

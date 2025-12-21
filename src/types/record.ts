@@ -98,7 +98,7 @@ export interface CreateDraftFormData {
   contractTypeId?: string | null;
   wasteSourceId?: string | null;
   hazCodeId?: string | null; // HAZ code definition ID
-  pickupLocationRefId?: string | null; // refId from location autocomplete
+  pickupLocationId?: string | null; // refId from location autocomplete - this value should be mapped to pickupLocation: { refId: string } in DTO
   collectedPricePerKg?: number | null;
   expiresAt?: string | null; // ISO date string
 }
@@ -116,8 +116,8 @@ export interface CreateDraftDTO {
   wasteOwnerIds?: string[]; // Backend expects array - optional, but should be included when waste owners are selected
   contractTypeId?: string | null;
   wasteSourceId?: string | null;
-  hazWasteId?: string | null; // HAZ code definition ID
-  pickupLocationId?: string | null; // Backend expects refId
+  hazCodeId?: string | null; // HAZ code definition ID
+  pickupLocation?: { refId: string } | null; // Backend expects object with refId property
   collectedPricePerKg?: number | null;
   expiresAt?: string | null; // Date string in dd/mm/yyyy format
 }
@@ -134,9 +134,9 @@ export interface UpdateDraftDTO {
   recycledVolumeKg?: number | null;
   wasteOwnerIds?: string[]; // Backend expects array
   contractTypeId?: string | null;
-  hazWasteId?: string | null; // HAZ code definition ID
+  hazCodeId?: string | null; // HAZ code definition ID
   wasteSourceId?: string | null;
-  pickupLocationId?: string | null; // Backend expects refId
+  pickupLocationId?: { refId: string } | null; // Backend expects object with refId property
   collectedPricePerKg?: number | null;
   expiresAt?: string | null; // ISO date string
 }

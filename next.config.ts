@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   output: "export",
+  transpilePackages: ["@vietmap/vietmap-gl-js"],
 };
 
 export default nextConfig;

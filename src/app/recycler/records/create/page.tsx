@@ -306,8 +306,8 @@ export default function CreateCollectionRecordPage() {
           });
         } else {
           // Fallback validation
-          if (!formData.recycledVolumeKg || formData.recycledVolumeKg <= 0) {
-            newErrors.recycledVolumeKg = "Khối lượng tái chế là bắt buộc";
+      if (!formData.recycledVolumeKg || formData.recycledVolumeKg <= 0) {
+        newErrors.recycledVolumeKg = "Khối lượng tái chế là bắt buộc";
           }
           if (!recycledPhoto) {
             newErrors.recycledPhoto = "Ảnh sản phẩm đã tái chế là bắt buộc";
@@ -548,16 +548,16 @@ export default function CreateCollectionRecordPage() {
         contractTypeId: formData.contractTypeId || null,
         // Backend expects UUID for wasteSourceId (waste type ID)
         wasteSourceId: formData.wasteSourceId || null,
-        // Explicitly set hazWasteId - use null if undefined, empty string, or null
-        hazWasteId: (formData.hazCodeId && formData.hazCodeId.trim() !== "") ? formData.hazCodeId : null,
-        pickupLocationId: locationRefId || null,
+        // Explicitly set hazCodeId - use null if undefined, empty string, or null
+        hazCodeId: (formData.hazCodeId && formData.hazCodeId.trim() !== "") ? formData.hazCodeId : null,
+        pickupLocation: locationRefId ? { refId: locationRefId } : null,
         collectedPricePerKg: formData.collectedPricePerKg || null,
       };
 
-      console.log("Saving draft with hazWasteId:", {
+      console.log("Saving draft with hazCodeId:", {
         formDataHazCodeId: formData.hazCodeId,
         formDataHazCodeIdType: typeof formData.hazCodeId,
-        hazWasteId: draftData.hazWasteId,
+        hazCodeId: draftData.hazCodeId,
         fullFormData: JSON.stringify(formData, null, 2),
         fullDraftData: JSON.stringify(draftData, null, 2),
       });
@@ -639,8 +639,8 @@ export default function CreateCollectionRecordPage() {
           wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
           contractTypeId: formData.contractTypeId || null,
           wasteSourceId: formData.wasteSourceId || null,
-          hazWasteId: (formData.hazCodeId && formData.hazCodeId.trim() !== "") ? formData.hazCodeId : null,
-          pickupLocationId: locationRefId || null,
+          hazCodeId: (formData.hazCodeId && formData.hazCodeId.trim() !== "") ? formData.hazCodeId : null,
+          pickupLocation: locationRefId ? { refId: locationRefId } : null,
           collectedPricePerKg: formData.collectedPricePerKg || null,
         };
 

@@ -9,6 +9,7 @@ import { DocumentUpload, DocumentFile } from "@/components/records/DocumentUploa
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { LocationService } from "@/lib/services/location.service";
 import { FileType } from "@/types/file-record";
+//import { VietMap } from "@/components/ui/vietmap";
 
 interface Step2CollectionDetailsProps {
   formData: Partial<CreateDraftFormData>;
@@ -209,17 +210,33 @@ export function Step2CollectionDetails({
           <div className="grid grid-cols-2 gap-6">
             {/* Left Column - Map & GPS Coordinates */}
             <div className="space-y-4">
-              {/* Map */}
+              {/* Map - Temporarily disabled */}
+              {/* <div className="space-y-2">
+                <Label>Bản đồ</Label>
+                {latitude !== undefined && longitude !== undefined ? (
+                  <VietMap
+                    latitude={latitude}
+                    longitude={longitude}
+                    zoom={15}
+                    height="256px"
+                    className="rounded-lg border-2 border-gray-300"
+                  />
+                ) : (
+                  <div className="w-full h-64 bg-gray-100 border-2 border-gray-300 rounded-lg flex items-center justify-center">
+                    <p className="text-sm text-muted-foreground">
+                      Chọn địa chỉ để hiển thị bản đồ
+                    </p>
+                  </div>
+                )}
+              </div> */}
+              
+              {/* Map placeholder - temporarily disabled */}
               <div className="space-y-2">
                 <Label>Bản đồ</Label>
-                <div className="w-full h-64 bg-gradient-to-br from-blue-100 to-green-100 border-2 border-gray-300 rounded-lg flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                    <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
-                      <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                        <div className="w-2 h-2 bg-red-600 rounded-full"></div>
-                      </div>
-                    </div>
-                  </div>
+                <div className="w-full h-64 bg-gray-100 border-2 border-gray-300 rounded-lg flex items-center justify-center">
+                  <p className="text-sm text-muted-foreground">
+                    Bản đồ tạm thời bị vô hiệu hóa
+                  </p>
                 </div>
               </div>
 
@@ -247,35 +264,35 @@ export function Step2CollectionDetails({
             {/* Right Column - Detailed Address */}
             <div className="space-y-4">
               <Label>Địa chỉ thu gom chi tiết</Label>
-              <LocationAutocomplete
+                <LocationAutocomplete
                 value={fullAddress || ""}
-                onSelect={async (result) => {
-                  onLocationRefIdChange(result.refId);
-                  // Fetch full location details to populate address and coordinates
-                  try {
-                    const locationDetails = await LocationService.getLocationByRefId(result.refId);
+                  onSelect={async (result) => {
+                    onLocationRefIdChange(result.refId);
+                    // Fetch full location details to populate address and coordinates
+                    try {
+                      const locationDetails = await LocationService.getLocationByRefId(result.refId);
                     // Store the full address string for backend and display
-                    onFullAddressChange?.(locationDetails.address);
-                    onAddressChange?.({
-                      ...address,
-                      province: locationDetails.city,
-                      // Note: district and ward would need to be parsed from address or fetched separately
-                    });
-                    // Update GPS coordinates if available
-                    if (locationDetails.latitude && locationDetails.longitude) {
-                      onLatitudeChange?.(locationDetails.latitude);
-                      onLongitudeChange?.(locationDetails.longitude);
+                      onFullAddressChange?.(locationDetails.address);
+                      onAddressChange?.({
+                        ...address,
+                        province: locationDetails.city,
+                        // Note: district and ward would need to be parsed from address or fetched separately
+                      });
+                      // Update GPS coordinates if available
+                      if (locationDetails.latitude && locationDetails.longitude) {
+                        onLatitudeChange?.(locationDetails.latitude);
+                        onLongitudeChange?.(locationDetails.longitude);
+                      }
+                    } catch (error) {
+                      console.error("Failed to fetch location details:", error);
                     }
-                  } catch (error) {
-                    console.error("Failed to fetch location details:", error);
-                  }
-                }}
-                label="Số nhà, tên đường"
-                placeholder="Tìm hoặc chọn từ danh sách...."
-                required
-                disabled={disabled}
-                error={errors.locationRefId}
-              />
+                  }}
+                  label="Số nhà, tên đường"
+                  placeholder="Tìm hoặc chọn từ danh sách...."
+                  required
+                  disabled={disabled}
+                  error={errors.locationRefId}
+                />
             </div>
           </div>
         </div>

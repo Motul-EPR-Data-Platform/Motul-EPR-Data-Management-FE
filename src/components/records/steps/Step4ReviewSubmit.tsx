@@ -164,10 +164,10 @@ export function Step4ReviewSubmit({
             />
           )}
           {(latitude !== undefined && longitude !== undefined) && (
-            <ReviewField
+          <ReviewField
               label="Tọa độ GPS"
               value={`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`}
-            />
+          />
           )}
           <ReviewField
             label="Bằng chứng đã tải lên"
@@ -192,10 +192,10 @@ export function Step4ReviewSubmit({
           />
           {formData.stockpiled === true && (
             <>
-              <ReviewField
-                label="Khối lượng lưu kho (kg)"
-                value={formData.stockpileVolumeKg}
-              />
+            <ReviewField
+              label="Khối lượng lưu kho (kg)"
+              value={formData.stockpileVolumeKg}
+            />
               <ReviewField
                 label="Ảnh nhập kho"
                 value={hasStockpilePhoto ? "Đã tải lên" : "Chưa tải lên"}

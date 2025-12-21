@@ -456,8 +456,8 @@ export default function EditCollectionRecordPage() {
         wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
         contractTypeId: formData.contractTypeId || null,
         wasteSourceId: formData.wasteSourceId || null,
-        hazWasteId: formData.hazCodeId || null,
-        pickupLocationId: locationRefId || null,
+        hazCodeId: formData.hazCodeId || null,
+        pickupLocation: locationRefId ? { refId: locationRefId } : null,
         collectedPricePerKg: formData.collectedPricePerKg || null,
       };
 
@@ -524,8 +524,8 @@ export default function EditCollectionRecordPage() {
         wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
         contractTypeId: formData.contractTypeId || null,
         wasteSourceId: formData.wasteSourceId || null,
-        hazWasteId: formData.hazCodeId || null,
-        pickupLocationId: locationRefId || null,
+        hazCodeId: formData.hazCodeId || null,
+        pickupLocation: locationRefId ? { refId: locationRefId } : null,
         collectedPricePerKg: formData.collectedPricePerKg || null,
       };
 
