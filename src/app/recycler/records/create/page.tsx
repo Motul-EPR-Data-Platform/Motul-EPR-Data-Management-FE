@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ProgressStepper } from "@/components/records/ProgressStepper";
@@ -20,6 +20,8 @@ import { transformDefinitions } from "@/lib/utils/definitionUtils/definitionTran
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { FileType } from "@/types/file-record";
+import { z } from "zod";
+import { step3ValidationSchema } from "@/lib/validations/record";
 
 const STEPS = [
   { number: 1, label: "Thông tin Chủ nguồn thải" },
@@ -53,6 +55,38 @@ export default function CreateCollectionRecordPage() {
   const [evidenceFiles, setEvidenceFiles] = useState<DocumentFile[]>([]);
   const [qualityDocuments, setQualityDocuments] = useState<DocumentFile[]>([]);
   const [recycledPhoto, setRecycledPhoto] = useState<File | null>(null);
+  const [stockpilePhoto, setStockpilePhoto] = useState<File | null>(null);
+
+  // Track uploaded files to avoid re-uploading unchanged files
+  const uploadedFilesRef = useRef<{
+    evidenceFiles: Set<string>; // Set of file identifiers (name-size-lastModified)
+    qualityMetricsFiles: Set<string>;
+    outputQualityMetricsFiles: Set<string>;
+    recycledPhoto: string | null;
+    stockpilePhoto: string | null;
+  }>({
+    evidenceFiles: new Set(),
+    qualityMetricsFiles: new Set(),
+    outputQualityMetricsFiles: new Set(),
+    recycledPhoto: null,
+    stockpilePhoto: null,
+  });
+
+  // Helper to generate file identifier
+  const getFileId = (file: File): string => {
+    return `${file.name}-${file.size}-${file.lastModified}`;
+  };
+
+  // Reset uploaded files tracking (call when starting a new record)
+  const resetUploadedFilesTracking = () => {
+    uploadedFilesRef.current = {
+      evidenceFiles: new Set(),
+      qualityMetricsFiles: new Set(),
+      outputQualityMetricsFiles: new Set(),
+      recycledPhoto: null,
+      stockpilePhoto: null,
+    };
+  };
 
   // Data for dropdowns
   const [wasteOwners, setWasteOwners] = useState<
@@ -251,15 +285,42 @@ export default function CreateCollectionRecordPage() {
     }
 
     if (step === 3) {
-      // Disabled for now - allow bypassing date requirement
-      // if (!recycledDate) {
-      //   newErrors.recycledDate = "Ngày hoàn thành tái chế là bắt buộc";
-      // }
-      if (!formData.recycledVolumeKg || formData.recycledVolumeKg <= 0) {
-        newErrors.recycledVolumeKg = "Khối lượng tái chế là bắt buộc";
-      }
-      if (!recycledPhoto) {
-        newErrors.recycledPhoto = "Ảnh sản phẩm đã tái chế là bắt buộc";
+      // Use Zod validation for Step 3
+      try {
+        const step3Data = {
+          stockpiled: formData.stockpiled ?? false,
+          stockpileVolumeKg: formData.stockpileVolumeKg ?? null,
+          recycledVolumeKg: formData.recycledVolumeKg ?? 0,
+          recycledPhoto: recycledPhoto,
+          stockpilePhoto: stockpilePhoto ?? null,
+        };
+
+        step3ValidationSchema.parse(step3Data);
+      } catch (error: any) {
+        if (error instanceof z.ZodError) {
+          error.issues.forEach((issue) => {
+            const field = issue.path[0] as string;
+            if (field) {
+              newErrors[field] = issue.message;
+            }
+          });
+        } else {
+          // Fallback validation
+          if (!formData.recycledVolumeKg || formData.recycledVolumeKg <= 0) {
+            newErrors.recycledVolumeKg = "Khối lượng tái chế là bắt buộc";
+          }
+          if (!recycledPhoto) {
+            newErrors.recycledPhoto = "Ảnh sản phẩm đã tái chế là bắt buộc";
+          }
+          if (formData.stockpiled === true) {
+            if (!formData.stockpileVolumeKg || formData.stockpileVolumeKg <= 0) {
+              newErrors.stockpileVolumeKg = "Khối lượng lưu kho là bắt buộc khi chọn lưu kho";
+            }
+            if (!stockpilePhoto) {
+              newErrors.stockpilePhoto = "Ảnh nhập kho là bắt buộc khi chọn lưu kho";
+            }
+          }
+        }
       }
     }
 
@@ -317,46 +378,80 @@ export default function CreateCollectionRecordPage() {
     return FileType.EVIDENCE_PHOTO;
   };
 
-  // Upload files for a record
+  // Upload files for a record - only uploads changed files
   const uploadFilesForRecord = async (recordId: string) => {
     const uploadPromises: Promise<any>[] = [];
 
-    // Upload evidence photos (from Step 2)
+    // Upload evidence photos (from Step 2) - only new/changed files
     if (evidenceFiles && evidenceFiles.length > 0) {
-      // Group evidence files by type and upload them
       const evidencePhotos = evidenceFiles
         .filter((doc) => doc && doc.file && ["phieu-can", "bien-ban-giao-nhan", "bien-so-xe", "khac"].includes(doc.type))
         .map((doc) => doc.file)
         .filter((file): file is File => file instanceof File);
       
-      if (evidencePhotos.length > 0) {
-        console.log("Uploading evidence photos:", evidencePhotos.length, evidencePhotos.map(f => f.name));
+      // Filter out already uploaded files
+      const newEvidencePhotos = evidencePhotos.filter((file) => {
+        const fileId = getFileId(file);
+        return !uploadedFilesRef.current.evidenceFiles.has(fileId);
+      });
+      
+      if (newEvidencePhotos.length > 0) {
+        console.log("Uploading new evidence photos:", newEvidencePhotos.length, newEvidencePhotos.map(f => f.name));
         uploadPromises.push(
           CollectionRecordService.uploadMultipleFiles(
             recordId,
-            evidencePhotos,
+            newEvidencePhotos,
             FileType.EVIDENCE_PHOTO
-          )
+          ).then(() => {
+            // Mark as uploaded
+            newEvidencePhotos.forEach((file) => {
+              uploadedFilesRef.current.evidenceFiles.add(getFileId(file));
+            });
+          })
         );
       } else {
-        console.warn("No valid evidence photos to upload");
+        console.log("No new evidence photos to upload (all already uploaded)");
       }
     }
 
-    // Upload recycled photo (from Step 3) - Required
-    if (recycledPhoto) {
-      console.log("Uploading recycled photo:", recycledPhoto.name);
-      uploadPromises.push(
-        CollectionRecordService.uploadFile(recordId, {
-          file: recycledPhoto,
-          category: FileType.STOCKPILE_PHOTO,
-        })
-      );
+    // Upload stockpile photo (from Step 3) - only if changed
+    if (stockpilePhoto) {
+      const fileId = getFileId(stockpilePhoto);
+      if (uploadedFilesRef.current.stockpilePhoto !== fileId) {
+        console.log("Uploading stockpile photo:", stockpilePhoto.name);
+        uploadPromises.push(
+          CollectionRecordService.uploadFile(recordId, {
+            file: stockpilePhoto,
+            category: FileType.STOCKPILE_PHOTO,
+          }).then(() => {
+            uploadedFilesRef.current.stockpilePhoto = fileId;
+          })
+        );
+      } else {
+        console.log("Stockpile photo already uploaded, skipping");
+      }
     }
 
-    // Upload quality documents (from Step 3)
+    // Upload recycled photo (from Step 3) - only if changed
+    if (recycledPhoto) {
+      const fileId = getFileId(recycledPhoto);
+      if (uploadedFilesRef.current.recycledPhoto !== fileId) {
+        console.log("Uploading recycled photo:", recycledPhoto.name);
+        uploadPromises.push(
+          CollectionRecordService.uploadFile(recordId, {
+            file: recycledPhoto,
+            category: FileType.RECYCLED_PHOTO,
+          }).then(() => {
+            uploadedFilesRef.current.recycledPhoto = fileId;
+          })
+        );
+      } else {
+        console.log("Recycled photo already uploaded, skipping");
+      }
+    }
+
+    // Upload quality documents (from Step 3) - only new/changed files
     if (qualityDocuments && qualityDocuments.length > 0) {
-      // Group by document type
       const qualityMetricsFiles = qualityDocuments
         .filter((doc) => doc && doc.file && doc.type === "chat-luong-truoc-tai-che")
         .map((doc) => doc.file)
@@ -367,34 +462,61 @@ export default function CreateCollectionRecordPage() {
         .map((doc) => doc.file)
         .filter((file): file is File => file instanceof File);
 
-      if (qualityMetricsFiles.length > 0) {
-        console.log("Uploading quality metrics files:", qualityMetricsFiles.length);
+      // Filter out already uploaded quality metrics files
+      const newQualityMetricsFiles = qualityMetricsFiles.filter((file) => {
+        const fileId = getFileId(file);
+        return !uploadedFilesRef.current.qualityMetricsFiles.has(fileId);
+      });
+
+      if (newQualityMetricsFiles.length > 0) {
+        console.log("Uploading new quality metrics files:", newQualityMetricsFiles.length);
         uploadPromises.push(
           CollectionRecordService.uploadMultipleFiles(
             recordId,
-            qualityMetricsFiles,
+            newQualityMetricsFiles,
             FileType.QUALITY_METRICS
-          )
+          ).then(() => {
+            // Mark as uploaded
+            newQualityMetricsFiles.forEach((file) => {
+              uploadedFilesRef.current.qualityMetricsFiles.add(getFileId(file));
+            });
+          })
         );
+      } else if (qualityMetricsFiles.length > 0) {
+        console.log("No new quality metrics files to upload (all already uploaded)");
       }
 
-      if (outputQualityMetricsFiles.length > 0) {
-        console.log("Uploading output quality metrics files:", outputQualityMetricsFiles.length);
+      // Filter out already uploaded output quality metrics files
+      const newOutputQualityMetricsFiles = outputQualityMetricsFiles.filter((file) => {
+        const fileId = getFileId(file);
+        return !uploadedFilesRef.current.outputQualityMetricsFiles.has(fileId);
+      });
+
+      if (newOutputQualityMetricsFiles.length > 0) {
+        console.log("Uploading new output quality metrics files:", newOutputQualityMetricsFiles.length);
         uploadPromises.push(
           CollectionRecordService.uploadMultipleFiles(
             recordId,
-            outputQualityMetricsFiles,
+            newOutputQualityMetricsFiles,
             FileType.OUTPUT_QUALITY_METRICS
-          )
+          ).then(() => {
+            // Mark as uploaded
+            newOutputQualityMetricsFiles.forEach((file) => {
+              uploadedFilesRef.current.outputQualityMetricsFiles.add(getFileId(file));
+            });
+          })
         );
+      } else if (outputQualityMetricsFiles.length > 0) {
+        console.log("No new output quality metrics files to upload (all already uploaded)");
       }
     }
 
     // Execute all uploads in parallel
     if (uploadPromises.length > 0) {
       await Promise.all(uploadPromises);
+      console.log("File uploads completed successfully");
     } else {
-      console.warn("No files to upload");
+      console.log("No new files to upload (all files already uploaded)");
     }
   };
 
@@ -454,7 +576,7 @@ export default function CreateCollectionRecordPage() {
       }
 
       // Upload files after draft is created/updated
-      if (currentDraftId && (evidenceFiles.length > 0 || qualityDocuments.length > 0 || recycledPhoto)) {
+      if (currentDraftId && (evidenceFiles.length > 0 || qualityDocuments.length > 0 || recycledPhoto || stockpilePhoto)) {
         try {
           await uploadFilesForRecord(currentDraftId);
           toast.success("Đã tải lên tài liệu");
@@ -537,7 +659,7 @@ export default function CreateCollectionRecordPage() {
     }
 
     // Upload files before submitting
-    if (currentDraftId && (evidenceFiles.length > 0 || qualityDocuments.length > 0)) {
+    if (currentDraftId && (evidenceFiles.length > 0 || qualityDocuments.length > 0 || recycledPhoto || stockpilePhoto)) {
       try {
         await uploadFilesForRecord(currentDraftId);
       } catch (fileError: any) {
@@ -588,6 +710,18 @@ export default function CreateCollectionRecordPage() {
   const getSelectedWasteSourceName = () => {
     const wasteType = wasteTypes.find((wt) => wt.id === formData.wasteSourceId);
     return wasteType?.name || undefined;
+  };
+
+  const getSelectedHazCodeName = () => {
+    const hazType = hazTypes.find((ht) => ht.id === formData.hazCodeId);
+    if (hazType) {
+      const hazCode = hazType.haz_code || hazType.code || "";
+      const displayName = hazType.name || hazType.code || "";
+      return hazCode && hazCode !== displayName
+        ? `${displayName} (${hazCode})`
+        : displayName;
+    }
+    return undefined;
   };
 
   const completedSteps = Array.from(
@@ -672,6 +806,8 @@ export default function CreateCollectionRecordPage() {
               onQualityDocumentsChange={setQualityDocuments}
               recycledPhoto={recycledPhoto}
               onRecycledPhotoChange={setRecycledPhoto}
+              stockpilePhoto={stockpilePhoto}
+              onStockpilePhotoChange={setStockpilePhoto}
             />
           )}
 
@@ -682,11 +818,16 @@ export default function CreateCollectionRecordPage() {
               wasteOwnerName={getSelectedWasteOwnerName()}
               contractTypeName={getSelectedContractTypeName()}
               wasteSourceName={getSelectedWasteSourceName()}
+              hazCodeName={getSelectedHazCodeName()}
               collectionDate={collectionDate}
-              address={address}
+              fullAddress={fullAddress}
+              latitude={latitude}
+              longitude={longitude}
               recycledDate={recycledDate}
               evidenceFilesCount={evidenceFiles.length}
               qualityDocumentsCount={qualityDocuments.length}
+              hasRecycledPhoto={!!recycledPhoto}
+              hasStockpilePhoto={!!stockpilePhoto}
             />
           )}
 

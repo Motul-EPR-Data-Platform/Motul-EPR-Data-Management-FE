@@ -20,6 +20,8 @@ import { transformDefinitions } from "@/lib/utils/definitionUtils/definitionTran
 import { toast } from "sonner";
 import { format, parse } from "date-fns";
 import { FileType } from "@/types/file-record";
+import { z } from "zod";
+import { step3ValidationSchema } from "@/lib/validations/record";
 
 const STEPS = [
   { number: 1, label: "Thông tin Chủ nguồn thải" },
@@ -80,6 +82,7 @@ export default function EditCollectionRecordPage() {
   const [evidenceFiles, setEvidenceFiles] = useState<DocumentFile[]>([]);
   const [qualityDocuments, setQualityDocuments] = useState<DocumentFile[]>([]);
   const [recycledPhoto, setRecycledPhoto] = useState<File | null>(null);
+  const [stockpilePhoto, setStockpilePhoto] = useState<File | null>(null);
 
   // Data for dropdowns
   const [wasteOwners, setWasteOwners] = useState<
@@ -287,11 +290,42 @@ export default function EditCollectionRecordPage() {
     }
 
     if (step === 3) {
-      if (!formData.recycledVolumeKg || formData.recycledVolumeKg <= 0) {
-        newErrors.recycledVolumeKg = "Khối lượng tái chế là bắt buộc";
-      }
-      if (!recycledPhoto) {
-        newErrors.recycledPhoto = "Ảnh sản phẩm đã tái chế là bắt buộc";
+      // Use Zod validation for Step 3
+      try {
+        const step3Data = {
+          stockpiled: formData.stockpiled ?? false,
+          stockpileVolumeKg: formData.stockpileVolumeKg ?? null,
+          recycledVolumeKg: formData.recycledVolumeKg ?? 0,
+          recycledPhoto: recycledPhoto,
+          stockpilePhoto: stockpilePhoto ?? null,
+        };
+
+        step3ValidationSchema.parse(step3Data);
+      } catch (error: any) {
+        if (error instanceof z.ZodError) {
+          error.issues.forEach((issue) => {
+            const field = issue.path[0] as string;
+            if (field) {
+              newErrors[field] = issue.message;
+            }
+          });
+        } else {
+          // Fallback validation
+          if (!formData.recycledVolumeKg || formData.recycledVolumeKg <= 0) {
+            newErrors.recycledVolumeKg = "Khối lượng tái chế là bắt buộc";
+          }
+          if (!recycledPhoto) {
+            newErrors.recycledPhoto = "Ảnh sản phẩm đã tái chế là bắt buộc";
+          }
+          if (formData.stockpiled === true) {
+            if (!formData.stockpileVolumeKg || formData.stockpileVolumeKg <= 0) {
+              newErrors.stockpileVolumeKg = "Khối lượng lưu kho là bắt buộc khi chọn lưu kho";
+            }
+            if (!stockpilePhoto) {
+              newErrors.stockpilePhoto = "Ảnh nhập kho là bắt buộc khi chọn lưu kho";
+            }
+          }
+        }
       }
     }
 
@@ -370,6 +404,17 @@ export default function EditCollectionRecordPage() {
       }
     }
 
+    // Upload stockpile photo (if stockpiled)
+    if (stockpilePhoto instanceof File) {
+      uploadPromises.push(
+        CollectionRecordService.uploadFile(recordId, {
+          file: stockpilePhoto,
+          category: FileType.STOCKPILE_PHOTO,
+        }),
+      );
+    }
+
+    // Upload recycled photo
     if (recycledPhoto instanceof File) {
       uploadPromises.push(
         CollectionRecordService.uploadFile(recordId, {
@@ -420,7 +465,7 @@ export default function EditCollectionRecordPage() {
       toast.success("Đã cập nhật bản nháp");
 
       // Upload files after draft is updated
-      if (evidenceFiles.length > 0 || qualityDocuments.length > 0 || recycledPhoto) {
+      if (evidenceFiles.length > 0 || qualityDocuments.length > 0 || recycledPhoto || stockpilePhoto) {
         try {
           await uploadFilesForRecord(draftId);
           toast.success("Đã tải lên tài liệu");
@@ -488,7 +533,7 @@ export default function EditCollectionRecordPage() {
       await CollectionRecordService.updateDraft(draftId, draftData);
 
       // Upload files
-      if (evidenceFiles.length > 0 || qualityDocuments.length > 0 || recycledPhoto) {
+      if (evidenceFiles.length > 0 || qualityDocuments.length > 0 || recycledPhoto || stockpilePhoto) {
         await uploadFilesForRecord(draftId);
       }
 
@@ -520,6 +565,18 @@ export default function EditCollectionRecordPage() {
   const getSelectedWasteSourceName = () => {
     const wasteType = wasteTypes.find((wt) => wt.id === formData.wasteSourceId);
     return wasteType?.name || undefined;
+  };
+
+  const getSelectedHazCodeName = () => {
+    const hazType = hazTypes.find((ht) => ht.id === formData.hazCodeId);
+    if (hazType) {
+      const hazCode = hazType.haz_code || hazType.code || "";
+      const displayName = hazType.name || hazType.code || "";
+      return hazCode && hazCode !== displayName
+        ? `${displayName} (${hazCode})`
+        : displayName;
+    }
+    return undefined;
   };
 
   if (isLoadingRecord) {
@@ -621,6 +678,8 @@ export default function EditCollectionRecordPage() {
               onQualityDocumentsChange={setQualityDocuments}
               recycledPhoto={recycledPhoto}
               onRecycledPhotoChange={setRecycledPhoto}
+              stockpilePhoto={stockpilePhoto}
+              onStockpilePhotoChange={setStockpilePhoto}
             />
           )}
 
@@ -631,11 +690,16 @@ export default function EditCollectionRecordPage() {
               wasteOwnerName={getSelectedWasteOwnerName()}
               contractTypeName={getSelectedContractTypeName()}
               wasteSourceName={getSelectedWasteSourceName()}
+              hazCodeName={getSelectedHazCodeName()}
               collectionDate={collectionDate}
-              address={address}
+              fullAddress={fullAddress}
+              latitude={latitude}
+              longitude={longitude}
               recycledDate={recycledDate}
               evidenceFilesCount={evidenceFiles.length}
               qualityDocumentsCount={qualityDocuments.length}
+              hasRecycledPhoto={!!recycledPhoto}
+              hasStockpilePhoto={!!stockpilePhoto}
             />
           )}
 

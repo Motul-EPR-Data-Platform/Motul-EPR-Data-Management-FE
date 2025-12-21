@@ -12,17 +12,16 @@ interface Step4ReviewSubmitProps {
   wasteOwnerName?: string;
   contractTypeName?: string;
   wasteSourceName?: string;
+  hazCodeName?: string;
   collectionDate?: Date;
-  address?: {
-    houseNumber?: string;
-    street?: string;
-    ward?: string;
-    district?: string;
-    province?: string;
-  };
+  fullAddress?: string; // Full address string from location service
+  latitude?: number;
+  longitude?: number;
   recycledDate?: Date;
   evidenceFilesCount?: number;
   qualityDocumentsCount?: number;
+  hasRecycledPhoto?: boolean;
+  hasStockpilePhoto?: boolean;
 }
 
 interface ReviewSectionProps {
@@ -87,11 +86,16 @@ export function Step4ReviewSubmit({
   wasteOwnerName,
   contractTypeName,
   wasteSourceName,
+  hazCodeName,
   collectionDate,
-  address,
+  fullAddress,
+  latitude,
+  longitude,
   recycledDate,
   evidenceFilesCount = 0,
   qualityDocumentsCount = 0,
+  hasRecycledPhoto = false,
+  hasStockpilePhoto = false,
 }: Step4ReviewSubmitProps) {
   return (
     <div className="space-y-6">
@@ -117,11 +121,13 @@ export function Step4ReviewSubmit({
         >
           <ReviewField label="Tên Chủ nguồn thải" value={wasteOwnerName} />
           <ReviewField
-            label="Mã chất thải nguy hại (M3 CTNH)"
+            label="Loại chất thải"
             value={wasteSourceName}
           />
-          <ReviewField label="Phân loại" value={contractTypeName} />
-          <ReviewField label="Nguồn phát sinh chất thải" value="Not provided" />
+          <ReviewField label="Phân loại hợp đồng" value={contractTypeName} />
+          {hazCodeName && (
+            <ReviewField label="Mã HAZ" value={hazCodeName} />
+          )}
         </ReviewSection>
 
         {/* Step 2 Review */}
@@ -133,30 +139,36 @@ export function Step4ReviewSubmit({
             label="Ngày thu gom"
             value={
               collectionDate
-                ? format(collectionDate, "MMMM d, yyyy")
+                ? format(collectionDate, "dd/MM/yyyy")
                 : undefined
             }
           />
           <ReviewField
-            label="Khối lượng (kg)"
+            label="Khối lượng thu gom (kg)"
             value={formData.collectedVolumeKg}
           />
+          {formData.collectedPricePerKg && (
+            <ReviewField
+              label="Giá thu gom (VNĐ/kg)"
+              value={formData.collectedPricePerKg.toLocaleString("vi-VN")}
+            />
+          )}
           <ReviewField
-            label="Vị trí GPS"
-            value={
-              formData.pickupLocationRefId
-                ? "10.823100, 106.629700"
-                : undefined
-            }
+            label="Biển số xe"
+            value={formData.vehiclePlate}
           />
-          <ReviewField
-            label="Địa chỉ thu gom chi tiết"
-            value={
-              address
-                ? `${address.houseNumber || ""} ${address.street || ""}, ${address.ward || ""}, ${address.district || ""}, ${address.province || ""}`
-                : undefined
-            }
-          />
+          {fullAddress && (
+            <ReviewField
+              label="Địa chỉ thu gom"
+              value={fullAddress}
+            />
+          )}
+          {(latitude !== undefined && longitude !== undefined) && (
+            <ReviewField
+              label="Tọa độ GPS"
+              value={`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`}
+            />
+          )}
           <ReviewField
             label="Bằng chứng đã tải lên"
             value={`${evidenceFilesCount} file(s)`}
@@ -179,21 +191,37 @@ export function Step4ReviewSubmit({
             }
           />
           {formData.stockpiled === true && (
-            <ReviewField
-              label="Khối lượng lưu kho (kg)"
-              value={formData.stockpileVolumeKg}
-            />
+            <>
+              <ReviewField
+                label="Khối lượng lưu kho (kg)"
+                value={formData.stockpileVolumeKg}
+              />
+              <ReviewField
+                label="Ảnh nhập kho"
+                value={hasStockpilePhoto ? "Đã tải lên" : "Chưa tải lên"}
+              />
+            </>
           )}
           <ReviewField
             label="Ngày hoàn thành tái chế"
             value={
-              recycledDate ? format(recycledDate, "MMMM d, yyyy") : undefined
+              recycledDate ? format(recycledDate, "dd/MM/yyyy") : undefined
             }
           />
           <ReviewField
             label="Khối lượng đã tái chế (kg)"
             value={formData.recycledVolumeKg}
           />
+          <ReviewField
+            label="Ảnh sản phẩm đã tái chế"
+            value={hasRecycledPhoto ? "Đã tải lên" : "Chưa tải lên"}
+          />
+          {qualityDocumentsCount > 0 && (
+            <ReviewField
+              label="Tài liệu chất lượng"
+              value={`${qualityDocumentsCount} file(s)`}
+            />
+          )}
         </ReviewSection>
       </div>
     </div>
