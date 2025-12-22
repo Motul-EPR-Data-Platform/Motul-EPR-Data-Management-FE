@@ -20,7 +20,11 @@ import { RecordOverviewCard } from "@/components/records/RecordOverviewCard";
 import { RecordApprovalActions } from "@/components/records/RecordApprovalActions";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
-import { formatHazWasteCode, formatRecycledDate, formatWasteOwnerType } from "@/lib/utils/formatTitle";
+import {
+  formatHazWasteCode,
+  formatRecycledDate,
+  formatWasteOwnerType,
+} from "@/lib/utils/formatTitle";
 
 const getStatusBadgeVariant = (
   status: string,
@@ -155,16 +159,20 @@ export default function RecordDetailPage() {
       </PageLayout>
     );
   }
- const wasteOwner =
+  const wasteOwner =
     record.wasteOwner ||
     (record.wasteOwners && record.wasteOwners.length > 0
       ? record.wasteOwners[0]
       : null);
 
-  const formattedWasteOwnerType = formatWasteOwnerType(wasteOwner?.wasteOwnerType);
+  const formattedWasteOwnerType = formatWasteOwnerType(
+    wasteOwner?.wasteOwnerType,
+  );
   const formattedHazWasteCode = formatHazWasteCode(record.hazWaste?.code);
-  const formattedRecycledDate = formatRecycledDate(record?.recycledDate ?? undefined);
-  
+  const formattedRecycledDate = formatRecycledDate(
+    record?.recycledDate ?? undefined,
+  );
+
   return (
     <PageLayout
       breadcrumbs={[

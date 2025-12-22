@@ -56,9 +56,9 @@ export interface CollectionRecordDetail extends CollectionRecord {
     wasteOwnerType?: string;
   }>;
   recycler?: {
-    id: string
-    vendorName: string
-  } | null
+    id: string;
+    vendorName: string;
+  } | null;
   contractType?: {
     id: string;
     name: string;

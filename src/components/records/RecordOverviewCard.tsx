@@ -74,7 +74,7 @@ export function RecordOverviewCard({ record }: RecordOverviewCardProps) {
     (record.wasteOwners && record.wasteOwners.length > 0
       ? record.wasteOwners[0]
       : null);
-  const recyclerName = record.recycler?.vendorName ;
+  const recyclerName = record.recycler?.vendorName;
 
   return (
     <Card className="border-red-500">
