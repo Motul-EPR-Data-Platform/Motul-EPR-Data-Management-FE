@@ -62,6 +62,10 @@ export interface CollectionRecordDetail extends CollectionRecord {
     id: string;
     name: string;
   } | null;
+  hazWaste?: {
+    id: string;
+    code: string;
+  } | null;
   pickupLocation?: Location | null;
   approval?: {
     id: string;

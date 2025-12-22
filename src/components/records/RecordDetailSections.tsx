@@ -74,7 +74,7 @@ export function WasteSourceInfoSection({ record }: RecordDetailSectionsProps) {
             <p className="text-sm text-muted-foreground mb-1">
               Mã Chất thải Nguy hại (CTNH)
             </p>
-            <p className="font-medium">{record.wasteSourceId || "-"}</p>
+            <p className="font-medium">{record.hazWaste?.code || "-"}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground mb-1">
