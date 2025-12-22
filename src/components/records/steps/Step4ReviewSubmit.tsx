@@ -69,7 +69,13 @@ function ReviewSection({ title, children, onEdit }: ReviewSectionProps) {
   );
 }
 
-function ReviewField({ label, value }: { label: string; value: string | number | undefined | null }) {
+function ReviewField({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number | undefined | null;
+}) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <span className="text-sm text-muted-foreground">{label}:</span>
@@ -107,8 +113,8 @@ export function Step4ReviewSubmit({
       {/* Info Box */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-800">
-          Vui lòng lại toàn bộ thông tin một cách cẩn thận trước khi gửi. Bạn
-          có thể quay lại các bước trước để chỉnh sửa.
+          Vui lòng lại toàn bộ thông tin một cách cẩn thận trước khi gửi. Bạn có
+          thể quay lại các bước trước để chỉnh sửa.
         </p>
       </div>
 
@@ -120,27 +126,17 @@ export function Step4ReviewSubmit({
           onEdit={() => onEditStep(1)}
         >
           <ReviewField label="Tên Chủ nguồn thải" value={wasteOwnerName} />
-          <ReviewField
-            label="Loại chất thải"
-            value={wasteSourceName}
-          />
+          <ReviewField label="Loại chất thải" value={wasteSourceName} />
           <ReviewField label="Phân loại hợp đồng" value={contractTypeName} />
-          {hazCodeName && (
-            <ReviewField label="Mã HAZ" value={hazCodeName} />
-          )}
+          {hazCodeName && <ReviewField label="Mã HAZ" value={hazCodeName} />}
         </ReviewSection>
 
         {/* Step 2 Review */}
-        <ReviewSection
-          title="Chi tiết Thu gom"
-          onEdit={() => onEditStep(2)}
-        >
+        <ReviewSection title="Chi tiết Thu gom" onEdit={() => onEditStep(2)}>
           <ReviewField
             label="Ngày thu gom"
             value={
-              collectionDate
-                ? format(collectionDate, "dd/MM/yyyy")
-                : undefined
+              collectionDate ? format(collectionDate, "dd/MM/yyyy") : undefined
             }
           />
           <ReviewField
@@ -153,21 +149,15 @@ export function Step4ReviewSubmit({
               value={formData.collectedPricePerKg.toLocaleString("vi-VN")}
             />
           )}
-          <ReviewField
-            label="Biển số xe"
-            value={formData.vehiclePlate}
-          />
+          <ReviewField label="Biển số xe" value={formData.vehiclePlate} />
           {fullAddress && (
-            <ReviewField
-              label="Địa chỉ thu gom"
-              value={fullAddress}
-            />
+            <ReviewField label="Địa chỉ thu gom" value={fullAddress} />
           )}
-          {(latitude !== undefined && longitude !== undefined) && (
-          <ReviewField
+          {latitude !== undefined && longitude !== undefined && (
+            <ReviewField
               label="Tọa độ GPS"
               value={`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`}
-          />
+            />
           )}
           <ReviewField
             label="Bằng chứng đã tải lên"
@@ -176,10 +166,7 @@ export function Step4ReviewSubmit({
         </ReviewSection>
 
         {/* Step 3 Review */}
-        <ReviewSection
-          title="Nhập kho & Tái chế"
-          onEdit={() => onEditStep(3)}
-        >
+        <ReviewSection title="Nhập kho & Tái chế" onEdit={() => onEditStep(3)}>
           <ReviewField
             label="Lưu kho?"
             value={
@@ -192,10 +179,10 @@ export function Step4ReviewSubmit({
           />
           {formData.stockpiled === true && (
             <>
-            <ReviewField
-              label="Khối lượng lưu kho (kg)"
-              value={formData.stockpileVolumeKg}
-            />
+              <ReviewField
+                label="Khối lượng lưu kho (kg)"
+                value={formData.stockpileVolumeKg}
+              />
               <ReviewField
                 label="Ảnh nhập kho"
                 value={hasStockpilePhoto ? "Đã tải lên" : "Chưa tải lên"}
@@ -227,4 +214,3 @@ export function Step4ReviewSubmit({
     </div>
   );
 }
-

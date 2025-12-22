@@ -34,22 +34,26 @@ const message = getErrorMessage(error, null, "Default message");
 ### With Toast Notifications
 
 ```typescript
-import { getToastErrorMessage, DEFAULT_ERROR_MESSAGES } from "@/lib/utils/errorHandler";
+import {
+  getToastErrorMessage,
+  DEFAULT_ERROR_MESSAGES,
+} from "@/lib/utils/errorHandler";
 
-toast.promise(
-  apiCall(),
-  {
-    loading: "Đang xử lý...",
-    success: "Thành công!",
-    error: (err) => getToastErrorMessage(err, null, DEFAULT_ERROR_MESSAGES.SAVE_DATA),
-  }
-);
+toast.promise(apiCall(), {
+  loading: "Đang xử lý...",
+  success: "Thành công!",
+  error: (err) =>
+    getToastErrorMessage(err, null, DEFAULT_ERROR_MESSAGES.SAVE_DATA),
+});
 ```
 
 ### With Form Errors
 
 ```typescript
-import { getFormErrorMessage, DEFAULT_ERROR_MESSAGES } from "@/lib/utils/errorHandler";
+import {
+  getFormErrorMessage,
+  DEFAULT_ERROR_MESSAGES,
+} from "@/lib/utils/errorHandler";
 
 try {
   await submitForm();
@@ -57,7 +61,7 @@ try {
   const errorMessage = getFormErrorMessage(
     error,
     null,
-    DEFAULT_ERROR_MESSAGES.VALIDATION_ERROR
+    DEFAULT_ERROR_MESSAGES.VALIDATION_ERROR,
   );
   setError(errorMessage);
 }
@@ -119,6 +123,7 @@ If the backend returns an error code that is **not defined** in `ERROR_MESSAGES`
 1. **Backend message is used** - If the backend provides a message in `error.response.data.message`, it will be displayed to the user (even if the code is not mapped)
 
 2. **Development warning** - In development mode, a console warning will be logged to help identify unmapped error codes:
+
    ```
    [Error Handler] Unknown error code: 8001. Add it to ERROR_MESSAGES in src/constants/errors.ts
    ```
@@ -155,4 +160,3 @@ if (!isErrorCodeMapped("8001")) {
 ## Examples
 
 See `src/lib/utils/errorHandler.example.ts` for more detailed examples.
-

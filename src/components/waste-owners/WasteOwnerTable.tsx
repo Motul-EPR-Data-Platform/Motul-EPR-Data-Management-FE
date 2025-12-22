@@ -33,7 +33,9 @@ const getWasteOwnerTypeLabel = (type: string): string => {
   }
 };
 
-const getWasteOwnerTypeBadgeVariant = (type: string): "default" | "secondary" | "outline" => {
+const getWasteOwnerTypeBadgeVariant = (
+  type: string,
+): "default" | "secondary" | "outline" => {
   switch (type) {
     case "individual":
       return "outline";
@@ -86,7 +88,9 @@ export function WasteOwnerTable({
 
             return (
               <TableRow key={wasteOwner.id}>
-                <TableCell className="font-mono text-sm">{wasteOwner.id}</TableCell>
+                <TableCell className="font-mono text-sm">
+                  {wasteOwner.id}
+                </TableCell>
                 <TableCell className="font-medium">
                   <div>
                     <div>{wasteOwner.name}</div>
@@ -96,7 +100,11 @@ export function WasteOwnerTable({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={getWasteOwnerTypeBadgeVariant(wasteOwner.wasteOwnerType)}>
+                  <Badge
+                    variant={getWasteOwnerTypeBadgeVariant(
+                      wasteOwner.wasteOwnerType,
+                    )}
+                  >
                     {getWasteOwnerTypeLabel(wasteOwner.wasteOwnerType)}
                   </Badge>
                 </TableCell>
@@ -146,4 +154,3 @@ export function WasteOwnerTable({
     </div>
   );
 }
-

@@ -48,10 +48,10 @@ export function DatePicker({
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
   const [date, setDate] = React.useState<Date | undefined>(
-    value && isValidDate(value) ? value : undefined
+    value && isValidDate(value) ? value : undefined,
   );
   const [month, setMonth] = React.useState<Date | undefined>(
-    date && isValidDate(date) ? date : new Date()
+    date && isValidDate(date) ? date : new Date(),
   );
   const [inputValue, setInputValue] = React.useState(formatDate(date));
 
@@ -73,7 +73,11 @@ export function DatePicker({
     const dateMatch = inputVal.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (dateMatch) {
       const [, day, month, year] = dateMatch;
-      const parsedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      const parsedDate = new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day),
+      );
       if (isValidDate(parsedDate)) {
         setDate(parsedDate);
         setMonth(parsedDate);

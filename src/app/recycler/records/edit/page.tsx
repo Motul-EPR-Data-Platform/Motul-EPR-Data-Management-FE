@@ -11,7 +11,11 @@ import { Step3WarehouseRecycling } from "@/components/records/steps/Step3Warehou
 import { Step4ReviewSubmit } from "@/components/records/steps/Step4ReviewSubmit";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { CreateDraftDTO, CreateDraftFormData, CollectionRecordDetail } from "@/types/record";
+import {
+  CreateDraftDTO,
+  CreateDraftFormData,
+  CollectionRecordDetail,
+} from "@/types/record";
 import { CollectionRecordService } from "@/lib/services/collection-record.service";
 import { DocumentFile } from "@/components/records/DocumentUpload";
 import { WasteOwnerService } from "@/lib/services/waste-owner.service";
@@ -57,7 +61,7 @@ export default function EditCollectionRecordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const recordId = searchParams.get("id");
-  
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingRecord, setIsLoadingRecord] = useState(true);
@@ -112,12 +116,20 @@ export default function EditCollectionRecordPage() {
     setIsLoadingRecord(true);
     try {
       // Load dropdown data and record data in parallel
-      const [wasteOwnersRes, contractTypesRes, wasteTypesRes, hazTypesRes, recordRes] = await Promise.allSettled([
+      const [
+        wasteOwnersRes,
+        contractTypesRes,
+        wasteTypesRes,
+        hazTypesRes,
+        recordRes,
+      ] = await Promise.allSettled([
         WasteOwnerService.getAllWasteOwners({ isActive: true }),
         DefinitionService.getActiveContractTypes(),
         DefinitionService.getActiveWasteTypes(),
         DefinitionService.getActiveHazTypes(),
-        recordId ? CollectionRecordService.getRecordById(recordId) : Promise.resolve(null),
+        recordId
+          ? CollectionRecordService.getRecordById(recordId)
+          : Promise.resolve(null),
       ]);
 
       // Load dropdown data
@@ -131,7 +143,9 @@ export default function EditCollectionRecordPage() {
       }
 
       if (contractTypesRes.status === "fulfilled") {
-        const transformedDefinitions = transformDefinitions(contractTypesRes.value);
+        const transformedDefinitions = transformDefinitions(
+          contractTypesRes.value,
+        );
         const transformed = transformedDefinitions.map((def) => {
           const contractData = def.data as any;
           return {
@@ -144,7 +158,9 @@ export default function EditCollectionRecordPage() {
       }
 
       if (wasteTypesRes.status === "fulfilled") {
-        const transformedDefinitions = transformDefinitions(wasteTypesRes.value);
+        const transformedDefinitions = transformDefinitions(
+          wasteTypesRes.value,
+        );
         const transformed = transformedDefinitions.map((def) => {
           const wasteTypeData = def.data as any;
           return {
@@ -166,7 +182,11 @@ export default function EditCollectionRecordPage() {
               id: def.id,
               code: hazTypeData?.code || "",
               name: hazTypeData?.name || hazTypeData?.code || "",
-              haz_code: hazTypeData?.hazCode || hazTypeData?.haz_code || hazTypeData?.code || "",
+              haz_code:
+                hazTypeData?.hazCode ||
+                hazTypeData?.haz_code ||
+                hazTypeData?.code ||
+                "",
             };
           })
           .filter((hazType) => hazType.id && hazType.id.trim() !== ""); // Filter out any with empty IDs
@@ -180,9 +200,9 @@ export default function EditCollectionRecordPage() {
 
         // Prefill form data from record
         // Get waste owner ID from wasteOwners array or wasteOwnerId field
-        const wasteOwnerId = 
-          (record.wasteOwners && record.wasteOwners.length > 0) 
-            ? record.wasteOwners[0].id 
+        const wasteOwnerId =
+          record.wasteOwners && record.wasteOwners.length > 0
+            ? record.wasteOwners[0].id
             : record.wasteOwnerId || null;
 
         const prefillData: Partial<CreateDraftFormData> = {
@@ -216,7 +236,10 @@ export default function EditCollectionRecordPage() {
         // Prefill location data
         if (record.pickupLocation) {
           setFullAddress(record.pickupLocation.address || "");
-          if (record.pickupLocation.latitude && record.pickupLocation.longitude) {
+          if (
+            record.pickupLocation.latitude &&
+            record.pickupLocation.longitude
+          ) {
             setLatitude(record.pickupLocation.latitude);
             setLongitude(record.pickupLocation.longitude);
           }
@@ -229,7 +252,10 @@ export default function EditCollectionRecordPage() {
         // Load files if available
         if (record.files) {
           // Convert evidence photos to DocumentFile format
-          if (record.files.evidencePhotos && record.files.evidencePhotos.length > 0) {
+          if (
+            record.files.evidencePhotos &&
+            record.files.evidencePhotos.length > 0
+          ) {
             // Note: We can't convert IFile to DocumentFile directly, so we'll need to handle this
             // For now, files will need to be re-uploaded if editing
           }
@@ -260,7 +286,9 @@ export default function EditCollectionRecordPage() {
   };
 
   const handleCancel = () => {
-    if (confirm("Bạn có chắc chắn muốn hủy? Tất cả thay đổi chưa lưu sẽ bị mất.")) {
+    if (
+      confirm("Bạn có chắc chắn muốn hủy? Tất cả thay đổi chưa lưu sẽ bị mất.")
+    ) {
       router.push("/recycler/my-records");
     }
   };
@@ -318,11 +346,16 @@ export default function EditCollectionRecordPage() {
             newErrors.recycledPhoto = "Ảnh sản phẩm đã tái chế là bắt buộc";
           }
           if (formData.stockpiled === true) {
-            if (!formData.stockpileVolumeKg || formData.stockpileVolumeKg <= 0) {
-              newErrors.stockpileVolumeKg = "Khối lượng lưu kho là bắt buộc khi chọn lưu kho";
+            if (
+              !formData.stockpileVolumeKg ||
+              formData.stockpileVolumeKg <= 0
+            ) {
+              newErrors.stockpileVolumeKg =
+                "Khối lượng lưu kho là bắt buộc khi chọn lưu kho";
             }
             if (!stockpilePhoto) {
-              newErrors.stockpilePhoto = "Ảnh nhập kho là bắt buộc khi chọn lưu kho";
+              newErrors.stockpilePhoto =
+                "Ảnh nhập kho là bắt buộc khi chọn lưu kho";
             }
           }
         }
@@ -359,7 +392,11 @@ export default function EditCollectionRecordPage() {
   };
 
   const mapDocumentTypeToFileType = (docType: string): FileType => {
-    if (["phieu-can", "bien-ban-giao-nhan", "bien-so-xe", "khac"].includes(docType)) {
+    if (
+      ["phieu-can", "bien-ban-giao-nhan", "bien-so-xe", "khac"].includes(
+        docType,
+      )
+    ) {
       return FileType.EVIDENCE_PHOTO;
     }
     if (docType === "chat-luong-truoc-tai-che") {
@@ -378,7 +415,7 @@ export default function EditCollectionRecordPage() {
       const filesToUpload = evidenceFiles
         .map((doc) => doc.file)
         .filter((file): file is File => file instanceof File);
-      
+
       if (filesToUpload.length > 0) {
         uploadPromises.push(
           CollectionRecordService.uploadMultipleFiles(
@@ -445,7 +482,9 @@ export default function EditCollectionRecordPage() {
       };
 
       const draftData: CreateDraftDTO = {
-        submissionMonth: formatDateDDMMYYYY(new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1)),
+        submissionMonth: formatDateDDMMYYYY(
+          new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1),
+        ),
         collectedVolumeKg: formData.collectedVolumeKg || null,
         deliveryDate: formatDateDDMMYYYY(collectionDate),
         vehiclePlate: formData.vehiclePlate || null,
@@ -465,13 +504,20 @@ export default function EditCollectionRecordPage() {
       toast.success("Đã cập nhật bản nháp");
 
       // Upload files after draft is updated
-      if (evidenceFiles.length > 0 || qualityDocuments.length > 0 || recycledPhoto || stockpilePhoto) {
+      if (
+        evidenceFiles.length > 0 ||
+        qualityDocuments.length > 0 ||
+        recycledPhoto ||
+        stockpilePhoto
+      ) {
         try {
           await uploadFilesForRecord(draftId);
           toast.success("Đã tải lên tài liệu");
         } catch (fileError: any) {
           console.error("Error uploading files:", fileError);
-          toast.error("Đã cập nhật bản nháp nhưng không thể tải lên một số tài liệu");
+          toast.error(
+            "Đã cập nhật bản nháp nhưng không thể tải lên một số tài liệu",
+          );
         }
       }
     } catch (error: any) {
@@ -492,7 +538,9 @@ export default function EditCollectionRecordPage() {
     }
 
     if (!formData.vehiclePlate || formData.vehiclePlate.trim() === "") {
-      toast.error("Biển số xe là bắt buộc. Vui lòng quay lại bước 2 để nhập biển số xe.");
+      toast.error(
+        "Biển số xe là bắt buộc. Vui lòng quay lại bước 2 để nhập biển số xe.",
+      );
       setCurrentStep(2);
       setErrors({ ...errors, vehiclePlate: "Biển số xe là bắt buộc" });
       return;
@@ -513,7 +561,9 @@ export default function EditCollectionRecordPage() {
       };
 
       const draftData: CreateDraftDTO = {
-        submissionMonth: formatDateDDMMYYYY(new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1)),
+        submissionMonth: formatDateDDMMYYYY(
+          new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1),
+        ),
         collectedVolumeKg: formData.collectedVolumeKg || null,
         deliveryDate: formatDateDDMMYYYY(collectionDate),
         vehiclePlate: formData.vehiclePlate || null,
@@ -533,7 +583,12 @@ export default function EditCollectionRecordPage() {
       await CollectionRecordService.updateDraft(draftId, draftData);
 
       // Upload files
-      if (evidenceFiles.length > 0 || qualityDocuments.length > 0 || recycledPhoto || stockpilePhoto) {
+      if (
+        evidenceFiles.length > 0 ||
+        qualityDocuments.length > 0 ||
+        recycledPhoto ||
+        stockpilePhoto
+      ) {
         await uploadFilesForRecord(draftId);
       }
 
@@ -590,7 +645,9 @@ export default function EditCollectionRecordPage() {
         subtitle="Đang tải dữ liệu..."
       >
         <div className="rounded-lg border bg-card p-6">
-          <p className="text-center text-muted-foreground py-12">Đang tải dữ liệu...</p>
+          <p className="text-center text-muted-foreground py-12">
+            Đang tải dữ liệu...
+          </p>
         </div>
       </PageLayout>
     );
@@ -722,4 +779,3 @@ export default function EditCollectionRecordPage() {
     </PageLayout>
   );
 }
-

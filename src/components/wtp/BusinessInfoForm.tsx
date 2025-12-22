@@ -72,7 +72,8 @@ export function WtpBusinessInfoForm({
     defaultValues: {
       waste_transfer_name: initialData?.waste_transfer_name || "",
       business_code: initialData?.business_code || "",
-      company_registration_address: initialData?.company_registration_address || "",
+      company_registration_address:
+        initialData?.company_registration_address || "",
       phone: initialData?.phone || "",
       contact_email: initialData?.contact_email || "",
       contact_person: initialData?.contact_person || "",
@@ -89,7 +90,8 @@ export function WtpBusinessInfoForm({
       reset({
         waste_transfer_name: initialData.waste_transfer_name || "",
         business_code: initialData.business_code || "",
-        company_registration_address: initialData.company_registration_address || "",
+        company_registration_address:
+          initialData.company_registration_address || "",
         phone: initialData.phone || "",
         contact_email: initialData.contact_email || "",
         contact_person: initialData.contact_person || "",
@@ -104,18 +106,20 @@ export function WtpBusinessInfoForm({
   // Watch date fields to get current values and ensure they're Date objects
   const envPermitIssueDateRaw = watch("env_permit_issue_date");
   const envPermitExpiryDateRaw = watch("env_permit_expiry_date");
-  
-  const envPermitIssueDate = envPermitIssueDateRaw instanceof Date 
-    ? envPermitIssueDateRaw 
-    : typeof envPermitIssueDateRaw === "string" 
-      ? parseDate(envPermitIssueDateRaw) 
-      : undefined;
-      
-  const envPermitExpiryDate = envPermitExpiryDateRaw instanceof Date 
-    ? envPermitExpiryDateRaw 
-    : typeof envPermitExpiryDateRaw === "string" 
-      ? parseDate(envPermitExpiryDateRaw) 
-      : undefined;
+
+  const envPermitIssueDate =
+    envPermitIssueDateRaw instanceof Date
+      ? envPermitIssueDateRaw
+      : typeof envPermitIssueDateRaw === "string"
+        ? parseDate(envPermitIssueDateRaw)
+        : undefined;
+
+  const envPermitExpiryDate =
+    envPermitExpiryDateRaw instanceof Date
+      ? envPermitExpiryDateRaw
+      : typeof envPermitExpiryDateRaw === "string"
+        ? parseDate(envPermitExpiryDateRaw)
+        : undefined;
 
   const onSubmit = async (data: CompleteWtpAdminProfileFormData) => {
     setIsLoading(true);
@@ -165,12 +169,18 @@ export function WtpBusinessInfoForm({
           .split(",")
           .map((part) => part.trim())
           .filter(Boolean);
-        
+
         // Assign parts: code (first, required), address (middle or all, required min 5 chars), city (last, required)
         const locationCode = addressParts[0] || "LOC001";
         const locationAddress =
-          addressParts.slice(1).join(", ") || addressParts[0] || data.company_registration_address || "Địa chỉ đăng ký công ty";
-        const locationCity = addressParts.length > 1 ? addressParts[addressParts.length - 1] : "Thành phố";
+          addressParts.slice(1).join(", ") ||
+          addressParts[0] ||
+          data.company_registration_address ||
+          "Địa chỉ đăng ký công ty";
+        const locationCity =
+          addressParts.length > 1
+            ? addressParts[addressParts.length - 1]
+            : "Thành phố";
 
         // Ensure minimum length for address and city for backend validation
         const finalAddress =
@@ -302,7 +312,9 @@ export function WtpBusinessInfoForm({
             placeholder="Vui lòng nhập địa chỉ đăng ký công ty"
             {...register("company_registration_address")}
             disabled={isFormDisabled}
-            className={errors.company_registration_address ? "border-red-500" : ""}
+            className={
+              errors.company_registration_address ? "border-red-500" : ""
+            }
           />
           {errors.company_registration_address && (
             <p className="text-sm text-red-500">

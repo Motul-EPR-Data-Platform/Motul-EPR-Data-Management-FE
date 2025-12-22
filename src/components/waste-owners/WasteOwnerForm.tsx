@@ -14,18 +14,18 @@ import {
 interface WasteOwnerFormProps {
   // Initial data (for edit/view mode)
   initialData?: WasteOwnerWithLocation | null;
-  
+
   // Mode
   mode: "create" | "edit" | "view";
-  
+
   // Form state
   isLoading?: boolean;
   errors?: Record<string, string>;
-  
+
   // Handlers
   onSubmit?: (data: CreateWasteOwnerDTO | UpdateWasteOwnerDTO) => Promise<void>;
   onCancel?: () => void;
-  
+
   // Submit button text
   submitButtonText?: string;
   showCancelButton?: boolean;
@@ -137,8 +137,8 @@ export function WasteOwnerForm({
           contactPerson={formData.contactPerson || ""}
           phone={formData.phone || ""}
           email={formData.email || ""}
-          locationRefId={formData.locationRefId || ''}
-          fullAddress={formData.fullAddress || ''}
+          locationRefId={formData.locationRefId || ""}
+          fullAddress={formData.fullAddress || ""}
           isActive={formData.isActive}
           disabled={isViewMode || isLoading}
           errors={errors}
@@ -175,7 +175,6 @@ export function WasteOwnerForm({
           }
         />
       </div>
-
 
       {/* Location Information Section (read-only, from API) */}
       {isViewMode && initialData?.location && (
@@ -245,4 +244,3 @@ export function WasteOwnerForm({
     </form>
   );
 }
-

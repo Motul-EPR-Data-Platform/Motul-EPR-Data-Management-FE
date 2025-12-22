@@ -18,7 +18,12 @@ interface Step1WasteSourceInfoProps {
   disabled?: boolean;
   wasteOwners?: Array<{ id: string; name: string }>;
   contractTypes?: Array<{ id: string; name: string; code: string }>;
-  wasteTypes?: Array<{ id: string; name: string; code?: string; hazCode?: string }>;
+  wasteTypes?: Array<{
+    id: string;
+    name: string;
+    code?: string;
+    hazCode?: string;
+  }>;
 }
 
 export function Step1WasteSourceInfo({
@@ -33,9 +38,7 @@ export function Step1WasteSourceInfo({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold mb-1">
-          Thông tin Chủ nguồn thải
-        </h2>
+        <h2 className="text-xl font-semibold mb-1">Thông tin Chủ nguồn thải</h2>
         <p className="text-sm text-muted-foreground">Bước thứ 1 trên 4</p>
       </div>
 
@@ -74,9 +77,7 @@ export function Step1WasteSourceInfo({
           <Label htmlFor="contractTypeId">Phân loại hợp đồng</Label>
           <Select
             value={formData.contractTypeId || ""}
-            onValueChange={(value) =>
-              onChange("contractTypeId", value || null)
-            }
+            onValueChange={(value) => onChange("contractTypeId", value || null)}
             disabled={disabled}
           >
             <SelectTrigger id="contractTypeId">
@@ -87,13 +88,15 @@ export function Step1WasteSourceInfo({
                 contractTypes.map((type) => {
                   // Ensure we have a display name - prefer name, then code, never show ID
                   const displayName = type.name || type.code || "Unknown";
-                  const displayCode = type.code && type.name && type.code !== type.name 
-                    ? ` (${type.code})` 
-                    : "";
-                  
+                  const displayCode =
+                    type.code && type.name && type.code !== type.name
+                      ? ` (${type.code})`
+                      : "";
+
                   return (
                     <SelectItem key={type.id} value={String(type.id)}>
-                      {displayName}{displayCode}
+                      {displayName}
+                      {displayCode}
                     </SelectItem>
                   );
                 })
@@ -113,9 +116,7 @@ export function Step1WasteSourceInfo({
           </Label>
           <Select
             value={formData.wasteSourceId || ""}
-            onValueChange={(value) =>
-              onChange("wasteSourceId", value || null)
-            }
+            onValueChange={(value) => onChange("wasteSourceId", value || null)}
             disabled={disabled}
           >
             <SelectTrigger
@@ -130,11 +131,15 @@ export function Step1WasteSourceInfo({
                   // Display name with code and hazCode if available
                   const displayName = wasteType.name || "Unknown";
                   const codePart = wasteType.code ? ` (${wasteType.code})` : "";
-                  const hazCodePart = wasteType.hazCode ? ` - ${wasteType.hazCode}` : "";
-                  
+                  const hazCodePart = wasteType.hazCode
+                    ? ` - ${wasteType.hazCode}`
+                    : "";
+
                   return (
                     <SelectItem key={wasteType.id} value={wasteType.id}>
-                      {displayName}{codePart}{hazCodePart}
+                      {displayName}
+                      {codePart}
+                      {hazCodePart}
                     </SelectItem>
                   );
                 })
@@ -170,4 +175,3 @@ export function Step1WasteSourceInfo({
     </div>
   );
 }
-

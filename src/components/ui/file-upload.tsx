@@ -6,7 +6,10 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileType } from "@/types/file-record";
-import { validateFileType, getFileTypeDescription } from "@/lib/validations/file-record.validation";
+import {
+  validateFileType,
+  getFileTypeDescription,
+} from "@/lib/validations/file-record.validation";
 
 interface FileUploadProps {
   id?: string;
@@ -38,12 +41,13 @@ export function FileUpload({
   // Determine accept string based on category or use provided
   const getAcceptString = (): string => {
     if (category) {
-      const allowedTypes = category === FileType.ACCEPTANCE_DOC ||
+      const allowedTypes =
+        category === FileType.ACCEPTANCE_DOC ||
         category === FileType.APPROVAL_DOC ||
         category === FileType.OUTPUT_QUALITY_METRICS ||
         category === FileType.QUALITY_METRICS
-        ? "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        : "image/jpeg,image/jpg,image/png,image/webp";
+          ? "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          : "image/jpeg,image/jpg,image/png,image/webp";
       return accept || allowedTypes;
     }
     return accept || "application/pdf,image/jpeg,image/jpg,image/png";
@@ -112,9 +116,9 @@ export function FileUpload({
     } else {
       // Fallback to basic MIME type validation
       const acceptedTypes = acceptString.split(",").map((type) => type.trim());
-    if (!acceptedTypes.some((type) => file.type.match(type))) {
+      if (!acceptedTypes.some((type) => file.type.match(type))) {
         alert("File không hợp lệ. Vui lòng chọn file đúng định dạng.");
-      return false;
+        return false;
       }
     }
 

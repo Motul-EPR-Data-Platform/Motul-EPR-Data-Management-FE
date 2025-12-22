@@ -1,18 +1,13 @@
 import { api } from "@/lib/axios";
 import { ENDPOINTS } from "@/constants/api";
-import {
-  VietmapAutocompleteResult,
-  LocationData,
-} from "@/types/location";
+import { VietmapAutocompleteResult, LocationData } from "@/types/location";
 
 export const LocationService = {
   /**
    * Search address autocomplete
    * GET /api/locations/autocomplete?query=...
    */
-  async searchAddress(
-    query: string,
-  ): Promise<VietmapAutocompleteResult[]> {
+  async searchAddress(query: string): Promise<VietmapAutocompleteResult[]> {
     if (!query || query.length < 2) {
       return [];
     }
@@ -42,4 +37,3 @@ export const LocationService = {
     return data.data || data;
   },
 };
-

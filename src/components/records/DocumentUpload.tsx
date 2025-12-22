@@ -164,7 +164,9 @@ export function DocumentUpload({
               <div className="flex items-center gap-3 flex-1">
                 <File className="w-5 h-5 text-gray-400" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{doc.file.name}</p>
+                  <p className="text-sm font-medium truncate">
+                    {doc.file.name}
+                  </p>
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <span>{getDocumentTypeLabel(doc.type)}</span>
                     <span>•</span>
@@ -266,4 +268,3 @@ export function DocumentUpload({
     </div>
   );
 }
-

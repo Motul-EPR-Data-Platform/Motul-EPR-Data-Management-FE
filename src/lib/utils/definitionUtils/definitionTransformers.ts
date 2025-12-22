@@ -60,7 +60,10 @@ export function transformCategory(backendCategory: any): Category {
     createdAt: backendCategory.created_at || backendCategory.createdAt,
     schemaDefinition,
     // Use definitionCount from backend if available
-    definitionCount: backendCategory.definitionCount ?? backendCategory.definition_count ?? undefined,
+    definitionCount:
+      backendCategory.definitionCount ??
+      backendCategory.definition_count ??
+      undefined,
   };
 }
 

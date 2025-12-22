@@ -63,9 +63,7 @@ export function ProgressStepper({
               <div
                 className={cn(
                   "flex-1 h-0.5 mx-2 transition-colors",
-                  isPast || isCompleted
-                    ? "bg-red-600"
-                    : "bg-gray-300",
+                  isPast || isCompleted ? "bg-red-600" : "bg-gray-300",
                 )}
               />
             )}
@@ -75,4 +73,3 @@ export function ProgressStepper({
     </div>
   );
 }
-

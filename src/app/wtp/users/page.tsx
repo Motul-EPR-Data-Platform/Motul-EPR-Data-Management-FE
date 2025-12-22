@@ -133,34 +133,32 @@ export default function WTPUsersPage() {
       role || (availableRoles.length > 0 ? availableRoles[0] : "WTP User");
 
     const backendRole = mapFrontendRoleToBackend(invitedRole);
-    
+
     // Backend requires wasteTransferPointId at top level for waste_transfer role
     // Backend will override with inviter's wasteTransferPointId, but validation requires the field
     const payload: any = {
       email,
       role: backendRole,
     };
-    
+
     if (backendRole === "waste_transfer") {
       // Send any value to pass validation - backend will use inviter's wasteTransferPointId anyway
-      payload.wasteTransferPointId = user?.wasteTransferPointId || user?.id || "";
+      payload.wasteTransferPointId =
+        user?.wasteTransferPointId || user?.id || "";
     }
 
-    await toast.promise(
-      InvitationService.send(payload),
-      {
-        loading: `Đang gửi lời mời tới ${email}...`,
-        success: () => {
-          loadData(); // Reload data from API
-          setActiveTab("pending");
-          return `Đã gửi lời mời tới ${email}`;
-        },
-        error: (err) =>
-          err?.response?.data?.message ||
-          err?.message ||
-          "Không thể gửi lời mời. Vui lòng thử lại.",
+    await toast.promise(InvitationService.send(payload), {
+      loading: `Đang gửi lời mời tới ${email}...`,
+      success: () => {
+        loadData(); // Reload data from API
+        setActiveTab("pending");
+        return `Đã gửi lời mời tới ${email}`;
       },
-    );
+      error: (err) =>
+        err?.response?.data?.message ||
+        err?.message ||
+        "Không thể gửi lời mời. Vui lòng thử lại.",
+    });
   };
 
   const handleResendInvite = async (invite: PendingInvite) => {

@@ -57,7 +57,7 @@ export function CreateWasteOwnerDialog({
 
   const handleSubmit = async (dto: CreateWasteOwnerDTO | any) => {
     const createData = dto as CreateWasteOwnerDTO;
-    
+
     if (!validateForm(createData)) {
       return;
     }

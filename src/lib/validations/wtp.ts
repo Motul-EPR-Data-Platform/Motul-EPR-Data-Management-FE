@@ -26,7 +26,9 @@ export const completeWtpAdminProfileSchema = z.object({
     .string()
     .min(1, "Tên điểm tiếp nhận chất thải là bắt buộc"),
   business_code: z.string().min(1, "Mã số kinh doanh là bắt buộc"),
-  company_registration_address: z.string().min(1, "Địa chỉ đăng ký công ty là bắt buộc"),
+  company_registration_address: z
+    .string()
+    .min(1, "Địa chỉ đăng ký công ty là bắt buộc"),
 
   // Contact information
   phone: phoneValidation,

@@ -106,8 +106,11 @@ export function getAuthErrorMessage(
   error: any,
   overrideMessage?: string | null,
 ): string {
-  return getErrorMessage(path.auth(ENDPOINTS.AUTH.LOGIN), error, overrideMessage);
+  return getErrorMessage(
+    path.auth(ENDPOINTS.AUTH.LOGIN),
+    error,
+    overrideMessage,
+  );
 }
 
 export type { ErrorCode } from "@/constants/errorMessages";
-

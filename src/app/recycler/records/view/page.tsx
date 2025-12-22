@@ -23,7 +23,13 @@ import { Badge } from "@/components/ui/badge";
 
 const getStatusBadgeVariant = (
   status: string,
-): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" => {
+):
+  | "default"
+  | "secondary"
+  | "destructive"
+  | "outline"
+  | "success"
+  | "warning" => {
   switch (status) {
     case "approved":
       return "success";
@@ -59,7 +65,8 @@ export default function RecordDetailPage() {
   const { userRole } = useAuth();
   const recordId = searchParams.get("id");
   const [record, setRecord] = useState<CollectionRecordDetail | null>(null);
-  const [filesWithPreview, setFilesWithPreview] = useState<ICollectionRecordFilesWithPreview | null>(null);
+  const [filesWithPreview, setFilesWithPreview] =
+    useState<ICollectionRecordFilesWithPreview | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const isAdmin = userRole === "Motul Admin" || userRole === "MOTUL_ADMIN";
@@ -75,15 +82,17 @@ export default function RecordDetailPage() {
 
   const loadRecord = async () => {
     if (!recordId) return;
-    
+
     setIsLoading(true);
     try {
       const [recordData, filesData] = await Promise.all([
         CollectionRecordService.getRecordById(recordId),
-        CollectionRecordService.getRecordFilesWithPreview(recordId, 3600).catch((err) => {
-          console.warn("Failed to load files with preview:", err);
-          return null;
-        }),
+        CollectionRecordService.getRecordFilesWithPreview(recordId, 3600).catch(
+          (err) => {
+            console.warn("Failed to load files with preview:", err);
+            return null;
+          },
+        ),
       ]);
       setRecord(recordData);
       setFilesWithPreview(filesData);
@@ -108,7 +117,10 @@ export default function RecordDetailPage() {
   if (isLoading) {
     return (
       <PageLayout
-        breadcrumbs={[{ label: "Bản ghi của tôi" }, { label: "Chi tiết bản ghi" }]}
+        breadcrumbs={[
+          { label: "Bản ghi của tôi" },
+          { label: "Chi tiết bản ghi" },
+        ]}
         title="Chi tiết bản ghi"
         subtitle="Đang tải..."
       >
@@ -122,7 +134,10 @@ export default function RecordDetailPage() {
   if (!record) {
     return (
       <PageLayout
-        breadcrumbs={[{ label: "Bản ghi của tôi" }, { label: "Chi tiết bản ghi" }]}
+        breadcrumbs={[
+          { label: "Bản ghi của tôi" },
+          { label: "Chi tiết bản ghi" },
+        ]}
         title="Chi tiết bản ghi"
         subtitle="Không tìm thấy bản ghi"
       >
@@ -177,18 +192,20 @@ export default function RecordDetailPage() {
                 onApprovalChange={handleApprovalChange}
               />
             )}
-                  </div>
+          </div>
 
           {/* Main Content - Left Side on desktop, appears second on mobile */}
           <div className="lg:col-span-2 lg:order-1 space-y-6">
             <WasteSourceInfoSection record={record} />
             <CollectionDetailsSection record={record} />
             <StorageRecyclingSection record={record} />
-            <EvidenceSection record={record} filesWithPreview={filesWithPreview} />
+            <EvidenceSection
+              record={record}
+              filesWithPreview={filesWithPreview}
+            />
           </div>
         </div>
       </div>
     </PageLayout>
   );
 }
-

@@ -28,7 +28,7 @@ export default function RecyclerBusinessInfoPage() {
 
   // Check if user can edit organization info
   const canEditOrganizationInfo = usePermission("settings.edit");
-  
+
   // Check if profile is inactive (doesn't exist or user is inactive)
   const isProfileInactive = !profile || !user?.isActive;
 

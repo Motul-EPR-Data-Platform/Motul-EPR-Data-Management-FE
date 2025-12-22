@@ -16,7 +16,12 @@ import { DashboardSkeleton } from "@/components/skeleton/DashboardSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
-import { CATEGORY_KEYS, CATEGORY_ROUTE_KEYS, routeKeyToBackendKey, isStandardCategory } from "@/constants/categoryKeys";
+import {
+  CATEGORY_KEYS,
+  CATEGORY_ROUTE_KEYS,
+  routeKeyToBackendKey,
+  isStandardCategory,
+} from "@/constants/categoryKeys";
 
 export function CategoryDetailPageClient() {
   const params = useParams();
@@ -43,8 +48,11 @@ export function CategoryDetailPageClient() {
    */
   const getDefaultCategorySchema = (key: string): Category | null => {
     const backendKey = routeKeyToBackendKey(key);
-    
-    if (backendKey === CATEGORY_KEYS.HAZ_TYPE || key === CATEGORY_ROUTE_KEYS.HAZ_TYPES) {
+
+    if (
+      backendKey === CATEGORY_KEYS.HAZ_TYPE ||
+      key === CATEGORY_ROUTE_KEYS.HAZ_TYPES
+    ) {
       return {
         id: "haz_type_default",
         key: CATEGORY_KEYS.HAZ_TYPE,
@@ -76,7 +84,7 @@ export function CategoryDetailPageClient() {
         ] as FieldSchema[],
       };
     }
-    
+
     return null;
   };
 
@@ -85,7 +93,7 @@ export function CategoryDetailPageClient() {
     try {
       const backendKey = routeKeyToBackendKey(categoryKey);
       let categoryData: any = null;
-      
+
       // Try to fetch category from registry
       try {
         categoryData = await DefinitionService.getCategoryByKey(backendKey);
@@ -104,9 +112,10 @@ export function CategoryDetailPageClient() {
       const definitionsData = await getDefinitionsByCategory(categoryKey);
 
       // Transform backend snake_case to frontend camelCase
-      const transformedCategory = categoryData.id === "haz_type_default" 
-        ? categoryData 
-        : transformCategory(categoryData);
+      const transformedCategory =
+        categoryData.id === "haz_type_default"
+          ? categoryData
+          : transformCategory(categoryData);
       setCategory(transformedCategory);
       setDefinitions(definitionsData);
     } catch (error: any) {

@@ -8,7 +8,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { UpdateWasteOwnerDTO, WasteOwnerWithLocation } from "@/types/waste-owner";
+import {
+  UpdateWasteOwnerDTO,
+  WasteOwnerWithLocation,
+} from "@/types/waste-owner";
 import { WasteOwnerForm } from "./WasteOwnerForm";
 
 interface EditWasteOwnerDialogProps {
@@ -55,7 +58,7 @@ export function EditWasteOwnerDialog({
     if (!wasteOwner) return;
 
     const updateData = dto as UpdateWasteOwnerDTO;
-    
+
     if (!validateForm(updateData)) {
       return;
     }
@@ -99,4 +102,3 @@ export function EditWasteOwnerDialog({
     </Dialog>
   );
 }
-

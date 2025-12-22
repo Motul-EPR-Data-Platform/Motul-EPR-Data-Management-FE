@@ -7,13 +7,10 @@ const imageFileValidation = z
     (file) => file.size <= 10 * 1024 * 1024,
     "Kích thước file tối đa 10MB",
   )
-  .refine(
-    (file) => {
-      const imageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-      return imageTypes.includes(file.type);
-    },
-    "Chỉ chấp nhận file ảnh: JPEG, PNG, WebP",
-  );
+  .refine((file) => {
+    const imageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    return imageTypes.includes(file.type);
+  }, "Chỉ chấp nhận file ảnh: JPEG, PNG, WebP");
 
 // Step 3 validation schema
 export const step3ValidationSchema = z
@@ -46,8 +43,7 @@ export const step3ValidationSchema = z
       // If stockpiled is true, stockpilePhoto is required
       if (data.stockpiled === true) {
         return (
-          data.stockpilePhoto !== null &&
-          data.stockpilePhoto !== undefined
+          data.stockpilePhoto !== null && data.stockpilePhoto !== undefined
         );
       }
       return true;
@@ -59,4 +55,3 @@ export const step3ValidationSchema = z
   );
 
 export type Step3ValidationData = z.infer<typeof step3ValidationSchema>;
-

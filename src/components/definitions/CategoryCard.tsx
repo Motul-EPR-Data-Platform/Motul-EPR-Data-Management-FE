@@ -18,10 +18,7 @@ interface CategoryCardProps {
   definitionCount?: number;
 }
 
-export function CategoryCard({
-  category,
-  definitionCount,
-}: CategoryCardProps) {
+export function CategoryCard({ category, definitionCount }: CategoryCardProps) {
   const router = useRouter();
   const { organization } = useAuth();
 

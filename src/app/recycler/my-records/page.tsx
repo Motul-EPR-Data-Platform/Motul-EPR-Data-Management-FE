@@ -24,7 +24,9 @@ interface StatusCounts {
 export default function MyRecordsPage() {
   const router = useRouter();
   const [records, setRecords] = useState<CollectionRecordDetail[]>([]);
-  const [filteredRecords, setFilteredRecords] = useState<CollectionRecordDetail[]>([]);
+  const [filteredRecords, setFilteredRecords] = useState<
+    CollectionRecordDetail[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -69,8 +71,10 @@ export default function MyRecordsPage() {
       const counts: StatusCounts = {
         total: normalizedRecords.length,
         pending: normalizedRecords.filter((r) => r.status === "pending").length,
-        approved: normalizedRecords.filter((r) => r.status === "approved").length,
-        rejected: normalizedRecords.filter((r) => r.status === "rejected").length,
+        approved: normalizedRecords.filter((r) => r.status === "approved")
+          .length,
+        rejected: normalizedRecords.filter((r) => r.status === "rejected")
+          .length,
         draft: normalizedRecords.filter((r) => r.status === "draft").length,
       };
       setStatusCounts(counts);
@@ -99,15 +103,17 @@ export default function MyRecordsPage() {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((r) => {
         // Handle both wasteOwner (singular) and wasteOwners (array)
-        const wasteOwner = r.wasteOwner || (r.wasteOwners && r.wasteOwners.length > 0 ? r.wasteOwners[0] : null);
-        
+        const wasteOwner =
+          r.wasteOwner ||
+          (r.wasteOwners && r.wasteOwners.length > 0 ? r.wasteOwners[0] : null);
+
         return (
           r.id.toLowerCase().includes(query) ||
           wasteOwner?.name?.toLowerCase().includes(query) ||
           wasteOwner?.businessCode?.toLowerCase().includes(query) ||
           r.contractType?.name?.toLowerCase().includes(query) ||
           r.contractType?.code?.toLowerCase().includes(query)
-      );
+        );
       });
     }
 

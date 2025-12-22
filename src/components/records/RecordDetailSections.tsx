@@ -45,8 +45,12 @@ const formatDateTime = (dateString: string | null | undefined): string => {
 
 export function WasteSourceInfoSection({ record }: RecordDetailSectionsProps) {
   // Handle both wasteOwner (singular) and wasteOwners (array) from backend
-  const wasteOwner = record.wasteOwner || (record.wasteOwners && record.wasteOwners.length > 0 ? record.wasteOwners[0] : null);
-  
+  const wasteOwner =
+    record.wasteOwner ||
+    (record.wasteOwners && record.wasteOwners.length > 0
+      ? record.wasteOwners[0]
+      : null);
+
   return (
     <Card>
       <CardHeader>
@@ -58,25 +62,19 @@ export function WasteSourceInfoSection({ record }: RecordDetailSectionsProps) {
             <p className="text-sm text-muted-foreground mb-1">
               Tên Chủ nguồn thải
             </p>
-            <p className="font-medium">
-              {wasteOwner?.name || "-"}
-            </p>
+            <p className="font-medium">{wasteOwner?.name || "-"}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground mb-1">
               Mã định danh (MST/CCCD)
             </p>
-            <p className="font-medium">
-              {wasteOwner?.businessCode || "-"}
-            </p>
+            <p className="font-medium">{wasteOwner?.businessCode || "-"}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground mb-1">
               Mã Chất thải Nguy hại (CTNH)
             </p>
-            <p className="font-medium">
-              {record.wasteSourceId || "-"}
-            </p>
+            <p className="font-medium">{record.wasteSourceId || "-"}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground mb-1">
@@ -117,9 +115,7 @@ export function CollectionDetailsSection({
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <p className="text-sm text-muted-foreground mb-1">
-              Ngày thu gom
-            </p>
+            <p className="text-sm text-muted-foreground mb-1">Ngày thu gom</p>
             <p className="font-medium">{formatDate(record.deliveryDate)}</p>
           </div>
           <div>
@@ -159,7 +155,8 @@ export function CollectionDetailsSection({
               Vị trí thu gom (GPS)
             </p>
             <p className="font-medium">
-              {record.pickupLocation?.latitude && record.pickupLocation?.longitude
+              {record.pickupLocation?.latitude &&
+              record.pickupLocation?.longitude
                 ? `${record.pickupLocation.latitude.toFixed(6)}, ${record.pickupLocation.longitude.toFixed(6)}`
                 : "-"}
             </p>
@@ -170,9 +167,7 @@ export function CollectionDetailsSection({
   );
 }
 
-export function StorageRecyclingSection({
-  record,
-}: RecordDetailSectionsProps) {
+export function StorageRecyclingSection({ record }: RecordDetailSectionsProps) {
   return (
     <Card>
       <CardHeader>
@@ -232,7 +227,10 @@ export function StorageRecyclingSection({
   );
 }
 
-export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectionsProps) {
+export function EvidenceSection({
+  record,
+  filesWithPreview,
+}: RecordDetailSectionsProps) {
   const evidenceFiles = filesWithPreview?.evidencePhotos || [];
   const stockpilePhoto = filesWithPreview?.stockpilePhoto;
   const recycledPhoto = filesWithPreview?.recycledPhoto;
@@ -254,7 +252,7 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
     window.open(signedUrl, "_blank");
   };
 
-  const hasAnyFiles = 
+  const hasAnyFiles =
     evidenceFiles.length > 0 ||
     stockpilePhoto ||
     recycledPhoto ||
@@ -277,7 +275,9 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
             {/* Evidence Photos */}
             {evidenceFiles.length > 0 && (
               <div>
-                <p className="text-sm font-medium mb-2">Ảnh bằng chứng ({evidenceFiles.length})</p>
+                <p className="text-sm font-medium mb-2">
+                  Ảnh bằng chứng ({evidenceFiles.length})
+                </p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {evidenceFiles.map((file) => (
                     <div
@@ -290,10 +290,15 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                             src={file.signedUrl}
                             alt={file.fileName}
                             className="w-full h-32 object-cover cursor-pointer"
-                            onClick={() => handlePreview(file.signedUrl, file.fileName)}
+                            onClick={() =>
+                              handlePreview(file.signedUrl, file.fileName)
+                            }
                           />
                           <div className="p-2">
-                            <p className="text-xs font-medium truncate" title={file.fileName}>
+                            <p
+                              className="text-xs font-medium truncate"
+                              title={file.fileName}
+                            >
                               {file.fileName}
                             </p>
                             <p className="text-xs text-muted-foreground">
@@ -305,7 +310,10 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                         <div className="p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <FileText className="h-5 w-5 text-muted-foreground" />
-                            <p className="text-xs font-medium truncate flex-1" title={file.fileName}>
+                            <p
+                              className="text-xs font-medium truncate flex-1"
+                              title={file.fileName}
+                            >
                               {file.fileName}
                             </p>
                           </div>
@@ -316,7 +324,9 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                             variant="ghost"
                             size="sm"
                             className="w-full"
-                            onClick={() => handlePreview(file.signedUrl, file.fileName)}
+                            onClick={() =>
+                              handlePreview(file.signedUrl, file.fileName)
+                            }
                           >
                             <Download className="h-3 w-3 mr-1" />
                             Xem
@@ -340,10 +350,18 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                         src={stockpilePhoto.signedUrl}
                         alt={stockpilePhoto.fileName}
                         className="w-full h-48 object-cover cursor-pointer"
-                        onClick={() => handlePreview(stockpilePhoto.signedUrl, stockpilePhoto.fileName)}
+                        onClick={() =>
+                          handlePreview(
+                            stockpilePhoto.signedUrl,
+                            stockpilePhoto.fileName,
+                          )
+                        }
                       />
                       <div className="p-2">
-                        <p className="text-xs font-medium truncate" title={stockpilePhoto.fileName}>
+                        <p
+                          className="text-xs font-medium truncate"
+                          title={stockpilePhoto.fileName}
+                        >
                           {stockpilePhoto.fileName}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -355,7 +373,10 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                     <div className="p-3">
                       <div className="flex items-center gap-2 mb-2">
                         <FileText className="h-5 w-5 text-muted-foreground" />
-                        <p className="text-xs font-medium truncate flex-1" title={stockpilePhoto.fileName}>
+                        <p
+                          className="text-xs font-medium truncate flex-1"
+                          title={stockpilePhoto.fileName}
+                        >
                           {stockpilePhoto.fileName}
                         </p>
                       </div>
@@ -366,7 +387,12 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                         variant="ghost"
                         size="sm"
                         className="w-full"
-                        onClick={() => handlePreview(stockpilePhoto.signedUrl, stockpilePhoto.fileName)}
+                        onClick={() =>
+                          handlePreview(
+                            stockpilePhoto.signedUrl,
+                            stockpilePhoto.fileName,
+                          )
+                        }
                       >
                         <Download className="h-3 w-3 mr-1" />
                         Xem
@@ -380,7 +406,9 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
             {/* Recycled Photo */}
             {recycledPhoto && (
               <div>
-                <p className="text-sm font-medium mb-2">Ảnh sản phẩm đã tái chế</p>
+                <p className="text-sm font-medium mb-2">
+                  Ảnh sản phẩm đã tái chế
+                </p>
                 <div className="border rounded-md overflow-hidden hover:shadow-md transition-shadow max-w-md">
                   {isImageFile(recycledPhoto.mimeType) ? (
                     <div className="relative">
@@ -388,10 +416,18 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                         src={recycledPhoto.signedUrl}
                         alt={recycledPhoto.fileName}
                         className="w-full h-48 object-cover cursor-pointer"
-                        onClick={() => handlePreview(recycledPhoto.signedUrl, recycledPhoto.fileName)}
+                        onClick={() =>
+                          handlePreview(
+                            recycledPhoto.signedUrl,
+                            recycledPhoto.fileName,
+                          )
+                        }
                       />
                       <div className="p-2">
-                        <p className="text-xs font-medium truncate" title={recycledPhoto.fileName}>
+                        <p
+                          className="text-xs font-medium truncate"
+                          title={recycledPhoto.fileName}
+                        >
                           {recycledPhoto.fileName}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -403,7 +439,10 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                     <div className="p-3">
                       <div className="flex items-center gap-2 mb-2">
                         <FileText className="h-5 w-5 text-muted-foreground" />
-                        <p className="text-xs font-medium truncate flex-1" title={recycledPhoto.fileName}>
+                        <p
+                          className="text-xs font-medium truncate flex-1"
+                          title={recycledPhoto.fileName}
+                        >
                           {recycledPhoto.fileName}
                         </p>
                       </div>
@@ -414,7 +453,12 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                         variant="ghost"
                         size="sm"
                         className="w-full"
-                        onClick={() => handlePreview(recycledPhoto.signedUrl, recycledPhoto.fileName)}
+                        onClick={() =>
+                          handlePreview(
+                            recycledPhoto.signedUrl,
+                            recycledPhoto.fileName,
+                          )
+                        }
                       >
                         <Download className="h-3 w-3 mr-1" />
                         Xem
@@ -433,7 +477,9 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                   <div className="flex items-center gap-3">
                     <FileText className="h-5 w-5 text-muted-foreground" />
                     <div>
-                      <p className="font-medium text-sm">{acceptanceDoc.fileName}</p>
+                      <p className="font-medium text-sm">
+                        {acceptanceDoc.fileName}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {formatFileSize(acceptanceDoc.fileSize)}
                       </p>
@@ -442,7 +488,12 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handlePreview(acceptanceDoc.signedUrl, acceptanceDoc.fileName)}
+                    onClick={() =>
+                      handlePreview(
+                        acceptanceDoc.signedUrl,
+                        acceptanceDoc.fileName,
+                      )
+                    }
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Xem
@@ -454,12 +505,16 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
             {/* Quality Metrics */}
             {outputQualityMetrics && (
               <div>
-                <p className="text-sm font-medium mb-2">Chất lượng sau tái chế</p>
+                <p className="text-sm font-medium mb-2">
+                  Chất lượng sau tái chế
+                </p>
                 <div className="flex items-center justify-between p-3 border rounded-md">
-                <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                      <p className="font-medium text-sm">{outputQualityMetrics.fileName}</p>
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium text-sm">
+                        {outputQualityMetrics.fileName}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {formatFileSize(outputQualityMetrics.fileSize)}
                       </p>
@@ -468,7 +523,12 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handlePreview(outputQualityMetrics.signedUrl, outputQualityMetrics.fileName)}
+                    onClick={() =>
+                      handlePreview(
+                        outputQualityMetrics.signedUrl,
+                        outputQualityMetrics.fileName,
+                      )
+                    }
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Xem
@@ -480,12 +540,16 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
             {/* Quality Metrics (Before) */}
             {qualityMetrics && (
               <div>
-                <p className="text-sm font-medium mb-2">Chất lượng trước tái chế</p>
+                <p className="text-sm font-medium mb-2">
+                  Chất lượng trước tái chế
+                </p>
                 <div className="flex items-center justify-between p-3 border rounded-md">
                   <div className="flex items-center gap-3">
                     <FileText className="h-5 w-5 text-muted-foreground" />
                     <div>
-                      <p className="font-medium text-sm">{qualityMetrics.fileName}</p>
+                      <p className="font-medium text-sm">
+                        {qualityMetrics.fileName}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {formatFileSize(qualityMetrics.fileSize)}
                       </p>
@@ -494,11 +558,16 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handlePreview(qualityMetrics.signedUrl, qualityMetrics.fileName)}
+                    onClick={() =>
+                      handlePreview(
+                        qualityMetrics.signedUrl,
+                        qualityMetrics.fileName,
+                      )
+                    }
                   >
-                  <Download className="h-4 w-4 mr-2" />
-                  Xem
-                </Button>
+                    <Download className="h-4 w-4 mr-2" />
+                    Xem
+                  </Button>
                 </div>
               </div>
             )}
@@ -508,5 +577,3 @@ export function EvidenceSection({ record, filesWithPreview }: RecordDetailSectio
     </Card>
   );
 }
-
-

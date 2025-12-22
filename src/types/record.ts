@@ -1,7 +1,12 @@
 import { Location } from "./waste-owner";
 import { ICollectionRecordFiles } from "./file-record";
 
-export type RecordStatus = "draft" | "pending" | "submitted" | "approved" | "rejected";
+export type RecordStatus =
+  | "draft"
+  | "pending"
+  | "submitted"
+  | "approved"
+  | "rejected";
 
 export interface CollectionRecord {
   readonly id: string;
@@ -181,4 +186,3 @@ export interface CollectionRecordsListResponse {
   data: CollectionRecordDetail[];
   pagination?: PaginationInfo;
 }
-

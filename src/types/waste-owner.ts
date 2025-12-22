@@ -100,4 +100,3 @@ export interface WasteOwnersListResponse {
   count: number;
   data: WasteOwnerWithLocation[];
 }
-

@@ -35,11 +35,18 @@ export const CollectionRecordService = {
       // When array has values like ["id1"], it should create junction records
       wasteOwnerIds: Array.isArray(dto.wasteOwnerIds) ? dto.wasteOwnerIds : [],
     };
-    
-    console.log('Creating draft with payload:', JSON.stringify(payload, null, 2));
-    console.log('wasteOwnerIds value:', payload.wasteOwnerIds);
-    console.log('wasteOwnerIds type:', typeof payload.wasteOwnerIds, Array.isArray(payload.wasteOwnerIds));
-    
+
+    console.log(
+      "Creating draft with payload:",
+      JSON.stringify(payload, null, 2),
+    );
+    console.log("wasteOwnerIds value:", payload.wasteOwnerIds);
+    console.log(
+      "wasteOwnerIds type:",
+      typeof payload.wasteOwnerIds,
+      Array.isArray(payload.wasteOwnerIds),
+    );
+
     const { data } = await api.post(
       path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.DRAFT),
       payload,
@@ -55,8 +62,8 @@ export const CollectionRecordService = {
     id: string,
     dto: UpdateDraftDTO,
   ): Promise<CollectionRecord> {
-    console.log('Updating draft with payload:', JSON.stringify(dto, null, 2));
-    console.log('hazCodeId in payload:', dto.hazCodeId);
+    console.log("Updating draft with payload:", JSON.stringify(dto, null, 2));
+    console.log("hazCodeId in payload:", dto.hazCodeId);
     const { data } = await api.put(
       path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.DRAFT_BY_ID(id)),
       dto,
@@ -119,7 +126,7 @@ export const CollectionRecordService = {
       : ENDPOINTS.COLLECTION_RECORDS.ROOT;
 
     const { data } = await api.get(url);
-    
+
     // Normalize backend status to frontend status
     if (data.data && Array.isArray(data.data)) {
       data.data = data.data.map((record: any) => {
@@ -137,7 +144,7 @@ export const CollectionRecordService = {
         return { ...record, status: normalizedStatus };
       });
     }
-    
+
     return data;
   },
 
@@ -150,7 +157,7 @@ export const CollectionRecordService = {
       path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.BY_ID(id)),
     );
     const record = data.data || data;
-    
+
     // Normalize backend status to frontend status
     if (record.status === "SUBMITTED") {
       record.status = "pending";
@@ -161,21 +168,33 @@ export const CollectionRecordService = {
     } else if (record.status === "DRAFT") {
       record.status = "draft";
     }
-    
+
     // Normalize approval decision values if present
     // Backend returns "approval" (singular) as an array, map it to "approvals" (plural) for consistency
     if ((record as any).approval && Array.isArray((record as any).approval)) {
-      (record as any).approvals = (record as any).approval.map((approval: any) => ({
-        ...approval,
-        decision: approval.decision === "APPROVED" ? "APPROVED" : approval.decision === "REJECTED" ? "REJECTED" : approval.decision,
-      }));
+      (record as any).approvals = (record as any).approval.map(
+        (approval: any) => ({
+          ...approval,
+          decision:
+            approval.decision === "APPROVED"
+              ? "APPROVED"
+              : approval.decision === "REJECTED"
+                ? "REJECTED"
+                : approval.decision,
+        }),
+      );
     } else if (record.approvals && Array.isArray(record.approvals)) {
       record.approvals = record.approvals.map((approval: any) => ({
         ...approval,
-        decision: approval.decision === "APPROVED" ? "APPROVED" : approval.decision === "REJECTED" ? "REJECTED" : approval.decision,
+        decision:
+          approval.decision === "APPROVED"
+            ? "APPROVED"
+            : approval.decision === "REJECTED"
+              ? "REJECTED"
+              : approval.decision,
       }));
     }
-    
+
     return record;
   },
 
@@ -272,7 +291,9 @@ export const CollectionRecordService = {
     expiresIn: number = 3600,
   ): Promise<ICollectionRecordFilesWithPreview> {
     const { data } = await api.get(
-      path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.FILES_PREVIEW(recordId)),
+      path.collectionRecords(
+        ENDPOINTS.COLLECTION_RECORDS.FILES_PREVIEW(recordId),
+      ),
       {
         params: {
           expiresIn,
@@ -308,7 +329,11 @@ export const CollectionRecordService = {
     position: number,
     file: File,
   ): Promise<IFileUploadResponse> {
-    return FileRecordService.replaceFileByPosition(recordId, category, position, file);
+    return FileRecordService.replaceFileByPosition(
+      recordId,
+      category,
+      position,
+      file,
+    );
   },
 };
-

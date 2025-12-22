@@ -1,12 +1,12 @@
 // File category enum
 export enum FileType {
-  EVIDENCE_PHOTO = 'evidence_photo',
-  STOCKPILE_PHOTO = 'stockpile_photo',
-  RECYCLED_PHOTO = 'recycled_photo',
-  ACCEPTANCE_DOC = 'acceptance_doc',
-  OUTPUT_QUALITY_METRICS = 'output_quality_metrics',
-  QUALITY_METRICS = 'quality_metrics',
-  APPROVAL_DOC = 'approval_doc', // Approval certificate/document
+  EVIDENCE_PHOTO = "evidence_photo",
+  STOCKPILE_PHOTO = "stockpile_photo",
+  RECYCLED_PHOTO = "recycled_photo",
+  ACCEPTANCE_DOC = "acceptance_doc",
+  OUTPUT_QUALITY_METRICS = "output_quality_metrics",
+  QUALITY_METRICS = "quality_metrics",
+  APPROVAL_DOC = "approval_doc", // Approval certificate/document
 }
 
 // File metadata interface
@@ -78,25 +78,24 @@ export const validateRequiredFiles = (params: {
   stockpiledFlag: boolean;
 }): IFileValidationResult => {
   const missing: string[] = [];
-  
+
   // Evidence photos are always required (at least 1)
   if (!params.evidencePhotos || params.evidencePhotos.length === 0) {
-    missing.push('evidence_photo');
+    missing.push("evidence_photo");
   }
-  
+
   // Recycled photo is always required
   if (!params.recycledPhoto) {
-    missing.push('recycled_photo');
+    missing.push("recycled_photo");
   }
-  
+
   // Stockpile photo is required only if stockpiled flag is true
   if (params.stockpiledFlag && !params.stockpilePhoto) {
-    missing.push('stockpile_photo');
+    missing.push("stockpile_photo");
   }
-  
+
   return {
     valid: missing.length === 0,
     missing,
   };
 };
-

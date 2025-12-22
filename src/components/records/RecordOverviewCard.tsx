@@ -11,7 +11,13 @@ interface RecordOverviewCardProps {
 
 const getStatusBadgeVariant = (
   status: RecordStatus,
-): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" => {
+):
+  | "default"
+  | "secondary"
+  | "destructive"
+  | "outline"
+  | "success"
+  | "warning" => {
   switch (status) {
     case "approved":
       return "success";
@@ -63,8 +69,12 @@ const formatDate = (dateString: string | null | undefined): string => {
 
 export function RecordOverviewCard({ record }: RecordOverviewCardProps) {
   // Handle both wasteOwner (singular) and wasteOwners (array) from backend
-  const wasteOwner = record.wasteOwner || (record.wasteOwners && record.wasteOwners.length > 0 ? record.wasteOwners[0] : null);
-  
+  const wasteOwner =
+    record.wasteOwner ||
+    (record.wasteOwners && record.wasteOwners.length > 0
+      ? record.wasteOwners[0]
+      : null);
+
   return (
     <Card className="border-red-500">
       <CardHeader>
@@ -102,4 +112,3 @@ export function RecordOverviewCard({ record }: RecordOverviewCardProps) {
     </Card>
   );
 }
-

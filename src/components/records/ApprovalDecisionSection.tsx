@@ -44,24 +44,25 @@ const formatDateTime = (dateString: string | null | undefined): string => {
   }
 };
 
-export function ApprovalDecisionSection({ record }: ApprovalDecisionSectionProps) {
+export function ApprovalDecisionSection({
+  record,
+}: ApprovalDecisionSectionProps) {
   const [downloadingFile, setDownloadingFile] = useState<string | null>(null);
 
   // Get the latest approval decision (approved or rejected)
   // Backend returns "approval" (singular) as an array, but we also support "approvals" (plural)
   const approvalData = (record as any).approval || record.approvals || [];
   const approvals = Array.isArray(approvalData) ? approvalData : [];
-  
-  const latestApproval = approvals.length > 0 ? approvals[approvals.length - 1] : null;
-  
+
+  const latestApproval =
+    approvals.length > 0 ? approvals[approvals.length - 1] : null;
+
   // Check status (handle both normalized and non-normalized)
   const normalizedStatus = record.status?.toLowerCase();
-  const isApproved = 
-    latestApproval?.decision === "APPROVED" || 
-    normalizedStatus === "approved";
-  const isRejected = 
-    latestApproval?.decision === "REJECTED" || 
-    normalizedStatus === "rejected";
+  const isApproved =
+    latestApproval?.decision === "APPROVED" || normalizedStatus === "approved";
+  const isRejected =
+    latestApproval?.decision === "REJECTED" || normalizedStatus === "rejected";
 
   // Get approval document from files
   const approvalDoc = record.files?.approvalDoc;
@@ -69,7 +70,8 @@ export function ApprovalDecisionSection({ record }: ApprovalDecisionSectionProps
   const handleDownloadFile = async (fileId: string, fileName: string) => {
     setDownloadingFile(fileId);
     try {
-      const downloadUrl = await CollectionRecordService.getFileDownloadUrl(fileId);
+      const downloadUrl =
+        await CollectionRecordService.getFileDownloadUrl(fileId);
       // Open in new tab
       window.open(downloadUrl, "_blank");
     } catch (error: any) {
@@ -85,12 +87,26 @@ export function ApprovalDecisionSection({ record }: ApprovalDecisionSectionProps
     // Check if record status indicates it was approved/rejected but no approval data
     // Handle both normalized and non-normalized statuses
     const status = record.status?.toLowerCase();
-    if (status === "approved" || status === "rejected" || record.status === "APPROVED" || record.status === "REJECTED") {
-      const isApprovedStatus = status === "approved" || record.status === "APPROVED";
+    if (
+      status === "approved" ||
+      status === "rejected" ||
+      record.status === "APPROVED" ||
+      record.status === "REJECTED"
+    ) {
+      const isApprovedStatus =
+        status === "approved" || record.status === "APPROVED";
       return (
-        <Card className={isApprovedStatus ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}>
+        <Card
+          className={
+            isApprovedStatus
+              ? "border-green-200 bg-green-50"
+              : "border-red-200 bg-red-50"
+          }
+        >
           <CardHeader>
-            <CardTitle className={`flex items-center gap-2 ${isApprovedStatus ? "text-green-900" : "text-red-900"}`}>
+            <CardTitle
+              className={`flex items-center gap-2 ${isApprovedStatus ? "text-green-900" : "text-red-900"}`}
+            >
               {isApprovedStatus ? (
                 <CheckCircle2 className="h-5 w-5" />
               ) : (
@@ -101,7 +117,7 @@ export function ApprovalDecisionSection({ record }: ApprovalDecisionSectionProps
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              {isApprovedStatus 
+              {isApprovedStatus
                 ? "Bản ghi đã được phê duyệt. Thông tin chi tiết sẽ được hiển thị khi có dữ liệu."
                 : "Bản ghi đã bị từ chối. Thông tin chi tiết sẽ được hiển thị khi có dữ liệu."}
             </p>
@@ -113,8 +129,12 @@ export function ApprovalDecisionSection({ record }: ApprovalDecisionSectionProps
             )}
             {record.acceptanceDate && (
               <div className="mt-3">
-                <p className="text-sm text-muted-foreground mb-1">Ngày chấp thuận</p>
-                <p className="font-medium">{formatDate(record.acceptanceDate)}</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Ngày chấp thuận
+                </p>
+                <p className="font-medium">
+                  {formatDate(record.acceptanceDate)}
+                </p>
               </div>
             )}
           </CardContent>
@@ -136,15 +156,23 @@ export function ApprovalDecisionSection({ record }: ApprovalDecisionSectionProps
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Người phê duyệt</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Người phê duyệt
+              </p>
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <p className="font-medium">{latestApproval.approver.fullName}</p>
+                <p className="font-medium">
+                  {latestApproval.approver.fullName}
+                </p>
               </div>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Ngày phê duyệt</p>
-              <p className="font-medium">{formatDateTime(latestApproval.decidedAt)}</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Ngày phê duyệt
+              </p>
+              <p className="font-medium">
+                {formatDateTime(latestApproval.decidedAt)}
+              </p>
             </div>
             {record.eprId && (
               <div>
@@ -154,8 +182,12 @@ export function ApprovalDecisionSection({ record }: ApprovalDecisionSectionProps
             )}
             {record.acceptanceDate && (
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Ngày chấp thuận</p>
-                <p className="font-medium">{formatDate(record.acceptanceDate)}</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Ngày chấp thuận
+                </p>
+                <p className="font-medium">
+                  {formatDate(record.acceptanceDate)}
+                </p>
               </div>
             )}
           </div>
@@ -167,12 +199,16 @@ export function ApprovalDecisionSection({ record }: ApprovalDecisionSectionProps
           )}
           {approvalDoc && (
             <div>
-              <p className="text-sm text-muted-foreground mb-2">Tài liệu chấp thuận</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                Tài liệu chấp thuận
+              </p>
               <div className="flex items-center justify-between p-3 border rounded-md bg-white">
                 <div className="flex items-center gap-3">
                   <FileText className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="font-medium text-sm">{approvalDoc.fileName}</p>
+                    <p className="font-medium text-sm">
+                      {approvalDoc.fileName}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {(approvalDoc.fileSize / 1024).toFixed(2)} KB
                     </p>
@@ -181,11 +217,15 @@ export function ApprovalDecisionSection({ record }: ApprovalDecisionSectionProps
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleDownloadFile(approvalDoc.id, approvalDoc.fileName)}
+                  onClick={() =>
+                    handleDownloadFile(approvalDoc.id, approvalDoc.fileName)
+                  }
                   disabled={downloadingFile === approvalDoc.id}
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  {downloadingFile === approvalDoc.id ? "Đang tải..." : "Tải xuống"}
+                  {downloadingFile === approvalDoc.id
+                    ? "Đang tải..."
+                    : "Tải xuống"}
                 </Button>
               </div>
             </div>
@@ -207,20 +247,28 @@ export function ApprovalDecisionSection({ record }: ApprovalDecisionSectionProps
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Người từ chối</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Người từ chối
+              </p>
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <p className="font-medium">{latestApproval.approver.fullName}</p>
+                <p className="font-medium">
+                  {latestApproval.approver.fullName}
+                </p>
               </div>
             </div>
             <div>
               <p className="text-sm text-muted-foreground mb-1">Ngày từ chối</p>
-              <p className="font-medium">{formatDateTime(latestApproval.decidedAt)}</p>
+              <p className="font-medium">
+                {formatDateTime(latestApproval.decidedAt)}
+              </p>
             </div>
           </div>
           {latestApproval.comment && (
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Lý do từ chối</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Lý do từ chối
+              </p>
               <p className="font-medium text-sm text-red-800 bg-red-100 p-3 rounded-md">
                 {latestApproval.comment}
               </p>
@@ -233,4 +281,3 @@ export function ApprovalDecisionSection({ record }: ApprovalDecisionSectionProps
 
   return null;
 }
-

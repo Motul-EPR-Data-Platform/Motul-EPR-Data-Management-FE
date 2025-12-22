@@ -3,9 +3,18 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CreateDraftFormData } from "@/types/record";
-import { DocumentUpload, DocumentFile } from "@/components/records/DocumentUpload";
+import {
+  DocumentUpload,
+  DocumentFile,
+} from "@/components/records/DocumentUpload";
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { LocationService } from "@/lib/services/location.service";
 import { FileType } from "@/types/file-record";
@@ -36,7 +45,12 @@ interface Step2CollectionDetailsProps {
   onLongitudeChange?: (lng: number) => void;
   evidenceFiles?: DocumentFile[];
   onEvidenceFilesChange?: (files: DocumentFile[]) => void;
-  hazTypes?: Array<{ id: string; code: string; name?: string; haz_code?: string }>;
+  hazTypes?: Array<{
+    id: string;
+    code: string;
+    name?: string;
+    haz_code?: string;
+  }>;
 }
 
 export function Step2CollectionDetails({
@@ -118,9 +132,7 @@ export function Step2CollectionDetails({
             id="vehiclePlate"
             type="text"
             value={formData.vehiclePlate || ""}
-            onChange={(e) =>
-              onChange("vehiclePlate", e.target.value || null)
-            }
+            onChange={(e) => onChange("vehiclePlate", e.target.value || null)}
             placeholder="Nhập biển số xe"
             disabled={disabled}
             className={errors.vehiclePlate ? "border-red-500" : ""}
@@ -132,17 +144,15 @@ export function Step2CollectionDetails({
 
         {/* HAZ Code */}
         <div className="grid gap-2">
-          <Label htmlFor="hazCodeId">
-            Mã HAZ
-          </Label>
+          <Label htmlFor="hazCodeId">Mã HAZ</Label>
           <Select
             value={formData.hazCodeId ? String(formData.hazCodeId) : "__none__"}
             onValueChange={(value) => {
               const newValue = value === "__none__" ? null : value;
-              console.log("HAZ Code dropdown changed:", { 
-                selectedValue: value, 
-                newValue, 
-                currentFormDataHazCodeId: formData.hazCodeId 
+              console.log("HAZ Code dropdown changed:", {
+                selectedValue: value,
+                newValue,
+                currentFormDataHazCodeId: formData.hazCodeId,
               });
               onChange("hazCodeId", newValue);
             }}
@@ -160,10 +170,15 @@ export function Step2CollectionDetails({
                 .filter((hazType) => hazType.id && hazType.id.trim() !== "") // Filter out empty IDs
                 .map((hazType) => {
                   const hazCode = hazType.haz_code || hazType.code || "";
-                  const displayName = hazType.name || hazType.code || hazType.haz_code || "Unknown";
-                  const displayText = hazCode && hazCode !== displayName 
-                    ? `${displayName} (${hazCode})` 
-                    : displayName;
+                  const displayName =
+                    hazType.name ||
+                    hazType.code ||
+                    hazType.haz_code ||
+                    "Unknown";
+                  const displayText =
+                    hazCode && hazCode !== displayName
+                      ? `${displayName} (${hazCode})`
+                      : displayName;
                   return (
                     <SelectItem key={hazType.id} value={hazType.id}>
                       {displayText}
@@ -179,9 +194,7 @@ export function Step2CollectionDetails({
 
         {/* Collected Price Per Kg */}
         <div className="grid gap-2">
-          <Label htmlFor="collectedPricePerKg">
-            Giá thu gom (VNĐ/kg)
-          </Label>
+          <Label htmlFor="collectedPricePerKg">Giá thu gom (VNĐ/kg)</Label>
           <Input
             id="collectedPricePerKg"
             type="number"
@@ -229,7 +242,7 @@ export function Step2CollectionDetails({
                   </div>
                 )}
               </div> */}
-              
+
               {/* Map placeholder - temporarily disabled */}
               <div className="space-y-2">
                 <Label>Bản đồ</Label>
@@ -264,35 +277,36 @@ export function Step2CollectionDetails({
             {/* Right Column - Detailed Address */}
             <div className="space-y-4">
               <Label>Địa chỉ thu gom chi tiết</Label>
-                <LocationAutocomplete
+              <LocationAutocomplete
                 value={fullAddress || ""}
-                  onSelect={async (result) => {
-                    onLocationRefIdChange(result.refId);
-                    // Fetch full location details to populate address and coordinates
-                    try {
-                      const locationDetails = await LocationService.getLocationByRefId(result.refId);
+                onSelect={async (result) => {
+                  onLocationRefIdChange(result.refId);
+                  // Fetch full location details to populate address and coordinates
+                  try {
+                    const locationDetails =
+                      await LocationService.getLocationByRefId(result.refId);
                     // Store the full address string for backend and display
-                      onFullAddressChange?.(locationDetails.address);
-                      onAddressChange?.({
-                        ...address,
-                        province: locationDetails.city,
-                        // Note: district and ward would need to be parsed from address or fetched separately
-                      });
-                      // Update GPS coordinates if available
-                      if (locationDetails.latitude && locationDetails.longitude) {
-                        onLatitudeChange?.(locationDetails.latitude);
-                        onLongitudeChange?.(locationDetails.longitude);
-                      }
-                    } catch (error) {
-                      console.error("Failed to fetch location details:", error);
+                    onFullAddressChange?.(locationDetails.address);
+                    onAddressChange?.({
+                      ...address,
+                      province: locationDetails.city,
+                      // Note: district and ward would need to be parsed from address or fetched separately
+                    });
+                    // Update GPS coordinates if available
+                    if (locationDetails.latitude && locationDetails.longitude) {
+                      onLatitudeChange?.(locationDetails.latitude);
+                      onLongitudeChange?.(locationDetails.longitude);
                     }
-                  }}
-                  label="Số nhà, tên đường"
-                  placeholder="Tìm hoặc chọn từ danh sách...."
-                  required
-                  disabled={disabled}
-                  error={errors.locationRefId}
-                />
+                  } catch (error) {
+                    console.error("Failed to fetch location details:", error);
+                  }
+                }}
+                label="Số nhà, tên đường"
+                placeholder="Tìm hoặc chọn từ danh sách...."
+                required
+                disabled={disabled}
+                error={errors.locationRefId}
+              />
             </div>
           </div>
         </div>
@@ -301,8 +315,8 @@ export function Step2CollectionDetails({
         <div className="space-y-2">
           <Label>Tải lên bằng chứng</Label>
           <p className="text-sm text-muted-foreground mb-4">
-            Tải lên bằng chứng gồm: Ảnh chụp đầu thải, Biển số xe, Biên bản
-            giao nhận, Phiếu cân...
+            Tải lên bằng chứng gồm: Ảnh chụp đầu thải, Biển số xe, Biên bản giao
+            nhận, Phiếu cân...
           </p>
           <DocumentUpload
             documents={evidenceFiles || []}
@@ -318,7 +332,14 @@ export function Step2CollectionDetails({
             category={FileType.EVIDENCE_PHOTO}
             documentTypeToCategory={(docType) => {
               // All evidence document types map to EVIDENCE_PHOTO
-              if (["phieu-can", "bien-ban-giao-nhan", "bien-so-xe", "khac"].includes(docType)) {
+              if (
+                [
+                  "phieu-can",
+                  "bien-ban-giao-nhan",
+                  "bien-so-xe",
+                  "khac",
+                ].includes(docType)
+              ) {
                 return FileType.EVIDENCE_PHOTO;
               }
               return FileType.EVIDENCE_PHOTO;
@@ -329,4 +350,3 @@ export function Step2CollectionDetails({
     </div>
   );
 }
-

@@ -43,7 +43,9 @@ export function RecordApprovalActions({
   const [showApproveDialog, setShowApproveDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [eprId, setEprId] = useState("");
-  const [acceptanceDate, setAcceptanceDate] = useState<Date | undefined>(new Date());
+  const [acceptanceDate, setAcceptanceDate] = useState<Date | undefined>(
+    new Date(),
+  );
   const [approvalComment, setApprovalComment] = useState("");
   const [approvalDocument, setApprovalDocument] = useState<File | null>(null);
   const [rejectionComment, setRejectionComment] = useState("");
@@ -226,7 +228,10 @@ export function RecordApprovalActions({
                 onValueChange={setEprId}
                 disabled={isLoading || loadingEprEntities}
               >
-                <SelectTrigger id="eprId" className={!eprId ? "border-red-500" : ""}>
+                <SelectTrigger
+                  id="eprId"
+                  className={!eprId ? "border-red-500" : ""}
+                >
                   <SelectValue placeholder="Chọn EPR Entity..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -258,7 +263,9 @@ export function RecordApprovalActions({
                 placeholder="Chọn ngày chấp thuận"
               />
               {!acceptanceDate && (
-                <p className="text-xs text-red-500">Vui lòng chọn ngày chấp thuận</p>
+                <p className="text-xs text-red-500">
+                  Vui lòng chọn ngày chấp thuận
+                </p>
               )}
             </div>
             <div className="grid gap-2">
@@ -274,7 +281,8 @@ export function RecordApprovalActions({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="approvalDocument">
-                Tài liệu chấp thuận (Giấy chứng nhận) <span className="text-red-500">*</span>
+                Tài liệu chấp thuận (Giấy chứng nhận){" "}
+                <span className="text-red-500">*</span>
               </Label>
               <FileUpload
                 id="approvalDocument"
@@ -287,7 +295,9 @@ export function RecordApprovalActions({
                 required
               />
               {!approvalDocument && (
-                <p className="text-xs text-red-500">Vui lòng tải lên tài liệu chấp thuận</p>
+                <p className="text-xs text-red-500">
+                  Vui lòng tải lên tài liệu chấp thuận
+                </p>
               )}
               <p className="text-xs text-muted-foreground">
                 Chấp nhận file: PDF, DOC, DOCX (tối đa 10MB)
@@ -304,7 +314,9 @@ export function RecordApprovalActions({
             </Button>
             <Button
               onClick={handleApprove}
-              disabled={isLoading || !eprId || !acceptanceDate || !approvalDocument}
+              disabled={
+                isLoading || !eprId || !acceptanceDate || !approvalDocument
+              }
               className="bg-green-600 hover:bg-green-700"
             >
               Phê duyệt
@@ -319,7 +331,8 @@ export function RecordApprovalActions({
           <DialogHeader>
             <DialogTitle>Từ chối bản ghi</DialogTitle>
             <DialogDescription>
-              Vui lòng nhập lý do từ chối bản ghi này. Lý do từ chối là bắt buộc.
+              Vui lòng nhập lý do từ chối bản ghi này. Lý do từ chối là bắt
+              buộc.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -335,7 +348,11 @@ export function RecordApprovalActions({
                 disabled={isLoading}
                 rows={5}
                 required
-                className={!rejectionComment.trim() && rejectionComment.length > 0 ? "border-red-500" : ""}
+                className={
+                  !rejectionComment.trim() && rejectionComment.length > 0
+                    ? "border-red-500"
+                    : ""
+                }
               />
               {!rejectionComment.trim() && (
                 <p className="text-xs text-red-500">
@@ -368,4 +385,3 @@ export function RecordApprovalActions({
     </>
   );
 }
-

@@ -16,7 +16,11 @@ import { Button } from "@/components/ui/button";
 
 interface LocationAutocompleteProps {
   value?: string; // refId or display address
-  onSelect: (result: { refId: string; display: string; address: string }) => void;
+  onSelect: (result: {
+    refId: string;
+    display: string;
+    address: string;
+  }) => void;
   placeholder?: string;
   label?: string;
   required?: boolean;
@@ -188,4 +192,3 @@ export function LocationAutocomplete({
     </div>
   );
 }
-

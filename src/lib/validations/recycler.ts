@@ -50,7 +50,9 @@ export const completeRecyclerAdminProfileSchema = z.object({
   vendor_name: z.string().min(1, "Tên thị trường là bắt buộc"),
   tax_code: z.string().min(1, "Mã số thuế là bắt buộc"),
   representative: z.string().min(1, "Người đại diện pháp luật là bắt buộc"),
-  company_registration_address: z.string().min(1, "Địa chỉ đăng ký công ty là bắt buộc"),
+  company_registration_address: z
+    .string()
+    .min(1, "Địa chỉ đăng ký công ty là bắt buộc"),
   business_reg_number: z.string().optional(),
   business_reg_issue_date: dateValidation.optional(),
   business_reg_file: fileValidation,

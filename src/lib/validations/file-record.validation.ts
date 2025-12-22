@@ -81,7 +81,7 @@ export function getAllowedExtensions(category: FileType): string[] {
  */
 export function validateFileType(
   category: FileType,
-  file: File
+  file: File,
 ): { valid: boolean; error?: string } {
   const allowedTypes = getAllowedMimeTypes(category);
   const allowedExtensions = getAllowedExtensions(category);
@@ -91,7 +91,7 @@ export function validateFileType(
     // Fallback: check file extension if MIME type doesn't match
     const fileName = file.name.toLowerCase();
     const hasValidExtension = allowedExtensions.some((ext) =>
-      fileName.endsWith(ext)
+      fileName.endsWith(ext),
     );
 
     if (!hasValidExtension) {
@@ -136,4 +136,3 @@ export function getFileTypeDescription(category: FileType): string {
 
   return "JPEG, PNG, WebP";
 }
-

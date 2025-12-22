@@ -55,7 +55,8 @@ export default function WasteSourcesPage() {
   const loadWasteOwners = async () => {
     setIsLoading(true);
     try {
-      const filters: { isActive?: boolean; wasteOwnerType?: WasteOwnerType } = {};
+      const filters: { isActive?: boolean; wasteOwnerType?: WasteOwnerType } =
+        {};
 
       if (selectedStatus !== "all") {
         filters.isActive = selectedStatus === "active";
@@ -114,9 +115,7 @@ export default function WasteSourcesPage() {
 
   const handleDelete = async (wasteOwner: WasteOwnerWithLocation) => {
     if (
-      confirm(
-        `Bạn có chắc chắn muốn xóa chủ nguồn thải ${wasteOwner.name}?`,
-      )
+      confirm(`Bạn có chắc chắn muốn xóa chủ nguồn thải ${wasteOwner.name}?`)
     ) {
       try {
         await toast.promise(WasteOwnerService.deleteWasteOwner(wasteOwner.id), {

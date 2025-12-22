@@ -11,7 +11,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CreateDraftFormData } from "@/types/record";
-import { DocumentUpload, DocumentFile } from "@/components/records/DocumentUpload";
+import {
+  DocumentUpload,
+  DocumentFile,
+} from "@/components/records/DocumentUpload";
 import { FileType } from "@/types/file-record";
 import { FileUpload } from "@/components/ui/file-upload";
 
@@ -64,7 +67,10 @@ export function Step3WarehouseRecycling({
                   : ""
             }
             onValueChange={(value) =>
-              onChange("stockpiled", value === "yes" ? true : value === "no" ? false : null)
+              onChange(
+                "stockpiled",
+                value === "yes" ? true : value === "no" ? false : null,
+              )
             }
             disabled={disabled}
           >
@@ -81,24 +87,26 @@ export function Step3WarehouseRecycling({
         {/* Stockpile Volume and Photo (if stockpiled) */}
         {formData.stockpiled === true && (
           <>
-          <div className="grid gap-2">
-            <Label htmlFor="stockpileVolumeKg">Khối lượng lưu kho (kg)</Label>
-            <Input
-              id="stockpileVolumeKg"
-              type="number"
-              value={formData.stockpileVolumeKg || ""}
-              onChange={(e) =>
-                onChange(
-                  "stockpileVolumeKg",
-                  e.target.value ? parseFloat(e.target.value) : null,
-                )
-              }
-              placeholder="0"
-              disabled={disabled}
+            <div className="grid gap-2">
+              <Label htmlFor="stockpileVolumeKg">Khối lượng lưu kho (kg)</Label>
+              <Input
+                id="stockpileVolumeKg"
+                type="number"
+                value={formData.stockpileVolumeKg || ""}
+                onChange={(e) =>
+                  onChange(
+                    "stockpileVolumeKg",
+                    e.target.value ? parseFloat(e.target.value) : null,
+                  )
+                }
+                placeholder="0"
+                disabled={disabled}
                 className={errors.stockpileVolumeKg ? "border-red-500" : ""}
               />
               {errors.stockpileVolumeKg && (
-                <p className="text-sm text-red-500">{errors.stockpileVolumeKg}</p>
+                <p className="text-sm text-red-500">
+                  {errors.stockpileVolumeKg}
+                </p>
               )}
             </div>
 
@@ -124,7 +132,7 @@ export function Step3WarehouseRecycling({
               {errors.stockpilePhoto && (
                 <p className="text-sm text-red-500">{errors.stockpilePhoto}</p>
               )}
-          </div>
+            </div>
           </>
         )}
 
@@ -156,8 +164,7 @@ export function Step3WarehouseRecycling({
         {/* Recycled Volume */}
         <div className="grid gap-2">
           <Label htmlFor="recycledVolumeKg">
-            Khối lượng đã tái chế (kg){" "}
-            <span className="text-red-500">*</span>
+            Khối lượng đã tái chế (kg) <span className="text-red-500">*</span>
           </Label>
           <Input
             id="recycledVolumeKg"
@@ -237,4 +244,3 @@ export function Step3WarehouseRecycling({
     </div>
   );
 }
-

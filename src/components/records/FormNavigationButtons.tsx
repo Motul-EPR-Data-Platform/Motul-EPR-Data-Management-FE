@@ -74,33 +74,30 @@ export function FormNavigationButtons({
           </Button>
         )}
 
-        {isLastStep ? (
-          onSubmit && (
-            <Button
-              type="button"
-              onClick={onSubmit}
-              disabled={isLoading || !canGoNext}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              <Check className="w-4 h-4 mr-2" />
-              Gửi phê duyệt
-            </Button>
-          )
-        ) : (
-          onNext && (
-            <Button
-              type="button"
-              onClick={onNext}
-              disabled={isLoading || !canGoNext}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              Tiếp theo
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          )
-        )}
+        {isLastStep
+          ? onSubmit && (
+              <Button
+                type="button"
+                onClick={onSubmit}
+                disabled={isLoading || !canGoNext}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Gửi phê duyệt
+              </Button>
+            )
+          : onNext && (
+              <Button
+                type="button"
+                onClick={onNext}
+                disabled={isLoading || !canGoNext}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Tiếp theo
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            )}
       </div>
     </div>
   );
 }
-

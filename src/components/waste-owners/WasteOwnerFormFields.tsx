@@ -11,7 +11,12 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { WasteOwnerType } from "@/types/waste-owner";
-import { getBusinessCodeLabel, getNameLabel, getWasteOwnerTypeLabel, getWasteOwnerTypeBadgeVariant } from "./wasteOwnerUtils";
+import {
+  getBusinessCodeLabel,
+  getNameLabel,
+  getWasteOwnerTypeLabel,
+  getWasteOwnerTypeBadgeVariant,
+} from "./wasteOwnerUtils";
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { LocationService } from "@/lib/services/location.service";
 
@@ -26,7 +31,7 @@ interface WasteOwnerFormFieldsProps {
   locationRefId?: string;
   fullAddress?: string; // Full address string to display
   isActive?: boolean;
-  
+
   // Form state
   disabled?: boolean;
   errors?: Record<string, string>;
@@ -34,7 +39,7 @@ interface WasteOwnerFormFieldsProps {
   showActiveStatus?: boolean;
   showId?: boolean;
   id?: string;
-  
+
   // Handlers
   onTypeChange?: (value: WasteOwnerType) => void;
   onNameChange?: (value: string) => void;
@@ -132,7 +137,9 @@ export function WasteOwnerFormFields({
 
       {/* Business Code / CCCD Field */}
       <div className="grid gap-2">
-        <Label htmlFor="businessCode">{getBusinessCodeLabel(wasteOwnerType)}</Label>
+        <Label htmlFor="businessCode">
+          {getBusinessCodeLabel(wasteOwnerType)}
+        </Label>
         <Input
           id="businessCode"
           placeholder={
@@ -157,7 +164,9 @@ export function WasteOwnerFormFields({
             onLocationRefIdChange?.(result.refId);
             // Fetch full location details to populate address
             try {
-              const locationDetails = await LocationService.getLocationByRefId(result.refId);
+              const locationDetails = await LocationService.getLocationByRefId(
+                result.refId,
+              );
               // Store the full address string for display
               onFullAddressChange?.(locationDetails.address);
             } catch (error) {
@@ -243,4 +252,3 @@ export function WasteOwnerFormFields({
     </div>
   );
 }
-

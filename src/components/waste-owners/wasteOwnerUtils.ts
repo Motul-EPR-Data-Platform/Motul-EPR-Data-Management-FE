@@ -52,4 +52,3 @@ export function getBusinessCodeLabel(type: WasteOwnerType | string): string {
       return "Mã số thuế (MST) *";
   }
 }
-

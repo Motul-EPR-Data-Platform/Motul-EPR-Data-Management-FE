@@ -14,7 +14,9 @@ import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 export default function PendingRegistrationPage() {
   const router = useRouter();
   const [records, setRecords] = useState<CollectionRecordDetail[]>([]);
-  const [filteredRecords, setFilteredRecords] = useState<CollectionRecordDetail[]>([]);
+  const [filteredRecords, setFilteredRecords] = useState<
+    CollectionRecordDetail[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -50,7 +52,7 @@ export default function PendingRegistrationPage() {
       const allRecords = response.data || [];
 
       setRecords(allRecords);
-      
+
       // Update pagination info
       if (response.pagination) {
         setTotalPages(response.pagination.totalPages);
@@ -80,8 +82,10 @@ export default function PendingRegistrationPage() {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((r) => {
         // Handle both wasteOwner (singular) and wasteOwners (array)
-        const wasteOwner = r.wasteOwner || (r.wasteOwners && r.wasteOwners.length > 0 ? r.wasteOwners[0] : null);
-        
+        const wasteOwner =
+          r.wasteOwner ||
+          (r.wasteOwners && r.wasteOwners.length > 0 ? r.wasteOwners[0] : null);
+
         return (
           r.id.toLowerCase().includes(query) ||
           wasteOwner?.name?.toLowerCase().includes(query) ||
@@ -167,7 +171,9 @@ export default function PendingRegistrationPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                }
                 disabled={currentPage === totalPages || isLoading}
               >
                 Sau

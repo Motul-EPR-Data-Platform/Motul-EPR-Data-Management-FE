@@ -28,7 +28,7 @@ export default function WtpBusinessInfoPage() {
 
   // Check if user can edit organization info
   const canEditOrganizationInfo = usePermission("settings.edit");
-  
+
   // Check if profile is inactive (doesn't exist or user is inactive)
   const isProfileInactive = !profile || !user?.isActive;
 
@@ -109,11 +109,16 @@ export default function WtpBusinessInfoPage() {
     // Note: WTP profile might not have location field yet
     const locationParts: string[] = [];
     // If profile has location data, combine it (safely access location property)
-    const profileWithLocation = profile as WtpProfile & { location?: { code?: string; address?: string; city?: string } };
+    const profileWithLocation = profile as WtpProfile & {
+      location?: { code?: string; address?: string; city?: string };
+    };
     if (profileWithLocation.location) {
-      if (profileWithLocation.location.code) locationParts.push(profileWithLocation.location.code);
-      if (profileWithLocation.location.address) locationParts.push(profileWithLocation.location.address);
-      if (profileWithLocation.location.city) locationParts.push(profileWithLocation.location.city);
+      if (profileWithLocation.location.code)
+        locationParts.push(profileWithLocation.location.code);
+      if (profileWithLocation.location.address)
+        locationParts.push(profileWithLocation.location.address);
+      if (profileWithLocation.location.city)
+        locationParts.push(profileWithLocation.location.city);
     }
     const companyRegistrationAddress = locationParts.join(", ") || "";
 

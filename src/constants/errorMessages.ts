@@ -399,7 +399,8 @@ export function getErrorMessageForRoute(
   };
 
   // Check for error code in response
-  const errorCode = error?.response?.data?.code || error?.response?.data?.errorCode;
+  const errorCode =
+    error?.response?.data?.code || error?.response?.data?.errorCode;
   if (errorCode && mergedCodes[String(errorCode)]) {
     return mergedCodes[String(errorCode)];
   }
@@ -412,11 +413,20 @@ export function getErrorMessageForRoute(
 
   // Check for network errors
   if (error?.code === "ECONNABORTED" || error?.message?.includes("timeout")) {
-    return mergedCodes.NETWORK_ERROR || "Kết nối quá thời gian chờ. Vui lòng kiểm tra kết nối mạng và thử lại";
+    return (
+      mergedCodes.NETWORK_ERROR ||
+      "Kết nối quá thời gian chờ. Vui lòng kiểm tra kết nối mạng và thử lại"
+    );
   }
 
-  if (error?.code === "ERR_NETWORK" || error?.message?.includes("Network Error")) {
-    return mergedCodes.NETWORK_ERROR || "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối và thử lại";
+  if (
+    error?.code === "ERR_NETWORK" ||
+    error?.message?.includes("Network Error")
+  ) {
+    return (
+      mergedCodes.NETWORK_ERROR ||
+      "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối và thử lại"
+    );
   }
 
   // Check for generic error message
@@ -434,7 +444,10 @@ export function getErrorMessageForRoute(
  * @param defaultRoute - Default route if cannot be extracted
  * @returns Route string
  */
-export function extractRouteFromError(error: any, defaultRoute: string = ""): string {
+export function extractRouteFromError(
+  error: any,
+  defaultRoute: string = "",
+): string {
   // Try to extract from axios error config
   if (error?.config?.url) {
     const url = error.config.url;
@@ -452,4 +465,3 @@ export function extractRouteFromError(error: any, defaultRoute: string = ""): st
 
   return defaultRoute;
 }
-

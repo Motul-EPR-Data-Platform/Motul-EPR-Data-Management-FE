@@ -83,7 +83,8 @@ export function BusinessInfoForm({
       vendor_name: initialData?.vendor_name || "",
       tax_code: initialData?.tax_code || "",
       representative: initialData?.representative || "",
-      company_registration_address: initialData?.company_registration_address || "",
+      company_registration_address:
+        initialData?.company_registration_address || "",
       business_reg_number: initialData?.business_reg_number || "",
       business_reg_issue_date: getInitialDate("business_reg_issue_date"),
       phone: initialData?.phone || "",
@@ -105,7 +106,8 @@ export function BusinessInfoForm({
         vendor_name: initialData.vendor_name || "",
         tax_code: initialData.tax_code || "",
         representative: initialData.representative || "",
-        company_registration_address: initialData.company_registration_address || "",
+        company_registration_address:
+          initialData.company_registration_address || "",
         business_reg_number: initialData.business_reg_number || "",
         business_reg_issue_date: getInitialDate("business_reg_issue_date"),
         phone: initialData.phone || "",
@@ -134,9 +136,7 @@ export function BusinessInfoForm({
     setSuccess(false);
 
     try {
-      const formatedEnvPermitIssueDate = toDDMMYYYY(
-        data.env_permit_issue_date,
-      );
+      const formatedEnvPermitIssueDate = toDDMMYYYY(data.env_permit_issue_date);
       const formatedEnvPermitExpiryDate = toDDMMYYYY(
         data.env_permit_expiry_date,
       );
@@ -182,13 +182,17 @@ export function BusinessInfoForm({
           .split(",")
           .map((part) => part.trim())
           .filter(Boolean);
-        
+
         // Assign parts: code (first), address (middle), city (last)
         // If not enough parts, use defaults to satisfy backend validation
         const locationCode = addressParts[0] || "LOC001";
         const locationAddress =
-          addressParts.slice(1, -1).join(", ") || addressParts[0] || data.company_registration_address || "Địa chỉ đăng ký công ty";
-        const locationCity = addressParts[addressParts.length - 1] || "Thành phố";
+          addressParts.slice(1, -1).join(", ") ||
+          addressParts[0] ||
+          data.company_registration_address ||
+          "Địa chỉ đăng ký công ty";
+        const locationCity =
+          addressParts[addressParts.length - 1] || "Thành phố";
 
         const dto: CompleteRecyclerAdminProfileDTO = {
           vendorName: data.vendor_name,
@@ -197,8 +201,14 @@ export function BusinessInfoForm({
           // Temporary: Split company_registration_address into location fields for backend
           location: {
             code: locationCode,
-            address: locationAddress.length >= 5 ? locationAddress : locationAddress.padEnd(5, " "),
-            city: locationCity.length >= 2 ? locationCity : locationCity.padEnd(2, " "),
+            address:
+              locationAddress.length >= 5
+                ? locationAddress
+                : locationAddress.padEnd(5, " "),
+            city:
+              locationCity.length >= 2
+                ? locationCity
+                : locationCity.padEnd(2, " "),
           },
           phone: data.phone,
           contactEmail: data.contact_email,

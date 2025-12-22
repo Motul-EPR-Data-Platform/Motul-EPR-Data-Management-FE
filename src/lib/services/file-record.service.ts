@@ -16,7 +16,7 @@ export const FileRecordService = {
    */
   async uploadFile(
     recordId: string,
-    input: IFileUploadInput
+    input: IFileUploadInput,
   ): Promise<IFileUploadResponse> {
     // Validate file type based on category
     const validation = validateFileType(input.category, input.file);
@@ -27,20 +27,20 @@ export const FileRecordService = {
     const formData = new FormData();
     formData.append("file", input.file);
     formData.append("category", input.category);
-    
+
     if (input.position !== undefined) {
       formData.append("position", input.position.toString());
     }
-    
+
     if (input.metadata) {
       formData.append("metadata", JSON.stringify(input.metadata));
     }
 
     const { data } = await api.post(
       path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.UPLOAD(recordId)),
-      formData
+      formData,
     );
-    
+
     return data.data || data;
   },
 
@@ -51,7 +51,7 @@ export const FileRecordService = {
   async uploadMultipleFiles(
     recordId: string,
     files: File[],
-    category: FileType
+    category: FileType,
   ): Promise<IFileUploadResponse[]> {
     // Validate files array
     if (!files || files.length === 0) {
@@ -73,7 +73,7 @@ export const FileRecordService = {
       const validation = validateFileType(category, file);
       if (!validation.valid) {
         validationErrors.push(
-          `File ${index + 1} (${file.name}): ${validation.error}`
+          `File ${index + 1} (${file.name}): ${validation.error}`,
         );
         return;
       }
@@ -95,12 +95,12 @@ export const FileRecordService = {
     }
 
     const formData = new FormData();
-    
+
     // Append each file with the field name "files" (backend expects array)
     validFiles.forEach((file) => {
       formData.append("files", file);
     });
-    
+
     formData.append("category", category);
 
     // Debug: Log FormData contents (for development)
@@ -114,10 +114,12 @@ export const FileRecordService = {
     }
 
     const { data } = await api.post(
-      path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.UPLOAD_MULTIPLE(recordId)),
-      formData
+      path.collectionRecords(
+        ENDPOINTS.COLLECTION_RECORDS.UPLOAD_MULTIPLE(recordId),
+      ),
+      formData,
     );
-    
+
     return data.data || data;
   },
 
@@ -135,9 +137,7 @@ export const FileRecordService = {
    * GET /api/files/:id/download
    */
   async getDownloadUrl(id: string): Promise<string> {
-    const { data } = await api.get(
-      path.files(ENDPOINTS.FILES.DOWNLOAD(id))
-    );
+    const { data } = await api.get(path.files(ENDPOINTS.FILES.DOWNLOAD(id)));
     return data.data?.signedUrl || data.signedUrl;
   },
 
@@ -155,7 +155,7 @@ export const FileRecordService = {
    */
   async getRecordFiles(recordId: string): Promise<ICollectionRecordFiles> {
     const { data } = await api.get(
-      path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.FILES(recordId))
+      path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.FILES(recordId)),
     );
     return data.data || data;
   },
@@ -168,7 +168,7 @@ export const FileRecordService = {
     recordId: string,
     category: FileType,
     position: number,
-    file: File
+    file: File,
   ): Promise<IFileUploadResponse> {
     // Validate file type based on category
     const validation = validateFileType(category, file);
@@ -181,11 +181,12 @@ export const FileRecordService = {
     formData.append("category", category);
 
     const { data } = await api.put(
-      path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.REPLACE_FILE(recordId, position)),
-      formData
+      path.collectionRecords(
+        ENDPOINTS.COLLECTION_RECORDS.REPLACE_FILE(recordId, position),
+      ),
+      formData,
     );
-    
+
     return data.data || data;
   },
 };
-

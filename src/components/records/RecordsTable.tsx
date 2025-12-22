@@ -23,7 +23,13 @@ interface RecordsTableProps {
 
 const getStatusBadgeVariant = (
   status: RecordStatus,
-): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" => {
+):
+  | "default"
+  | "secondary"
+  | "destructive"
+  | "outline"
+  | "success"
+  | "warning" => {
   switch (status) {
     case "approved":
       return "success"; // Green
@@ -124,9 +130,7 @@ export function RecordsTable({
               </TableCell>
               <TableCell>{formatDate(record.deliveryDate)}</TableCell>
               <TableCell>
-                {record.contractType?.name ||
-                  record.contractType?.code ||
-                  "-"}
+                {record.contractType?.name || record.contractType?.code || "-"}
               </TableCell>
               <TableCell>
                 {record.collectedVolumeKg
@@ -184,4 +188,3 @@ export function RecordsTable({
     </div>
   );
 }
-

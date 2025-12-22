@@ -38,7 +38,9 @@ export function VietMap({
     // Make sure you have NEXT_PUBLIC_VIETMAP_API_KEY in your .env.local file
     const apiKey = process.env.NEXT_PUBLIC_VIETMAP_API_KEY;
     if (!apiKey) {
-      console.error("NEXT_PUBLIC_VIETMAP_API_KEY is not set in environment variables");
+      console.error(
+        "NEXT_PUBLIC_VIETMAP_API_KEY is not set in environment variables",
+      );
       return;
     }
 
@@ -109,11 +111,6 @@ export function VietMap({
   }, [draggable, isMapLoaded]);
 
   return (
-    <div
-      ref={mapContainer}
-      style={{ width, height }}
-      className={className}
-    />
+    <div ref={mapContainer} style={{ width, height }} className={className} />
   );
 }
-
