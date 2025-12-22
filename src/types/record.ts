@@ -53,6 +53,10 @@ export interface CollectionRecordDetail extends CollectionRecord {
     name: string;
     businessCode: string;
   }>;
+  recycler?: {
+    id: string
+    vendorName: string
+  } | null
   contractType?: {
     id: string;
     name: string;

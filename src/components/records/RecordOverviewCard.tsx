@@ -74,6 +74,7 @@ export function RecordOverviewCard({ record }: RecordOverviewCardProps) {
     (record.wasteOwners && record.wasteOwners.length > 0
       ? record.wasteOwners[0]
       : null);
+  const recyclerName = record.recycler?.vendorName ;
 
   return (
     <Card className="border-red-500">
@@ -94,7 +95,7 @@ export function RecordOverviewCard({ record }: RecordOverviewCardProps) {
         <div>
           <p className="text-sm text-muted-foreground mb-1">Đơn vị tái chế</p>
           <p className="font-medium">
-            {wasteOwner?.name || "N/A"}
+            {recyclerName || "N/A"}
             {wasteOwner && "email" in wasteOwner && wasteOwner.email && (
               <span className="text-muted-foreground text-sm ml-2">
                 ({wasteOwner.email})
