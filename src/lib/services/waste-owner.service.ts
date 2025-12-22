@@ -16,34 +16,38 @@ export const WasteOwnerService = {
    * Create new waste owner with location
    * POST /api/waste-owners
    */
-  async createWasteOwner(
-    dto: CreateWasteOwnerDTO,
-  ): Promise<WasteOwnerWithLocation> {
-    // Convert frontend wasteOwnerType to backend enum value
-    const backendDto: any = {
-      ...dto,
-      wasteOwnerType: toBackendWasteOwnerType(dto.wasteOwnerType),
-      // Convert empty strings to null for optional fields
-      contactPerson: dto.contactPerson || null,
-      phone: dto.phone || null,
-      email: dto.email || null,
+async createWasteOwner(
+  dto: CreateWasteOwnerDTO,
+): Promise<WasteOwnerWithLocation> {
+  // Convert frontend wasteOwnerType to backend enum value
+  const backendDto: any = {
+    ...dto,
+    wasteOwnerType: toBackendWasteOwnerType(dto.wasteOwnerType),
+    // Convert empty strings to null for optional fields
+    contactPerson: dto.contactPerson || null,
+    phone: dto.phone || null,
+    email: dto.email || null,
+  };
+  
+  // Check if location exists and has refId before accessing
+  if (dto.location?.refId) {
+    backendDto.location = {
+      refId: dto.location.refId,
     };
-    // TODO: Make location required again after backend implementation is complete
-    // Only include location if it's provided (temporary - location is optional)
-    if (dto.location?.refId) {
-      backendDto.location = dto.location;
-    }
-    const { data } = await api.post(
-      path.wasteOwners(ENDPOINTS.WASTE_OWNERS.ROOT),
-      backendDto,
-    );
-    // Convert backend response back to frontend format
-    const result = data.data || data;
-    if (result.wasteOwnerType) {
-      result.wasteOwnerType = fromBackendWasteOwnerType(result.wasteOwnerType);
-    }
-    return result;
-  },
+  }
+  
+  
+  const { data } = await api.post(
+    path.wasteOwners(ENDPOINTS.WASTE_OWNERS.ROOT),
+    backendDto,
+  );
+  // Convert backend response back to frontend format
+  const result = data.data || data;
+  if (result.wasteOwnerType) {
+    result.wasteOwnerType = fromBackendWasteOwnerType(result.wasteOwnerType);
+  }
+  return result;
+},
 
   /**
    * Get all waste owners (with optional filters)
