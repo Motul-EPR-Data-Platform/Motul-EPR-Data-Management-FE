@@ -45,6 +45,7 @@ export interface CollectionRecordDetail extends CollectionRecord {
     name: string;
     businessCode: string;
     contactPerson?: string;
+    wasteOwnerType?: string;
     phone?: string;
     email?: string;
   } | null;
@@ -52,6 +53,7 @@ export interface CollectionRecordDetail extends CollectionRecord {
     id: string;
     name: string;
     businessCode: string;
+    wasteOwnerType?: string;
   }>;
   recycler?: {
     id: string

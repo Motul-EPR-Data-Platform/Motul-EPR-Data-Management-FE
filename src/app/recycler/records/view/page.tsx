@@ -20,6 +20,7 @@ import { RecordOverviewCard } from "@/components/records/RecordOverviewCard";
 import { RecordApprovalActions } from "@/components/records/RecordApprovalActions";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
+import { formatHazWasteCode, formatRecycledDate, formatWasteOwnerType } from "@/lib/utils/formatTitle";
 
 const getStatusBadgeVariant = (
   status: string,
@@ -154,14 +155,23 @@ export default function RecordDetailPage() {
       </PageLayout>
     );
   }
+ const wasteOwner =
+    record.wasteOwner ||
+    (record.wasteOwners && record.wasteOwners.length > 0
+      ? record.wasteOwners[0]
+      : null);
 
+  const formattedWasteOwnerType = formatWasteOwnerType(wasteOwner?.wasteOwnerType);
+  const formattedHazWasteCode = formatHazWasteCode(record.hazWaste?.code);
+  const formattedRecycledDate = formatRecycledDate(record?.recycledDate ?? undefined);
+  
   return (
     <PageLayout
       breadcrumbs={[
         { label: "Bản ghi của tôi", href: "/recycler/my-records" },
         { label: "Chi tiết bản ghi" },
       ]}
-      title={`Xem xét Bản ghi: ${record.id}`}
+      title={`Xem xét Bản ghi: ${formattedWasteOwnerType}-${formattedHazWasteCode}-${formattedRecycledDate}`}
       subtitle={`Được nộp bởi ${record.wasteOwner?.name || (record.wasteOwners && record.wasteOwners.length > 0 ? record.wasteOwners[0].name : "N/A")}`}
     >
       <div className="space-y-6">
