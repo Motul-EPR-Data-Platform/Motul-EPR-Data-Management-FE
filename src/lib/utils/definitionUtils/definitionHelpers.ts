@@ -31,6 +31,12 @@ export async function createDefinition(
   ) {
     return DefinitionService.createEprEntity(dto);
   }
+  if (
+    categoryKey === CATEGORY_ROUTE_KEYS.HAZ_TYPES ||
+    categoryKey === CATEGORY_KEYS.HAZ_TYPE
+  ) {
+    return DefinitionService.createHazType(dto);
+  }
   // Custom category - use original key
   return DefinitionService.createCustom(categoryKey, dto);
 }
@@ -60,6 +66,11 @@ export async function getDefinitionsByCategory(
     categoryKey === CATEGORY_KEYS.EPR_ENTITY
   ) {
     rawDefinitions = await DefinitionService.getActiveEprEntities();
+  } else if (
+    categoryKey === CATEGORY_ROUTE_KEYS.HAZ_TYPES ||
+    categoryKey === CATEGORY_KEYS.HAZ_TYPE
+  ) {
+    rawDefinitions = await DefinitionService.getActiveHazTypes();
   } else {
     // Custom category - use original key
     rawDefinitions = await DefinitionService.getActiveCustom(categoryKey);

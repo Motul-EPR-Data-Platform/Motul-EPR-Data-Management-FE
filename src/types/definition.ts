@@ -84,6 +84,7 @@ export interface Category {
   name: string;
   description?: string | null;
   schemaDefinition: FieldSchema[];
+  definitionCount?: number; // Count of definitions in this category (from backend)
   isActive: boolean;
   createdAt?: string;
 }

@@ -5,6 +5,8 @@ import { Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FileType } from "@/types/file-record";
+import { validateFileType, getFileTypeDescription } from "@/lib/validations/file-record.validation";
 
 interface FileUploadProps {
   id?: string;
@@ -17,12 +19,13 @@ interface FileUploadProps {
   required?: boolean;
   disabled?: boolean;
   className?: string;
+  category?: FileType; // Optional: If provided, will use category-based validation
 }
 
 export function FileUpload({
   id,
   label,
-  accept = "application/pdf,image/jpeg,image/jpg,image/png",
+  accept,
   maxSize = 10,
   value,
   onChange,
@@ -30,7 +33,23 @@ export function FileUpload({
   required,
   disabled,
   className,
+  category,
 }: FileUploadProps) {
+  // Determine accept string based on category or use provided
+  const getAcceptString = (): string => {
+    if (category) {
+      const allowedTypes = category === FileType.ACCEPTANCE_DOC ||
+        category === FileType.APPROVAL_DOC ||
+        category === FileType.OUTPUT_QUALITY_METRICS ||
+        category === FileType.QUALITY_METRICS
+        ? "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        : "image/jpeg,image/jpg,image/png,image/webp";
+      return accept || allowedTypes;
+    }
+    return accept || "application/pdf,image/jpeg,image/jpg,image/png";
+  };
+
+  const acceptString = getAcceptString();
   const [dragActive, setDragActive] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -56,6 +75,11 @@ export function FileUpload({
       const file = files[0];
       if (validateFile(file)) {
         onChange?.(file);
+      } else {
+        // Reset input value so user can select the same file again
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       }
     }
   };
@@ -68,19 +92,35 @@ export function FileUpload({
       const file = files[0];
       if (validateFile(file)) {
         onChange?.(file);
+      } else {
+        // Reset input value so user can select the same file again
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       }
     }
   };
 
   const validateFile = (file: File): boolean => {
-    // Check file type
-    const acceptedTypes = accept.split(",").map((type) => type.trim());
+    // If category is provided, use category-based validation
+    if (category) {
+      const validation = validateFileType(category, file);
+      if (!validation.valid) {
+        alert(validation.error || "File không hợp lệ");
+        return false;
+      }
+    } else {
+      // Fallback to basic MIME type validation
+      const acceptedTypes = acceptString.split(",").map((type) => type.trim());
     if (!acceptedTypes.some((type) => file.type.match(type))) {
+        alert("File không hợp lệ. Vui lòng chọn file đúng định dạng.");
       return false;
+      }
     }
 
     // Check file size (maxSize in MB)
     if (file.size > maxSize * 1024 * 1024) {
+      alert(`File không được vượt quá ${maxSize}MB`);
       return false;
     }
 
@@ -134,7 +174,7 @@ export function FileUpload({
           ref={fileInputRef}
           type="file"
           id={id}
-          accept={accept}
+          accept={acceptString}
           onChange={handleChange}
           className="hidden"
           disabled={disabled}
@@ -163,7 +203,9 @@ export function FileUpload({
                 Nhấp để tải lên hoặc kéo thả file
               </p>
               <p className="text-xs text-gray-500">
-                PDF, JPG, PNG (Tối đa {maxSize}MB)
+                {category
+                  ? `${getFileTypeDescription(category)} (Tối đa ${maxSize}MB)`
+                  : `PDF, JPG, PNG (Tối đa ${maxSize}MB)`}
               </p>
             </>
           )}

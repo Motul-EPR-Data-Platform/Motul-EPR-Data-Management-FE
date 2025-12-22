@@ -20,7 +20,7 @@ interface CategoryCardProps {
 
 export function CategoryCard({
   category,
-  definitionCount = 0,
+  definitionCount,
 }: CategoryCardProps) {
   const router = useRouter();
   const { organization } = useAuth();
@@ -28,6 +28,9 @@ export function CategoryCard({
   const handleClick = () => {
     router.push(`/${organization}/definitions/${category.key}`);
   };
+
+  // Use definitionCount from category if available, otherwise use prop
+  const displayCount = category.definitionCount ?? definitionCount ?? 0;
 
   return (
     <Card
@@ -54,7 +57,7 @@ export function CategoryCard({
               {category.isActive ? "Hoạt động" : "Không hoạt động"}
             </Badge>
             <span className="text-sm text-muted-foreground">
-              {definitionCount} định nghĩa
+              {displayCount} định nghĩa
             </span>
           </div>
         </div>

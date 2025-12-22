@@ -1,0 +1,140 @@
+import { api } from "@/lib/axios";
+import { path, ENDPOINTS } from "@/constants/api";
+import {
+  WasteOwnerWithLocation,
+  CreateWasteOwnerDTO,
+  UpdateWasteOwnerDTO,
+  GetWasteOwnersFilters,
+  WasteOwnerResponse,
+  WasteOwnersListResponse,
+  toBackendWasteOwnerType,
+  fromBackendWasteOwnerType,
+} from "@/types/waste-owner";
+
+export const WasteOwnerService = {
+  /**
+   * Create new waste owner with location
+   * POST /api/waste-owners
+   */
+  async createWasteOwner(
+    dto: CreateWasteOwnerDTO,
+  ): Promise<WasteOwnerWithLocation> {
+    // Convert frontend wasteOwnerType to backend enum value
+    const backendDto: any = {
+      ...dto,
+      wasteOwnerType: toBackendWasteOwnerType(dto.wasteOwnerType),
+      // Convert empty strings to null for optional fields
+      contactPerson: dto.contactPerson || null,
+      phone: dto.phone || null,
+      email: dto.email || null,
+    };
+    // TODO: Make location required again after backend implementation is complete
+    // Only include location if it's provided (temporary - location is optional)
+    if (dto.location?.refId) {
+      backendDto.location = dto.location;
+    }
+    const { data } = await api.post(
+      path.wasteOwners(ENDPOINTS.WASTE_OWNERS.ROOT),
+      backendDto,
+    );
+    // Convert backend response back to frontend format
+    const result = data.data || data;
+    if (result.wasteOwnerType) {
+      result.wasteOwnerType = fromBackendWasteOwnerType(result.wasteOwnerType);
+    }
+    return result;
+  },
+
+  /**
+   * Get all waste owners (with optional filters)
+   * GET /api/waste-owners
+   */
+  async getAllWasteOwners(
+    filters?: GetWasteOwnersFilters,
+  ): Promise<WasteOwnersListResponse> {
+    const queryParams = new URLSearchParams();
+
+    if (filters?.isActive !== undefined) {
+      queryParams.append("isActive", String(filters.isActive));
+    }
+    if (filters?.wasteOwnerType) {
+      // Convert frontend type to backend type for query
+      queryParams.append("wasteOwnerType", toBackendWasteOwnerType(filters.wasteOwnerType));
+    }
+
+    const queryString = queryParams.toString();
+    const url = queryString
+      ? `${ENDPOINTS.WASTE_OWNERS.ROOT}?${queryString}`
+      : ENDPOINTS.WASTE_OWNERS.ROOT;
+
+    const { data } = await api.get(path.wasteOwners(url));
+    // Convert backend types to frontend types
+    if (data.data && Array.isArray(data.data)) {
+      data.data = data.data.map((item: any) => ({
+        ...item,
+        wasteOwnerType: fromBackendWasteOwnerType(item.wasteOwnerType),
+      }));
+    }
+    return data;
+  },
+
+  /**
+   * Get specific waste owner by ID
+   * GET /api/waste-owners/:id
+   */
+  async getWasteOwnerById(id: string): Promise<WasteOwnerWithLocation> {
+    const { data } = await api.get(
+      path.wasteOwners(ENDPOINTS.WASTE_OWNERS.BY_ID(id)),
+    );
+    const result = data.data || data;
+    // Convert backend type to frontend type
+    if (result.wasteOwnerType) {
+      result.wasteOwnerType = fromBackendWasteOwnerType(result.wasteOwnerType);
+    }
+    return result;
+  },
+
+  /**
+   * Update waste owner
+   * PATCH /api/waste-owners/:id
+   */
+  async updateWasteOwner(
+    id: string,
+    dto: UpdateWasteOwnerDTO,
+  ): Promise<WasteOwnerWithLocation> {
+    // Convert frontend wasteOwnerType to backend enum value if provided
+    const backendDto: any = { ...dto };
+    if (dto.wasteOwnerType) {
+      backendDto.wasteOwnerType = toBackendWasteOwnerType(dto.wasteOwnerType);
+    }
+    // Convert empty strings to null for optional fields
+    if (dto.contactPerson !== undefined) {
+      backendDto.contactPerson = dto.contactPerson || null;
+    }
+    if (dto.phone !== undefined) {
+      backendDto.phone = dto.phone || null;
+    }
+    if (dto.email !== undefined) {
+      backendDto.email = dto.email || null;
+    }
+    const { data } = await api.patch(
+      path.wasteOwners(ENDPOINTS.WASTE_OWNERS.BY_ID(id)),
+      backendDto,
+    );
+    const result = data.data || data;
+    // Convert backend type to frontend type
+    if (result.wasteOwnerType) {
+      result.wasteOwnerType = fromBackendWasteOwnerType(result.wasteOwnerType);
+    }
+    return result;
+  },
+
+  /**
+   * Delete waste owner (soft delete)
+   * DELETE /api/waste-owners/:id
+   */
+  async deleteWasteOwner(id: string): Promise<void> {
+    await api.delete(path.wasteOwners(ENDPOINTS.WASTE_OWNERS.BY_ID(id)));
+  },
+};
+

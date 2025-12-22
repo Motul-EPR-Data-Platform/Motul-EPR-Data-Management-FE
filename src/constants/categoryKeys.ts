@@ -8,6 +8,7 @@ export const CATEGORY_KEYS = {
   WASTE_TYPE: "waste_type",
   CONTRACT_TYPE: "contract_type",
   EPR_ENTITY: "epr_entity",
+  HAZ_TYPE: "haz_type",
 } as const;
 
 // Frontend route keys (used in URLs)
@@ -15,6 +16,7 @@ export const CATEGORY_ROUTE_KEYS = {
   WASTE_TYPES: "waste-types",
   CONTRACT_TYPES: "contract-types",
   EPR_ENTITIES: "epr-entities",
+  HAZ_TYPES: "haz-types",
 } as const;
 
 /**
@@ -25,6 +27,7 @@ export function backendKeyToRouteKey(backendKey: string): string {
     [CATEGORY_KEYS.WASTE_TYPE]: CATEGORY_ROUTE_KEYS.WASTE_TYPES,
     [CATEGORY_KEYS.CONTRACT_TYPE]: CATEGORY_ROUTE_KEYS.CONTRACT_TYPES,
     [CATEGORY_KEYS.EPR_ENTITY]: CATEGORY_ROUTE_KEYS.EPR_ENTITIES,
+    [CATEGORY_KEYS.HAZ_TYPE]: CATEGORY_ROUTE_KEYS.HAZ_TYPES,
   };
   return keyMap[backendKey] || backendKey;
 }
@@ -37,6 +40,7 @@ export function routeKeyToBackendKey(routeKey: string): string {
     [CATEGORY_ROUTE_KEYS.WASTE_TYPES]: CATEGORY_KEYS.WASTE_TYPE,
     [CATEGORY_ROUTE_KEYS.CONTRACT_TYPES]: CATEGORY_KEYS.CONTRACT_TYPE,
     [CATEGORY_ROUTE_KEYS.EPR_ENTITIES]: CATEGORY_KEYS.EPR_ENTITY,
+    [CATEGORY_ROUTE_KEYS.HAZ_TYPES]: CATEGORY_KEYS.HAZ_TYPE,
   };
   return keyMap[routeKey] || routeKey;
 }
@@ -49,8 +53,10 @@ export function isStandardCategory(key: string): boolean {
     key === CATEGORY_KEYS.WASTE_TYPE ||
     key === CATEGORY_KEYS.CONTRACT_TYPE ||
     key === CATEGORY_KEYS.EPR_ENTITY ||
+    key === CATEGORY_KEYS.HAZ_TYPE ||
     key === CATEGORY_ROUTE_KEYS.WASTE_TYPES ||
     key === CATEGORY_ROUTE_KEYS.CONTRACT_TYPES ||
-    key === CATEGORY_ROUTE_KEYS.EPR_ENTITIES
+    key === CATEGORY_ROUTE_KEYS.EPR_ENTITIES ||
+    key === CATEGORY_ROUTE_KEYS.HAZ_TYPES
   );
 }

@@ -24,6 +24,7 @@ export interface SidebarItem {
 
 export interface SidebarConfig {
   logo: string;
+  initials: string;
   footerText: string;
   items: SidebarItem[];
   basePath: string;
@@ -49,6 +50,7 @@ export function getOrganizationFromRole(
 // Motul Sidebar Configuration
 export const motulSidebarConfig: SidebarConfig = {
   logo: "/motul-logo.png",
+  initials: "ME",
   footerText: "Motul EPR",
   basePath: "/motul",
   items: [
@@ -76,6 +78,7 @@ export const motulSidebarConfig: SidebarConfig = {
 // Recycler Sidebar Configuration
 export const recyclerSidebarConfig: SidebarConfig = {
   logo: "/motul-logo.png", // Can be changed to recycler logo
+  initials: "RE",
   footerText: "Recycler EPR",
   basePath: "/recycler",
   items: [
@@ -107,6 +110,7 @@ export const recyclerSidebarConfig: SidebarConfig = {
 // WTP Sidebar Configuration
 export const wtpSidebarConfig: SidebarConfig = {
   logo: "/motul-logo.png", // Can be changed to WTP logo
+  initials: "WE",
   footerText: "WTP EPR",
   basePath: "/wtp",
   items: [

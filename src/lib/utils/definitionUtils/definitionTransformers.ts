@@ -45,6 +45,12 @@ export function transformCategory(backendCategory: any): Category {
     throw new Error("Cannot transform null or undefined category");
   }
 
+  const schemaDefinition = (
+    backendCategory.schema_definition ||
+    backendCategory.schemaDefinition ||
+    []
+  ).map(transformFieldSchema);
+
   return {
     id: String(backendCategory.id || ""),
     key: backendCategory.key,
@@ -52,11 +58,9 @@ export function transformCategory(backendCategory: any): Category {
     description: backendCategory.description || null,
     isActive: backendCategory.is_active ?? backendCategory.isActive ?? true,
     createdAt: backendCategory.created_at || backendCategory.createdAt,
-    schemaDefinition: (
-      backendCategory.schema_definition ||
-      backendCategory.schemaDefinition ||
-      []
-    ).map(transformFieldSchema),
+    schemaDefinition,
+    // Use definitionCount from backend if available
+    definitionCount: backendCategory.definitionCount ?? backendCategory.definition_count ?? undefined,
   };
 }
 
