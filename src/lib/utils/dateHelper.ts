@@ -32,3 +32,22 @@ export const toDDMMYYYY = (value: Date | string): string => {
   const dateObj = value instanceof Date ? value : parseDate(value);
   return formatToDDMMYYYY(dateObj);
 };
+
+/**
+ * Safely format a date to dd/mm/yyyy, returning undefined if date is invalid or undefined.
+ * Useful for optional date fields in DTOs.
+ */
+export const formatDateToDDMMYYYY = (
+  date: Date | string | undefined | null,
+): string | undefined => {
+  if (!date) return undefined;
+  try {
+    // If it's already a Date object, use it directly
+    // Otherwise, parse it from string
+    const dateObj = date instanceof Date ? date : parseDate(date as string);
+    if (isNaN(dateObj.getTime())) return undefined;
+    return formatToDDMMYYYY(dateObj);
+  } catch {
+    return undefined;
+  }
+};

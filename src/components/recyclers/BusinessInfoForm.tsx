@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { parseDate, toDDMMYYYY } from "@/lib/utils/dateHelper";
+import { formatDateToDDMMYYYY } from "@/lib/utils/dateHelper";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,10 @@ import {
 } from "@/types/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Download, FileText, ExternalLink } from "lucide-react";
+import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
+import { LocationService } from "@/lib/services/location.service";
+import { FileType, IRecyclerProfileFilesWithPreview, IFileWithSignedUrl } from "@/types/file-record";
 
 interface BusinessInfoFormProps {
   initialData?: Partial<CompleteRecyclerAdminProfileFormData>;
@@ -43,12 +46,19 @@ export function BusinessInfoForm({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [locationRefId, setLocationRefId] = useState<string | null>(null);
+  const [fullAddress, setFullAddress] = useState<string>("");
+  const [existingFiles, setExistingFiles] = useState<IRecyclerProfileFilesWithPreview | null>(null);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+  
+  // Track if files have been changed (user selected new files)
+  // In edit mode, if watch returns a File object, it means user selected a new file
 
   // If not editable, disable all form interactions
   const isFormDisabled = !editable || isLoading;
 
-  // Helper to convert string date (dd/mm/yyyy) to Date object
-  const parseDate = (dateStr: string | Date | undefined): Date | undefined => {
+  // Helper to convert string date (dd/mm/yyyy) to Date object for form handling
+  const parseFormDate = (dateStr: string | Date | undefined): Date | undefined => {
     if (!dateStr) return undefined;
     if (dateStr instanceof Date) return dateStr;
     if (typeof dateStr !== "string") return undefined;
@@ -67,7 +77,7 @@ export function BusinessInfoForm({
   ): Date | undefined => {
     if (!initialData) return undefined;
     const value = initialData[fieldName];
-    return parseDate(value as string | Date | undefined);
+    return parseFormDate(value as string | Date | undefined);
   };
 
   const {
@@ -122,8 +132,37 @@ export function BusinessInfoForm({
     }
   }, [initialData, reset]);
 
+  // Fetch existing files when profileId is available (both edit and view mode)
+  useEffect(() => {
+    const fetchFiles = async () => {
+      if (profileId) {
+        setIsLoadingFiles(true);
+        try {
+          const files = await RecyclerService.getProfileFilesWithPreview(profileId);
+          setExistingFiles(files);
+        } catch (error) {
+          console.error("Error fetching profile files:", error);
+          // Don't show error to user, just log it
+          setExistingFiles(null);
+        } finally {
+          setIsLoadingFiles(false);
+        }
+      } else {
+        // Reset files if profileId is not available
+        setExistingFiles(null);
+      }
+    };
+
+    fetchFiles();
+  }, [profileId]);
+
   const envPermitFile = watch("env_permit_file");
   const businessRegFile = watch("business_reg_file");
+  
+  // Helper to check if a file is a new File object (user selected new file)
+  const isNewFile = (file: File | undefined | null): file is File => {
+    return file instanceof File;
+  };
 
   // Watch date fields to get current values
   const businessRegIssueDate = watch("business_reg_issue_date");
@@ -136,13 +175,29 @@ export function BusinessInfoForm({
     setSuccess(false);
 
     try {
-      const formatedEnvPermitIssueDate = toDDMMYYYY(data.env_permit_issue_date);
-      const formatedEnvPermitExpiryDate = toDDMMYYYY(
-        data.env_permit_expiry_date,
+      // Convert dates to dd/mm/yyyy format (backend expects dd/mm/yyyy strings)
+      const formattedEnvPermitIssueDate = formatDateToDDMMYYYY(
+        data.env_permit_issue_date instanceof Date
+          ? data.env_permit_issue_date
+          : data.env_permit_issue_date
+          ? parseFormDate(data.env_permit_issue_date as string)
+          : undefined,
       );
-      const formatedBusinessRegIssueDate = data.business_reg_issue_date
-        ? toDDMMYYYY(data.business_reg_issue_date)
-        : undefined;
+      const formattedEnvPermitExpiryDate = formatDateToDDMMYYYY(
+        data.env_permit_expiry_date instanceof Date
+          ? data.env_permit_expiry_date
+          : data.env_permit_expiry_date
+          ? parseFormDate(data.env_permit_expiry_date as string)
+          : undefined,
+      );
+      const formattedBusinessRegIssueDate = formatDateToDDMMYYYY(
+        data.business_reg_issue_date
+          ? data.business_reg_issue_date instanceof Date
+            ? data.business_reg_issue_date
+            : parseFormDate(data.business_reg_issue_date as string)
+          : undefined,
+      );
+
       // If in edit mode and profileId exists, use update endpoint
       if (isEditMode && profileId) {
         const dto: UpdateRecyclerProfileDTO = {
@@ -154,14 +209,69 @@ export function BusinessInfoForm({
           contactPoint: data.contact_point,
           contactPhone: data.contact_phone,
           businessRegNumber: data.business_reg_number,
-          businessRegIssueDate: formatedBusinessRegIssueDate,
+          businessRegIssueDate: formattedBusinessRegIssueDate,
           googleMapLink: data.google_map_link,
           envPermitNumber: data.env_permit_number,
-          envPermitIssueDate: formatedEnvPermitIssueDate,
-          envPermitExpiryDate: formatedEnvPermitExpiryDate,
+          envPermitIssueDate: formattedEnvPermitIssueDate,
+          envPermitExpiryDate: formattedEnvPermitExpiryDate,
         };
 
+        // Step 1: Update profile metadata
         await RecyclerService.updateProfile(profileId, dto);
+
+        // Step 2: Update files separately if user selected new files
+        const fileUpdatePromises: Promise<any>[] = [];
+
+        // If business reg file is a File object, it means user selected a new file
+        if (isNewFile(businessRegFile)) {
+          fileUpdatePromises.push(
+            RecyclerService.replaceProfileFile(
+              profileId,
+              businessRegFile,
+              FileType.BUSINESS_REG_FILE,
+            ).catch((error) => {
+              console.error("Error updating business reg file:", error);
+              throw new Error(
+                error?.response?.data?.message ||
+                  error?.message ||
+                  "Không thể cập nhật file đăng ký kinh doanh",
+              );
+            }),
+          );
+        }
+
+        // If environmental permit file is a File object, it means user selected a new file
+        if (isNewFile(envPermitFile)) {
+          fileUpdatePromises.push(
+            RecyclerService.replaceProfileFile(
+              profileId,
+              envPermitFile,
+              FileType.ENVIRONMENTAL_PERMIT_FILE,
+            ).catch((error) => {
+              console.error("Error updating environmental permit file:", error);
+              throw new Error(
+                error?.response?.data?.message ||
+                  error?.message ||
+                  "Không thể cập nhật file giấy phép môi trường",
+              );
+            }),
+          );
+        }
+
+        // Wait for all file updates to complete
+        if (fileUpdatePromises.length > 0) {
+          await Promise.all(fileUpdatePromises);
+          // Refresh files after update
+          if (profileId) {
+            try {
+              const updatedFiles = await RecyclerService.getProfileFilesWithPreview(profileId);
+              setExistingFiles(updatedFiles);
+            } catch (error) {
+              console.error("Error refreshing files after update:", error);
+            }
+          }
+        }
+
         setSuccess(true);
 
         // Call success callback if provided
@@ -176,52 +286,100 @@ export function BusinessInfoForm({
         }
       } else {
         // Initial profile completion
-        // Split company_registration_address into location fields for backend validation
-        // Temporary workaround until backend supports single address field
-        const addressParts = data.company_registration_address
-          .split(",")
-          .map((part) => part.trim())
-          .filter(Boolean);
+        // Validate location refId is provided
+        if (!locationRefId) {
+          setError("Vui lòng chọn địa chỉ đăng ký công ty từ danh sách");
+          setIsLoading(false);
+          return;
+        }
 
-        // Assign parts: code (first), address (middle), city (last)
-        // If not enough parts, use defaults to satisfy backend validation
-        const locationCode = addressParts[0] || "LOC001";
-        const locationAddress =
-          addressParts.slice(1, -1).join(", ") ||
-          addressParts[0] ||
-          data.company_registration_address ||
-          "Địa chỉ đăng ký công ty";
-        const locationCity =
-          addressParts[addressParts.length - 1] || "Thành phố";
+        // Step 1: Upload files first (if provided)
+        let businessRegFileId: string | null = null;
+        let environmentalPermitFileId: string | null = null;
 
+        if (businessRegFile) {
+          try {
+            const uploadResult = await RecyclerService.uploadTemporaryFile(
+              businessRegFile,
+              FileType.BUSINESS_REG_FILE,
+            );
+            businessRegFileId = uploadResult.fileId || uploadResult.file.id;
+          } catch (fileError: any) {
+            setError(
+              fileError?.response?.data?.message ||
+                fileError?.message ||
+                "Không thể tải lên file đăng ký kinh doanh. Vui lòng thử lại.",
+            );
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        if (envPermitFile) {
+          try {
+            const uploadResult = await RecyclerService.uploadTemporaryFile(
+              envPermitFile,
+              FileType.ENVIRONMENTAL_PERMIT_FILE,
+            );
+            environmentalPermitFileId =
+              uploadResult.fileId || uploadResult.file.id;
+          } catch (fileError: any) {
+            setError(
+              fileError?.response?.data?.message ||
+                fileError?.message ||
+                "Không thể tải lên file giấy phép môi trường. Vui lòng thử lại.",
+            );
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // Step 2: Format dates to dd/mm/yyyy for initial profile completion
+        const formattedInitialBusinessRegIssueDate = formatDateToDDMMYYYY(
+          businessRegIssueDate
+            ? businessRegIssueDate instanceof Date
+              ? businessRegIssueDate
+              : parseFormDate(businessRegIssueDate as string)
+            : undefined,
+        );
+        const formattedInitialEnvPermitIssueDate = formatDateToDDMMYYYY(
+          envPermitIssueDate
+            ? envPermitIssueDate instanceof Date
+              ? envPermitIssueDate
+              : parseFormDate(envPermitIssueDate as string)
+            : undefined,
+        );
+        const formattedInitialEnvPermitExpiryDate = formatDateToDDMMYYYY(
+          envPermitExpiryDate
+            ? envPermitExpiryDate instanceof Date
+              ? envPermitExpiryDate
+              : parseFormDate(envPermitExpiryDate as string)
+            : undefined,
+        );
+
+        // Step 3: Complete profile with fileIds
         const dto: CompleteRecyclerAdminProfileDTO = {
           vendorName: data.vendor_name,
-          taxCode: data.tax_code,
-          representative: data.representative,
-          // Temporary: Split company_registration_address into location fields for backend
           location: {
-            code: locationCode,
-            address:
-              locationAddress.length >= 5
-                ? locationAddress
-                : locationAddress.padEnd(5, " "),
-            city:
-              locationCity.length >= 2
-                ? locationCity
-                : locationCity.padEnd(2, " "),
+            refId: locationRefId,
           },
+          googleMapLink: data.google_map_link,
+          representative: data.representative,
+          taxCode: data.tax_code,
           phone: data.phone,
-          contactEmail: data.contact_email,
           contactPoint: data.contact_point,
           contactPhone: data.contact_phone,
-          businessRegNumber: formatedBusinessRegIssueDate,
-          googleMapLink: data.google_map_link,
+          contactEmail: data.contact_email,
+          businessRegNumber: data.business_reg_number,
+          businessRegIssueDate: formattedInitialBusinessRegIssueDate,
           envPermitNumber: data.env_permit_number,
-          envPermitIssueDate: formatedEnvPermitIssueDate,
-          envPermitExpiryDate: formatedEnvPermitExpiryDate,
+          envPermitIssueDate: formattedInitialEnvPermitIssueDate,
+          envPermitExpiryDate: formattedInitialEnvPermitExpiryDate,
+          files: {
+            businessRegFileId: businessRegFileId,
+            environmentalPermitFileId: environmentalPermitFileId,
+          },
         };
-
-        // Files are optional and handled elsewhere; not included in dto here.
 
         await AuthService.completeRecyclerAdminProfile(dto);
         await refreshUser();
@@ -331,17 +489,36 @@ export function BusinessInfoForm({
             <Label htmlFor="company_registration_address">
               Địa chỉ đăng ký công ty <span className="text-red-500">*</span>
             </Label>
-            <Input
-              id="company_registration_address"
-              placeholder="Vui lòng nhập địa chỉ đăng ký công ty"
-              {...register("company_registration_address")}
+            <LocationAutocomplete
+              value={fullAddress}
+              onSelect={async (result) => {
+                setLocationRefId(result.refId);
+                try {
+                  const locationDetails =
+                    await LocationService.getLocationByRefId(result.refId);
+                  setFullAddress(locationDetails.address);
+                  // Also update the form field for display
+                  setValue("company_registration_address", locationDetails.address);
+                } catch (error) {
+                  console.error("Failed to fetch location details:", error);
+                  setFullAddress(result.display);
+                  setValue("company_registration_address", result.display);
+                }
+              }}
+              label=""
+              placeholder="Tìm hoặc chọn từ danh sách..."
+              required
               disabled={isFormDisabled}
-              readOnly={!editable}
-              className={!editable ? "bg-muted cursor-not-allowed" : ""}
+              error={errors.company_registration_address?.message}
             />
             {errors.company_registration_address && (
               <p className="mt-1 text-sm text-red-600">
                 {errors.company_registration_address.message}
+              </p>
+            )}
+            {!locationRefId && (
+              <p className="mt-1 text-sm text-red-600">
+                Vui lòng chọn địa chỉ từ danh sách
               </p>
             )}
           </div>
@@ -373,7 +550,9 @@ export function BusinessInfoForm({
               value={
                 businessRegIssueDate instanceof Date
                   ? businessRegIssueDate
-                  : parseDate(businessRegIssueDate as string | undefined)
+                  : businessRegIssueDate
+                  ? parseFormDate(businessRegIssueDate as string)
+                  : undefined
               }
               onChange={(date) => setValue("business_reg_issue_date", date)}
               placeholder="Chọn ngày cấp"
@@ -526,7 +705,7 @@ export function BusinessInfoForm({
                   : envPermitIssueDate instanceof Date
                     ? envPermitIssueDate
                     : typeof envPermitIssueDate === "string"
-                      ? parseDate(envPermitIssueDate)
+                      ? parseFormDate(envPermitIssueDate)
                       : undefined
               }
               onChange={(date) => {
@@ -559,7 +738,7 @@ export function BusinessInfoForm({
                   : envPermitExpiryDate instanceof Date
                     ? envPermitExpiryDate
                     : typeof envPermitExpiryDate === "string"
-                      ? parseDate(envPermitExpiryDate)
+                      ? parseFormDate(envPermitExpiryDate)
                       : undefined
               }
               onChange={(date) => {
@@ -589,11 +768,73 @@ export function BusinessInfoForm({
           Tải lên PDF, JPG hoặc PNG. Không bắt buộc để xác minh ngay.
         </p>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* Environmental Permit File */}
           <div>
+            <Label className="mb-2 block">
+              Bản sao giấy phép môi trường
+            </Label>
+            
+            {/* Display existing file if available */}
+            {existingFiles?.environmentalPermitFile && !isNewFile(envPermitFile) && (
+              <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-gray-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {existingFiles.environmentalPermitFile.fileName}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {(existingFiles.environmentalPermitFile.fileSize / 1024).toFixed(2)} KB
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (existingFiles.environmentalPermitFile?.signedUrl) {
+                          window.open(existingFiles.environmentalPermitFile.signedUrl, "_blank");
+                        }
+                      }}
+                      disabled={isFormDisabled}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      Xem
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (existingFiles.environmentalPermitFile?.signedUrl) {
+                          const link = document.createElement("a");
+                          link.href = existingFiles.environmentalPermitFile.signedUrl;
+                          link.download = existingFiles.environmentalPermitFile.fileName;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }
+                      }}
+                      disabled={isFormDisabled}
+                    >
+                      <Download className="h-4 w-4 mr-1" />
+                      Tải xuống
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* File upload component */}
             <FileUpload
               id="env_permit_file"
-              label="Tải lên bản sao giấy phép môi trường"
+              label={existingFiles?.environmentalPermitFile && !isNewFile(envPermitFile) 
+                ? "Thay đổi file giấy phép môi trường" 
+                : "Tải lên bản sao giấy phép môi trường"}
               value={envPermitFile || null}
               onChange={(file) =>
                 setValue("env_permit_file", file || undefined)
@@ -601,12 +842,77 @@ export function BusinessInfoForm({
               error={errors.env_permit_file?.message}
               disabled={isFormDisabled}
             />
+            {isLoadingFiles && !existingFiles && (
+              <p className="mt-1 text-sm text-gray-500">Đang tải thông tin file...</p>
+            )}
           </div>
 
+          {/* Business Registration File */}
           <div>
+            <Label className="mb-2 block">
+              Bản sao Giấy phép kinh doanh (không bắt buộc)
+            </Label>
+            
+            {/* Display existing file if available */}
+            {existingFiles?.businessRegFile && !isNewFile(businessRegFile) && (
+              <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-gray-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {existingFiles.businessRegFile.fileName}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {(existingFiles.businessRegFile.fileSize / 1024).toFixed(2)} KB
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (existingFiles.businessRegFile?.signedUrl) {
+                          window.open(existingFiles.businessRegFile.signedUrl, "_blank");
+                        }
+                      }}
+                      disabled={isFormDisabled}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      Xem
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (existingFiles.businessRegFile?.signedUrl) {
+                          const link = document.createElement("a");
+                          link.href = existingFiles.businessRegFile.signedUrl;
+                          link.download = existingFiles.businessRegFile.fileName;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }
+                      }}
+                      disabled={isFormDisabled}
+                    >
+                      <Download className="h-4 w-4 mr-1" />
+                      Tải xuống
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* File upload component */}
             <FileUpload
               id="business_reg_file"
-              label="Tải lên bản sao Giấy phép kinh doanh (không bắt buộc)"
+              label={existingFiles?.businessRegFile && !isNewFile(businessRegFile)
+                ? "Thay đổi file giấy phép kinh doanh"
+                : "Tải lên bản sao Giấy phép kinh doanh (không bắt buộc)"}
               value={businessRegFile || null}
               onChange={(file) =>
                 setValue("business_reg_file", file || undefined)
@@ -614,6 +920,9 @@ export function BusinessInfoForm({
               error={errors.business_reg_file?.message}
               disabled={isFormDisabled}
             />
+            {isLoadingFiles && !existingFiles && (
+              <p className="mt-1 text-sm text-gray-500">Đang tải thông tin file...</p>
+            )}
           </div>
         </div>
       </div>

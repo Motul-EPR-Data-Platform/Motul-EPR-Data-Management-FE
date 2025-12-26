@@ -38,6 +38,11 @@ export const ENDPOINTS = {
     PROFILE: (id: string) => `/profile/${id}`,
     USERS: "/users",
     PENDING_INVITATIONS: "/pending-invitations",
+    UPLOAD_TEMP_FILE: "/profile/upload-temp-file",
+    COMPLETE_PROFILE: "/complete-profile",
+    REPLACE_PROFILE_FILE: (profileId: string) => `/profiles/${profileId}`,
+    PROFILE_FILES: (id: string) => `/profile/${id}/files`,
+    PROFILE_FILES_PREVIEW: (id: string) => `/profile/${id}/files/preview`,
   },
   WTP: {
     ROOT: "/wtp-admin",

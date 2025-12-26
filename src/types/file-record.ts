@@ -1,5 +1,6 @@
-// File category enum
+// File category enum - Combined for both records and profiles
 export enum FileType {
+  // For collection records
   EVIDENCE_PHOTO = "evidence_photo",
   STOCKPILE_PHOTO = "stockpile_photo",
   RECYCLED_PHOTO = "recycled_photo",
@@ -7,6 +8,12 @@ export enum FileType {
   OUTPUT_QUALITY_METRICS = "output_quality_metrics",
   QUALITY_METRICS = "quality_metrics",
   APPROVAL_DOC = "approval_doc", // Approval certificate/document
+  // For recycler profile creation
+  ENVIRONMENTAL_PERMIT_FILE = "environmental_permit_file",
+  BUSINESS_REG_FILE = "business_reg_file",
+  // For waste transfer point profile creation
+  WTP_CONFIRMATION_LETTER = "wtp_confirmation_letter",
+  RECYCLING_SERVICE_AGREEMENT = "recycling_service_agreement",
 }
 
 // File metadata interface
@@ -62,6 +69,12 @@ export interface ICollectionRecordFilesWithPreview {
   acceptanceDoc: IFileWithSignedUrl | null;
   outputQualityMetrics: IFileWithSignedUrl | null;
   qualityMetrics: IFileWithSignedUrl | null;
+}
+
+// Recycler profile files with signed URLs for preview
+export interface IRecyclerProfileFilesWithPreview {
+  businessRegFile: IFileWithSignedUrl | null;
+  environmentalPermitFile: IFileWithSignedUrl | null;
 }
 
 // File validation result
