@@ -221,7 +221,7 @@ export default function RecyclerBusinessInfoPage() {
                 isEditMode={isEditing}
                 editable={isEditing && canEditOrganizationInfo}
                 onSaveSuccess={handleSaveSuccess}
-                profileId={user?.recyclerId}
+                profileId={profile?.id || user?.recyclerId || null}
               />
             </CardContent>
           </Card>

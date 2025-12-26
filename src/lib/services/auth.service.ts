@@ -61,8 +61,8 @@ export const AuthService = {
     dto: CompleteRecyclerAdminProfileDTO,
   ): Promise<AppUser> {
     const response = await api.post<{ data: AppUser }>(
-      path.auth(ENDPOINTS.AUTH.COMPLETE_PROFILE.RECYCLER_ADMIN),
-      { recyclerProfile: dto },
+      path.recycler(ENDPOINTS.RECYCLER.COMPLETE_PROFILE),
+      dto,
     );
     // Extract nested data if present, otherwise use response.data directly
     return (response.data as any).data || response.data;

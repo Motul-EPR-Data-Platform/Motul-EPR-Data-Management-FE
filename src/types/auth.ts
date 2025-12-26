@@ -54,12 +54,9 @@ export type RegisterWithInviteDTO = {
 export type CompleteRecyclerAdminProfileDTO = {
   vendorName: string;
   location: {
-    code: string;
-    address: string;
-    city: string;
-    latitude?: number;
-    longitude?: number;
+    refId: string; // Vietmap ref_id
   };
+  googleMapLink?: string;
   representative?: string;
   taxCode?: string;
   phone?: string;
@@ -67,11 +64,14 @@ export type CompleteRecyclerAdminProfileDTO = {
   contactPhone?: string;
   contactEmail?: string;
   businessRegNumber?: string;
-  businessRegIssueDate?: string; // dd/mm/yyyy format
-  googleMapLink?: string;
+  businessRegIssueDate?: string; // Date string in dd/mm/yyyy format
   envPermitNumber?: string;
-  envPermitIssueDate?: string; // dd/mm/yyyy format
-  envPermitExpiryDate?: string; // dd/mm/yyyy format
+  envPermitIssueDate?: string; // Date string in dd/mm/yyyy format
+  envPermitExpiryDate?: string; // Date string in dd/mm/yyyy format
+  files: {
+    businessRegFileId?: string | null;
+    environmentalPermitFileId?: string | null;
+  };
 };
 
 export type CompleteWasteTransferAdminProfileDTO = {
@@ -150,10 +150,10 @@ export type UpdateRecyclerProfileDTO = {
   contactPhone?: string;
   contactEmail?: string;
   businessRegNumber?: string;
-  businessRegIssueDate?: Date | string;
+  businessRegIssueDate?: string; // Date string in dd/mm/yyyy format
   envPermitNumber?: string;
-  envPermitIssueDate?: Date | string;
-  envPermitExpiryDate?: Date | string;
+  envPermitIssueDate?: string; // Date string in dd/mm/yyyy format
+  envPermitExpiryDate?: string; // Date string in dd/mm/yyyy format
 };
 
 // WTP Profile Types
