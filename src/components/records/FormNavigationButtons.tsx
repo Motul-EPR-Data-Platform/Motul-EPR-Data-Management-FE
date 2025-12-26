@@ -31,23 +31,7 @@ export function FormNavigationButtons({
   canGoNext = true,
 }: FormNavigationButtonsProps) {
   return (
-    <div className="flex items-center justify-between pt-6 border-t">
-      {/* Left side - Back button */}
-      <div>
-        {canGoBack && onBack && currentStep > 1 && (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onBack}
-            disabled={isLoading}
-            className="text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Quay lại
-          </Button>
-        )}
-      </div>
-
+    <div className="flex items-center justify-end pt-6 border-t">
       {/* Right side - Action buttons */}
       <div className="flex gap-2">
         {onRedo && (
@@ -71,6 +55,18 @@ export function FormNavigationButtons({
           >
             <Save className="w-4 h-4 mr-2" />
             Lưu nháp
+          </Button>
+        )}
+
+        {canGoBack && onBack && currentStep > 1 && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            disabled={isLoading}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Quay lại
           </Button>
         )}
 
