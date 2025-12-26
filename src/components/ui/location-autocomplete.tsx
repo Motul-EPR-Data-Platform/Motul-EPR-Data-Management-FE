@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger,
+  PopoverAnchor,
 } from "@/components/ui/popover";
 import { LocationService } from "@/lib/services/location.service";
 import { VietmapAutocompleteResult } from "@/types/location";
@@ -130,9 +130,9 @@ export function LocationAutocomplete({
         </Label>
       )}
       <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+        <PopoverAnchor asChild>
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" />
             <Input
               ref={inputRef}
               value={selectedDisplay}
@@ -142,19 +142,20 @@ export function LocationAutocomplete({
               placeholder={placeholder}
               disabled={disabled}
               className={cn(
-                "pl-10",
+                "pl-10 w-full",
                 error && "border-red-500",
                 disabled && "cursor-not-allowed",
               )}
             />
             {isLoading && (
-              <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+              <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground pointer-events-none" />
             )}
           </div>
-        </PopoverTrigger>
+        </PopoverAnchor>
         <PopoverContent
-          className="w-[var(--radix-popover-trigger-width)] p-0"
+          className="p-0 max-w-md min-w-[200px]"
           align="start"
+          onOpenAutoFocus={(e) => e.preventDefault()}
         >
           {results.length > 0 ? (
             <div className="max-h-60 overflow-y-auto">
