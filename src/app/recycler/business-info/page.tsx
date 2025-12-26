@@ -45,6 +45,7 @@ export default function RecyclerBusinessInfoPage() {
     setIsLoading(true);
     try {
       const profileData = await RecyclerService.getProfile(user.recyclerId);
+      console.log('Profile data from backend:', profileData);
       setProfile(profileData);
     } catch (error: any) {
       // If profile doesn't exist (404), set profile to null
@@ -103,19 +104,11 @@ export default function RecyclerBusinessInfoPage() {
       return undefined;
     };
 
-    // Combine location fields into single address string (if location exists)
-    const locationParts = [
-      profile.location?.code,
-      profile.location?.address,
-      profile.location?.city,
-    ].filter(Boolean);
-    const companyRegistrationAddress = locationParts.join(", ") || "";
-
     return {
       vendor_name: profile.vendorName || "",
       tax_code: profile.taxCode || "",
       representative: profile.representative || "",
-      company_registration_address: companyRegistrationAddress,
+      company_registration_address: profile.location?.address || "",
       business_reg_number: profile.businessRegNumber || "",
       business_reg_issue_date: parseDate(profile.businessRegIssueDate),
       phone: profile.phone || "",
@@ -126,6 +119,7 @@ export default function RecyclerBusinessInfoPage() {
       env_permit_number: profile.envPermitNumber || "",
       env_permit_issue_date: parseDate(profile.envPermitIssueDate),
       env_permit_expiry_date: parseDate(profile.envPermitExpiryDate),
+      location: profile.location, // Pass the location object from backend
     };
   };
 

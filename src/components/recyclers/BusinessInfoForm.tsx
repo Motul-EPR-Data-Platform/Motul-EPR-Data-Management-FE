@@ -24,7 +24,7 @@ import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle2, Download, FileText, ExternalLink } from "lucide-react";
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { LocationService } from "@/lib/services/location.service";
-import { FileType, IRecyclerProfileFilesWithPreview, IFileWithSignedUrl } from "@/types/file-record";
+import { FileType, IRecyclerProfileFilesWithPreview } from "@/types/file-record";
 
 interface BusinessInfoFormProps {
   initialData?: Partial<CompleteRecyclerAdminProfileFormData>;
@@ -79,7 +79,7 @@ export function BusinessInfoForm({
     const value = initialData[fieldName];
     return parseFormDate(value as string | Date | undefined);
   };
-
+console.log("initialData:", initialData);
   const {
     register,
     handleSubmit,
@@ -94,7 +94,7 @@ export function BusinessInfoForm({
       tax_code: initialData?.tax_code || "",
       representative: initialData?.representative || "",
       company_registration_address:
-        initialData?.company_registration_address || "",
+        (initialData as any)?.location?.address || initialData?.company_registration_address || "",
       business_reg_number: initialData?.business_reg_number || "",
       business_reg_issue_date: getInitialDate("business_reg_issue_date"),
       phone: initialData?.phone || "",
@@ -109,15 +109,23 @@ export function BusinessInfoForm({
     },
   });
 
-  // Reset form when initialData changes (e.g., when profile is loaded)
+  // Reset form when initialData changes 
   useEffect(() => {
     if (initialData) {
+
+      const addressFromBackend =  initialData.company_registration_address || "";
+      
+      // Get location refId/code from backend location object
+      const locationCode = (initialData)?.location?.code;
+      if (locationCode) {
+        setLocationRefId(locationCode);
+      }
+      
       reset({
         vendor_name: initialData.vendor_name || "",
         tax_code: initialData.tax_code || "",
         representative: initialData.representative || "",
-        company_registration_address:
-          initialData.company_registration_address || "",
+        company_registration_address: addressFromBackend,
         business_reg_number: initialData.business_reg_number || "",
         business_reg_issue_date: getInitialDate("business_reg_issue_date"),
         phone: initialData.phone || "",
@@ -129,6 +137,9 @@ export function BusinessInfoForm({
         env_permit_issue_date: getInitialDate("env_permit_issue_date"),
         env_permit_expiry_date: getInitialDate("env_permit_expiry_date"),
       });
+      
+      // Set fullAddress state for LocationAutocomplete display
+      setFullAddress(addressFromBackend);
     }
   }, [initialData, reset]);
 
@@ -516,7 +527,7 @@ export function BusinessInfoForm({
                 {errors.company_registration_address.message}
               </p>
             )}
-            {!locationRefId && (
+            {editable && !locationRefId && (
               <p className="mt-1 text-sm text-red-600">
                 Vui lòng chọn địa chỉ từ danh sách
               </p>
