@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ProgressStepper } from "@/components/records/ProgressStepper";
@@ -87,6 +87,30 @@ export default function EditCollectionRecordPage() {
   const [qualityDocuments, setQualityDocuments] = useState<DocumentFile[]>([]);
   const [recycledPhoto, setRecycledPhoto] = useState<File | null>(null);
   const [stockpilePhoto, setStockpilePhoto] = useState<File | null>(null);
+  
+  // Track original file IDs to determine if files are new or existing
+  const originalFileIdsRef = useRef<{
+    evidencePhotos: Set<string>;
+    qualityMetrics: Set<string>;
+    outputQualityMetrics: Set<string>;
+    recycledPhoto: string | null;
+    stockpilePhoto: string | null;
+  }>({
+    evidencePhotos: new Set(),
+    qualityMetrics: new Set(),
+    outputQualityMetrics: new Set(),
+    recycledPhoto: null,
+    stockpilePhoto: null,
+  });
+
+  // Track original File object references for single file uploads
+  const originalFileRefsRef = useRef<{
+    recycledPhoto: File | null;
+    stockpilePhoto: File | null;
+  }>({
+    recycledPhoto: null,
+    stockpilePhoto: null,
+  });
 
   // Data for dropdowns
   const [wasteOwners, setWasteOwners] = useState<
@@ -112,6 +136,17 @@ export default function EditCollectionRecordPage() {
     }
   }, [recordId]);
 
+  // Helper function to convert signed URL to File object
+  const urlToFile = async (
+    url: string,
+    fileName: string,
+    mimeType: string,
+  ): Promise<File> => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new File([blob], fileName, { type: mimeType });
+  };
+
   const loadRecordAndDropdownData = async () => {
     setIsLoadingRecord(true);
     try {
@@ -122,6 +157,7 @@ export default function EditCollectionRecordPage() {
         wasteTypesRes,
         hazTypesRes,
         recordRes,
+        filesRes,
       ] = await Promise.allSettled([
         WasteOwnerService.getAllWasteOwners({ isActive: true }),
         DefinitionService.getActiveContractTypes(),
@@ -129,6 +165,9 @@ export default function EditCollectionRecordPage() {
         DefinitionService.getActiveHazTypes(),
         recordId
           ? CollectionRecordService.getRecordById(recordId)
+          : Promise.resolve(null),
+        recordId
+          ? CollectionRecordService.getRecordFilesWithPreview(recordId, 3600)
           : Promise.resolve(null),
       ]);
 
@@ -205,11 +244,19 @@ export default function EditCollectionRecordPage() {
             ? record.wasteOwners[0].id
             : record.wasteOwnerId || null;
 
+        // Get HAZ code ID from hazWasteId, hazWaste.id, or hazCodeId
+        const hazCodeId =
+          (record as any).hazWasteId ||
+          (record as any).hazWaste?.id ||
+          (record as any).hazCodeId ||
+          null;
+
         const prefillData: Partial<CreateDraftFormData> = {
+          batchId: (record as any).batchId || null,
           wasteOwnerId,
           contractTypeId: record.contractTypeId || null,
           wasteSourceId: record.wasteSourceId || null,
-          hazCodeId: (record as any).hazCodeId || null,
+          hazCodeId,
           collectedVolumeKg: record.collectedVolumeKg || null,
           vehiclePlate: record.vehiclePlate || null,
           stockpiled: record.stockpiled || null,
@@ -249,15 +296,116 @@ export default function EditCollectionRecordPage() {
           }
         }
 
-        // Load files if available
-        if (record.files) {
-          // Convert evidence photos to DocumentFile format
-          if (
-            record.files.evidencePhotos &&
-            record.files.evidencePhotos.length > 0
-          ) {
-            // Note: We can't convert IFile to DocumentFile directly, so we'll need to handle this
-            // For now, files will need to be re-uploaded if editing
+        // Reset file tracking when loading new record
+        originalFileIdsRef.current = {
+          evidencePhotos: new Set(),
+          qualityMetrics: new Set(),
+          outputQualityMetrics: new Set(),
+          recycledPhoto: null,
+          stockpilePhoto: null,
+        };
+        originalFileRefsRef.current = {
+          recycledPhoto: null,
+          stockpilePhoto: null,
+        };
+
+        // Load and prefill files from preview API
+        if (filesRes.status === "fulfilled" && filesRes.value) {
+          const filesWithPreview = filesRes.value;
+          
+          try {
+            // Convert evidence photos to DocumentFile format (Step 2)
+            if (filesWithPreview.evidencePhotos?.length > 0) {
+              const evidenceDocs: DocumentFile[] = await Promise.all(
+                filesWithPreview.evidencePhotos.map(async (file) => {
+                  const fileObj = await urlToFile(
+                    file.signedUrl,
+                    file.fileName,
+                    file.mimeType,
+                  );
+                  // Track original file ID
+                  originalFileIdsRef.current.evidencePhotos.add(file.id);
+                  return {
+                    id: file.id,
+                    file: fileObj,
+                    type: "evidence_photo",
+                  };
+                }),
+              );
+              setEvidenceFiles(evidenceDocs);
+            }
+
+            // Convert quality metrics files (Step 3)
+            const qualityDocs: DocumentFile[] = [];
+            
+            // Output quality metrics
+            if (filesWithPreview.outputQualityMetrics) {
+              const fileObj = await urlToFile(
+                filesWithPreview.outputQualityMetrics.signedUrl,
+                filesWithPreview.outputQualityMetrics.fileName,
+                filesWithPreview.outputQualityMetrics.mimeType,
+              );
+              // Track original file ID
+              originalFileIdsRef.current.outputQualityMetrics.add(
+                filesWithPreview.outputQualityMetrics.id,
+              );
+              qualityDocs.push({
+                id: filesWithPreview.outputQualityMetrics.id,
+                file: fileObj,
+                type: "output_quality_metrics",
+              });
+            }
+
+            // Quality metrics (before recycling)
+            if (filesWithPreview.qualityMetrics) {
+              const fileObj = await urlToFile(
+                filesWithPreview.qualityMetrics.signedUrl,
+                filesWithPreview.qualityMetrics.fileName,
+                filesWithPreview.qualityMetrics.mimeType,
+              );
+              // Track original file ID
+              originalFileIdsRef.current.qualityMetrics.add(
+                filesWithPreview.qualityMetrics.id,
+              );
+              qualityDocs.push({
+                id: filesWithPreview.qualityMetrics.id,
+                file: fileObj,
+                type: "quality_metrics",
+              });
+            }
+
+            if (qualityDocs.length > 0) {
+              setQualityDocuments(qualityDocs);
+            }
+
+            // Convert recycled photo (Step 3)
+            if (filesWithPreview.recycledPhoto) {
+              const fileObj = await urlToFile(
+                filesWithPreview.recycledPhoto.signedUrl,
+                filesWithPreview.recycledPhoto.fileName,
+                filesWithPreview.recycledPhoto.mimeType,
+              );
+              // Track original file ID and file reference
+              originalFileIdsRef.current.recycledPhoto = filesWithPreview.recycledPhoto.id;
+              originalFileRefsRef.current.recycledPhoto = fileObj;
+              setRecycledPhoto(fileObj);
+            }
+
+            // Convert stockpile photo (Step 3, if stockpiled)
+            if (filesWithPreview.stockpilePhoto) {
+              const fileObj = await urlToFile(
+                filesWithPreview.stockpilePhoto.signedUrl,
+                filesWithPreview.stockpilePhoto.fileName,
+                filesWithPreview.stockpilePhoto.mimeType,
+              );
+              // Track original file ID and file reference
+              originalFileIdsRef.current.stockpilePhoto = filesWithPreview.stockpilePhoto.id;
+              originalFileRefsRef.current.stockpilePhoto = fileObj;
+              setStockpilePhoto(fileObj);
+            }
+          } catch (fileError) {
+            console.error("Error loading files:", fileError);
+            toast.warning("Không thể tải một số tệp đính kèm. Vui lòng tải lại nếu cần.");
           }
         }
       } else if (recordRes.status === "rejected") {
@@ -408,11 +556,45 @@ export default function EditCollectionRecordPage() {
     return FileType.EVIDENCE_PHOTO;
   };
 
+  // Helper to check if a file ID is a new temporary ID (not from database)
+  const isNewFileId = (fileId: string): boolean => {
+    // New file IDs are generated as `${Date.now()}-${Math.random()}` which contain a dash and timestamp
+    // Original file IDs from database are UUIDs
+    // Check if it's NOT in any of the original file ID sets
+    return (
+      !originalFileIdsRef.current.evidencePhotos.has(fileId) &&
+      !originalFileIdsRef.current.qualityMetrics.has(fileId) &&
+      !originalFileIdsRef.current.outputQualityMetrics.has(fileId)
+    );
+  };
+
+  // Helper to check if a single File is new (different from original)
+  const isNewSingleFile = (
+    currentFile: File | null,
+    originalFile: File | null,
+  ): boolean => {
+    // If no current file, nothing to upload
+    if (!currentFile) {
+      return false;
+    }
+    // If no original file was tracked, this is a new file
+    if (!originalFile) {
+      return true;
+    }
+    // Compare file references - if they're different objects, it's a new file
+    // File objects can't be directly compared for equality, but we can compare references
+    return currentFile !== originalFile;
+  };
+
   const uploadFilesForRecord = async (recordId: string) => {
     const uploadPromises: Promise<any>[] = [];
 
+    // Only upload evidence photos that are new (not in original set)
     if (evidenceFiles && evidenceFiles.length > 0) {
-      const filesToUpload = evidenceFiles
+      const newEvidenceFiles = evidenceFiles.filter((doc) =>
+        isNewFileId(doc.id),
+      );
+      const filesToUpload = newEvidenceFiles
         .map((doc) => doc.file)
         .filter((file): file is File => file instanceof File);
 
@@ -427,9 +609,10 @@ export default function EditCollectionRecordPage() {
       }
     }
 
+    // Only upload quality documents that are new
     if (qualityDocuments && qualityDocuments.length > 0) {
       for (const doc of qualityDocuments) {
-        if (doc.file instanceof File) {
+        if (doc.file instanceof File && isNewFileId(doc.id)) {
           const category = mapDocumentTypeToFileType(doc.type);
           uploadPromises.push(
             CollectionRecordService.uploadFile(recordId, {
@@ -441,8 +624,11 @@ export default function EditCollectionRecordPage() {
       }
     }
 
-    // Upload stockpile photo (if stockpiled)
-    if (stockpilePhoto instanceof File) {
+    // Upload stockpile photo only if it's new (different from original)
+    if (
+      stockpilePhoto instanceof File &&
+      isNewSingleFile(stockpilePhoto, originalFileRefsRef.current.stockpilePhoto)
+    ) {
       uploadPromises.push(
         CollectionRecordService.uploadFile(recordId, {
           file: stockpilePhoto,
@@ -451,8 +637,11 @@ export default function EditCollectionRecordPage() {
       );
     }
 
-    // Upload recycled photo
-    if (recycledPhoto instanceof File) {
+    // Upload recycled photo only if it's new (different from original)
+    if (
+      recycledPhoto instanceof File &&
+      isNewSingleFile(recycledPhoto, originalFileRefsRef.current.recycledPhoto)
+    ) {
       uploadPromises.push(
         CollectionRecordService.uploadFile(recordId, {
           file: recycledPhoto,
@@ -482,6 +671,7 @@ export default function EditCollectionRecordPage() {
       };
 
       const draftData: CreateDraftDTO = {
+        batchId: formData.batchId || null,
         submissionMonth: formatDateDDMMYYYY(
           new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1),
         ),
@@ -561,6 +751,7 @@ export default function EditCollectionRecordPage() {
       };
 
       const draftData: CreateDraftDTO = {
+        batchId: formData.batchId || null,
         submissionMonth: formatDateDDMMYYYY(
           new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1),
         ),

@@ -27,7 +27,10 @@ import { LocationService } from "@/lib/services/location.service";
 import { FileType, IRecyclerProfileFilesWithPreview } from "@/types/file-record";
 
 interface BusinessInfoFormProps {
-  initialData?: Partial<CompleteRecyclerAdminProfileFormData>;
+  initialData?: Partial<CompleteRecyclerAdminProfileFormData> & {
+    location_id?: string | null;
+    location_address?: string;
+  };
   isEditMode?: boolean;
   editable?: boolean; // If false, all inputs are read-only
   onSaveSuccess?: () => void; // Callback when save is successful
@@ -137,9 +140,14 @@ console.log("initialData:", initialData);
         env_permit_issue_date: getInitialDate("env_permit_issue_date"),
         env_permit_expiry_date: getInitialDate("env_permit_expiry_date"),
       });
-      
-      // Set fullAddress state for LocationAutocomplete display
-      setFullAddress(addressFromBackend);
+
+      // Initialize location data from profile
+      if (initialData.location_id) {
+        setLocationRefId(initialData.location_id);
+      }
+      if (initialData.location_address || initialData.company_registration_address) {
+        setFullAddress(initialData.location_address || initialData.company_registration_address || "");
+      }
     }
   }, [initialData, reset]);
 
@@ -213,6 +221,12 @@ console.log("initialData:", initialData);
       if (isEditMode && profileId) {
         const dto: UpdateRecyclerProfileDTO = {
           vendorName: data.vendor_name,
+          // Include location if locationRefId is provided (user changed location)
+          ...(locationRefId && {
+            location: {
+              refId: locationRefId,
+            },
+          }),
           taxCode: data.tax_code,
           representative: data.representative,
           phone: data.phone,
@@ -527,7 +541,7 @@ console.log("initialData:", initialData);
                 {errors.company_registration_address.message}
               </p>
             )}
-            {editable && !locationRefId && (
+            {!locationRefId && editable && (
               <p className="mt-1 text-sm text-red-600">
                 Vui lòng chọn địa chỉ từ danh sách
               </p>

@@ -10,6 +10,8 @@ export type RecordStatus =
 
 export interface CollectionRecord {
   readonly id: string;
+  recordName?: string | null; // Record name/identifier (e.g., "DN-170204-20251201")
+  batchId: string; // Batch ID
   recyclerId: string;
   createdBy: string;
   submissionMonth: string; // ISO date string (YYYY-MM)
@@ -40,6 +42,10 @@ export interface CollectionRecord {
 }
 
 export interface CollectionRecordDetail extends CollectionRecord {
+  batch?: {
+    batchName: string;
+    batchType: string;
+  } | null;
   wasteOwner?: {
     id: string;
     name: string;
@@ -72,6 +78,14 @@ export interface CollectionRecordDetail extends CollectionRecord {
     id: string;
     code: string;
   } | null;
+  eprEntity?: {
+    id: string;
+    code: string;
+    name: string;
+    region?: string | null;
+    description?: string | null;
+    producerContact?: string | null;
+  } | null;
   pickupLocation?: Location | null;
   approval?: {
     id: string;
@@ -101,6 +115,7 @@ export interface CollectionRecordDetail extends CollectionRecord {
 
 // Frontend form data structure (for internal use)
 export interface CreateDraftFormData {
+  batchId?: string | null; // Batch ID
   submissionMonth: string; // ISO date string (YYYY-MM)
   collectedVolumeKg?: number | null;
   deliveryDate?: string | null; // ISO date string
@@ -120,6 +135,7 @@ export interface CreateDraftFormData {
 
 // Backend DTO structure (matches ICreateDraftInput)
 export interface CreateDraftDTO {
+  batchId?: string | null; // Batch ID
   submissionMonth?: string; // Date string in dd/mm/yyyy format
   collectedVolumeKg?: number | null;
   deliveryDate?: string | null; // Date string in dd/mm/yyyy format
@@ -139,6 +155,7 @@ export interface CreateDraftDTO {
 
 // Backend DTO structure for update (matches IUpdateDraftInput)
 export interface UpdateDraftDTO {
+  batchId?: string | null; // Batch ID
   submissionMonth?: string; // ISO date string (YYYY-MM)
   collectedVolumeKg?: number | null;
   deliveryDate?: string | null; // ISO date string
@@ -151,7 +168,7 @@ export interface UpdateDraftDTO {
   contractTypeId?: string | null;
   hazCodeId?: string | null; // HAZ code definition ID
   wasteSourceId?: string | null;
-  pickupLocationId?: { refId: string } | null; // Backend expects object with refId property
+  pickupLocation?: { refId: string } | null; // Backend expects object with refId property
   collectedPricePerKg?: number | null;
   expiresAt?: string | null; // ISO date string
 }

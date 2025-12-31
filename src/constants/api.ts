@@ -91,6 +91,12 @@ export const ENDPOINTS = {
     BY_ID: (id: string) => `/${id}`,
     DOWNLOAD: (id: string) => `/${id}/download`,
   },
+  BATCHES: {
+    ROOT: "/batches",
+    BY_ID: (id: string) => `/${id}`,
+    CLOSE: (id: string) => `/${id}/close`,
+    ACTIVE: "/active",
+  },
 } as const;
 
 // Helpers to compose full paths
@@ -105,4 +111,5 @@ export const path = {
   collectionRecords: (p: string) => `${ENDPOINTS.COLLECTION_RECORDS.ROOT}${p}`, // Prepend ROOT to collection records paths
   locations: (p: string) => p, // Location endpoints are already full paths
   files: (p: string) => `${ENDPOINTS.FILES.ROOT}${p}`, // Prepend ROOT to file paths
+  batches: (p: string) => `${ENDPOINTS.BATCHES.ROOT}${p}`, // Prepend ROOT to batch paths
 };

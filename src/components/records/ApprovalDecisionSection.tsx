@@ -121,10 +121,15 @@ export function ApprovalDecisionSection({
                 ? "Bản ghi đã được phê duyệt. Thông tin chi tiết sẽ được hiển thị khi có dữ liệu."
                 : "Bản ghi đã bị từ chối. Thông tin chi tiết sẽ được hiển thị khi có dữ liệu."}
             </p>
-            {record.eprId && (
+            {((record as any).eprEntity || record.eprId) && (
               <div className="mt-3">
-                <p className="text-sm text-muted-foreground mb-1">EPR ID</p>
-                <p className="font-medium">{record.eprId}</p>
+                <p className="text-sm text-muted-foreground mb-1">EPR Entity</p>
+                <p className="font-medium">
+                  {(record as any).eprEntity?.name || 
+                   (record as any).eprEntity?.code || 
+                   record.eprId || 
+                   "-"}
+                </p>
               </div>
             )}
             {record.acceptanceDate && (
@@ -174,10 +179,15 @@ export function ApprovalDecisionSection({
                 {formatDateTime(latestApproval.decidedAt)}
               </p>
             </div>
-            {record.eprId && (
+            {((record as any).eprEntity || record.eprId) && (
               <div>
-                <p className="text-sm text-muted-foreground mb-1">EPR ID</p>
-                <p className="font-medium">{record.eprId}</p>
+                <p className="text-sm text-muted-foreground mb-1">EPR Entity</p>
+                <p className="font-medium">
+                  {(record as any).eprEntity?.name || 
+                   (record as any).eprEntity?.code || 
+                   record.eprId || 
+                   "-"}
+                </p>
               </div>
             )}
             {record.acceptanceDate && (

@@ -104,6 +104,9 @@ export default function RecyclerBusinessInfoPage() {
       return undefined;
     };
 
+    // Use location address if available, otherwise combine location fields
+    const companyRegistrationAddress = profile.location?.address || "";
+
     return {
       vendor_name: profile.vendorName || "",
       tax_code: profile.taxCode || "",
@@ -119,7 +122,8 @@ export default function RecyclerBusinessInfoPage() {
       env_permit_number: profile.envPermitNumber || "",
       env_permit_issue_date: parseDate(profile.envPermitIssueDate),
       env_permit_expiry_date: parseDate(profile.envPermitExpiryDate),
-      location: profile.location, // Pass the location object from backend
+      location_id: (profile as any).locationId || null,
+      location_address: companyRegistrationAddress,
     };
   };
 

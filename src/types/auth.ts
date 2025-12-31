@@ -142,6 +142,9 @@ export type RecyclerProfile = {
 
 export type UpdateRecyclerProfileDTO = {
   vendorName?: string;
+  location?: {
+    refId: string; // Vietmap ref_id
+  };
   googleMapLink?: string;
   representative?: string;
   taxCode?: string;

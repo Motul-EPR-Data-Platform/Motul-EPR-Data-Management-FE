@@ -109,6 +109,19 @@ export function RecordOverviewCard({ record }: RecordOverviewCardProps) {
             {getStatusLabel(record.status)}
           </Badge>
         </div>
+        {(record as any).batch && (
+          <div>
+            <p className="text-sm text-muted-foreground mb-1">Lô hàng</p>
+            <p className="font-medium">
+              {(record as any).batch.batchName || "-"}
+              {(record as any).batch.batchType && (
+                <span className="text-muted-foreground text-sm ml-2">
+                  ({(record as any).batch.batchType === "port" ? "Cảng" : "Nhà máy"})
+                </span>
+              )}
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -73,6 +73,7 @@ const permissionMatrix: Record<UserRole, Permission[]> = {
     "pending-registration.reject",
     "reports.view",
     "reports.create",
+    "waste-sources.view",
     "definitions.view",
     "definitions.create",
     "definitions.edit",

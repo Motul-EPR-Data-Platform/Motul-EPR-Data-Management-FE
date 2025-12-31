@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -10,6 +11,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CreateDraftFormData } from "@/types/record";
+import { BatchDropdown } from "@/components/batches/BatchDropdown";
+import { BatchDetailDialog } from "@/components/batches/BatchDetailDialog";
+import { BatchType } from "@/types/batch";
 
 interface Step1WasteSourceInfoProps {
   formData: Partial<CreateDraftFormData>;
@@ -24,6 +28,7 @@ interface Step1WasteSourceInfoProps {
     code?: string;
     hazCode?: string;
   }>;
+  batchType?: BatchType; // Optional batch type filter
 }
 
 export function Step1WasteSourceInfo({
@@ -34,15 +39,28 @@ export function Step1WasteSourceInfo({
   wasteOwners = [],
   contractTypes = [],
   wasteTypes = [],
+  batchType,
 }: Step1WasteSourceInfoProps) {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold mb-1">Thông tin Chủ nguồn thải</h2>
-        <p className="text-sm text-muted-foreground">Bước thứ 1 trên 4</p>
-      </div>
+  const [isBatchDetailDialogOpen, setIsBatchDetailDialogOpen] = useState(false);
 
-      <div className="space-y-4">
+  return (
+    <>
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold mb-1">Thông tin Chủ nguồn thải</h2>
+          <p className="text-sm text-muted-foreground">Bước thứ 1 trên 4</p>
+        </div>
+
+        <div className="space-y-4">
+          {/* Batch Selection */}
+          <BatchDropdown
+            value={formData.batchId || null}
+            onChange={(batchId) => onChange("batchId", batchId)}
+            batchType={batchType}
+            disabled={disabled}
+            error={errors.batchId}
+            onShowDetails={() => setIsBatchDetailDialogOpen(true)}
+          />
         {/* Waste Owner Selection */}
         <div className="grid gap-2">
           <Label htmlFor="wasteOwnerId">
@@ -172,6 +190,13 @@ export function Step1WasteSourceInfo({
           </Select>
         </div>
       </div>
-    </div>
+      </div>
+
+      <BatchDetailDialog
+        open={isBatchDetailDialogOpen}
+        onOpenChange={setIsBatchDetailDialogOpen}
+        batchType={batchType}
+      />
+    </>
   );
 }

@@ -123,7 +123,7 @@ export function RecordsTable({
           {records.map((record) => (
             <TableRow key={record.id}>
               <TableCell className="font-mono text-sm">
-                {record.id.slice(0, 8)}...
+                {record.recordName || record.id.slice(0, 8) + "..."}
               </TableCell>
               <TableCell>
                 {formatDate(record.submittedAt || record.createdAt)}

@@ -604,6 +604,7 @@ export default function CreateCollectionRecordPage() {
       // Transform form data to backend DTO format
       const draftData: CreateDraftDTO = {
         // Backend expects dates in dd/mm/yyyy format
+        batchId: formData.batchId || null,
         submissionMonth: formatDateDDMMYYYY(
           new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1),
         ),
@@ -711,6 +712,7 @@ export default function CreateCollectionRecordPage() {
         };
 
         const draftData: CreateDraftDTO = {
+          batchId: formData.batchId || null,
           submissionMonth: formatDateDDMMYYYY(
             new Date(
               collectionDate.getFullYear(),
