@@ -44,7 +44,10 @@ export function BarChart({
 }: BarChartProps) {
   const chart = (
     <ResponsiveContainer width="100%" height={height}>
-      <RechartsBarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+      <RechartsBarChart
+        data={data}
+        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+      >
         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
         <XAxis
           dataKey={xAxisKey}
@@ -67,15 +70,9 @@ export function BarChart({
             borderRadius: "0.5rem",
             padding: "0.5rem",
           }}
-          formatter={(value: number) => [
-            `${value}${unit || ""}`,
-            dataKey,
-          ]}
+          formatter={(value: number) => [`${value}${unit || ""}`, dataKey]}
         />
-        <Legend
-          wrapperStyle={{ paddingTop: "1rem" }}
-          iconType="square"
-        />
+        <Legend wrapperStyle={{ paddingTop: "1rem" }} iconType="square" />
         <Bar
           dataKey={dataKey}
           fill={color}
@@ -100,10 +97,7 @@ export function BarChart({
           )}
         </CardHeader>
       )}
-      <CardContent>
-        {chart}
-      </CardContent>
+      <CardContent>{chart}</CardContent>
     </Card>
   );
 }
-

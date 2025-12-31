@@ -125,10 +125,10 @@ export function ApprovalDecisionSection({
               <div className="mt-3">
                 <p className="text-sm text-muted-foreground mb-1">EPR Entity</p>
                 <p className="font-medium">
-                  {(record as any).eprEntity?.name || 
-                   (record as any).eprEntity?.code || 
-                   record.eprId || 
-                   "-"}
+                  {(record as any).eprEntity?.name ||
+                    (record as any).eprEntity?.code ||
+                    record.eprId ||
+                    "-"}
                 </p>
               </div>
             )}
@@ -183,10 +183,10 @@ export function ApprovalDecisionSection({
               <div>
                 <p className="text-sm text-muted-foreground mb-1">EPR Entity</p>
                 <p className="font-medium">
-                  {(record as any).eprEntity?.name || 
-                   (record as any).eprEntity?.code || 
-                   record.eprId || 
-                   "-"}
+                  {(record as any).eprEntity?.name ||
+                    (record as any).eprEntity?.code ||
+                    record.eprId ||
+                    "-"}
                 </p>
               </div>
             )}

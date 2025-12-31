@@ -87,7 +87,7 @@ export default function EditCollectionRecordPage() {
   const [qualityDocuments, setQualityDocuments] = useState<DocumentFile[]>([]);
   const [recycledPhoto, setRecycledPhoto] = useState<File | null>(null);
   const [stockpilePhoto, setStockpilePhoto] = useState<File | null>(null);
-  
+
   // Track original file IDs to determine if files are new or existing
   const originalFileIdsRef = useRef<{
     evidencePhotos: Set<string>;
@@ -312,7 +312,7 @@ export default function EditCollectionRecordPage() {
         // Load and prefill files from preview API
         if (filesRes.status === "fulfilled" && filesRes.value) {
           const filesWithPreview = filesRes.value;
-          
+
           try {
             // Convert evidence photos to DocumentFile format (Step 2)
             if (filesWithPreview.evidencePhotos?.length > 0) {
@@ -337,7 +337,7 @@ export default function EditCollectionRecordPage() {
 
             // Convert quality metrics files (Step 3)
             const qualityDocs: DocumentFile[] = [];
-            
+
             // Output quality metrics
             if (filesWithPreview.outputQualityMetrics) {
               const fileObj = await urlToFile(
@@ -386,7 +386,8 @@ export default function EditCollectionRecordPage() {
                 filesWithPreview.recycledPhoto.mimeType,
               );
               // Track original file ID and file reference
-              originalFileIdsRef.current.recycledPhoto = filesWithPreview.recycledPhoto.id;
+              originalFileIdsRef.current.recycledPhoto =
+                filesWithPreview.recycledPhoto.id;
               originalFileRefsRef.current.recycledPhoto = fileObj;
               setRecycledPhoto(fileObj);
             }
@@ -399,13 +400,16 @@ export default function EditCollectionRecordPage() {
                 filesWithPreview.stockpilePhoto.mimeType,
               );
               // Track original file ID and file reference
-              originalFileIdsRef.current.stockpilePhoto = filesWithPreview.stockpilePhoto.id;
+              originalFileIdsRef.current.stockpilePhoto =
+                filesWithPreview.stockpilePhoto.id;
               originalFileRefsRef.current.stockpilePhoto = fileObj;
               setStockpilePhoto(fileObj);
             }
           } catch (fileError) {
             console.error("Error loading files:", fileError);
-            toast.warning("Không thể tải một số tệp đính kèm. Vui lòng tải lại nếu cần.");
+            toast.warning(
+              "Không thể tải một số tệp đính kèm. Vui lòng tải lại nếu cần.",
+            );
           }
         }
       } else if (recordRes.status === "rejected") {
@@ -627,7 +631,10 @@ export default function EditCollectionRecordPage() {
     // Upload stockpile photo only if it's new (different from original)
     if (
       stockpilePhoto instanceof File &&
-      isNewSingleFile(stockpilePhoto, originalFileRefsRef.current.stockpilePhoto)
+      isNewSingleFile(
+        stockpilePhoto,
+        originalFileRefsRef.current.stockpilePhoto,
+      )
     ) {
       uploadPromises.push(
         CollectionRecordService.uploadFile(recordId, {

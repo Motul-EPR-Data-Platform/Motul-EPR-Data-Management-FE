@@ -83,14 +83,10 @@ export function PieChart({
               }}
               formatter={(value: number) => [value, "Giá trị"]}
             />
-            <Legend
-              wrapperStyle={{ paddingTop: "1rem" }}
-              iconType="circle"
-            />
+            <Legend wrapperStyle={{ paddingTop: "1rem" }} iconType="circle" />
           </RechartsPieChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
   );
 }
-

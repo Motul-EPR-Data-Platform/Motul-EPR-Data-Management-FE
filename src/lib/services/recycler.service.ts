@@ -8,7 +8,11 @@ import {
   GetUsersFilters,
   GetInvitationsFilters,
 } from "@/types/user";
-import { FileType, IFileUploadResponse, IRecyclerProfileFilesWithPreview } from "@/types/file-record";
+import {
+  FileType,
+  IFileUploadResponse,
+  IRecyclerProfileFilesWithPreview,
+} from "@/types/file-record";
 
 export const RecyclerService = {
   /**

@@ -27,7 +27,8 @@ export function VolumeByWasteOwnerChart({
 }: VolumeByWasteOwnerChartProps) {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
-  const [selectedWasteOwnerId, setSelectedWasteOwnerId] = useState<string>("all");
+  const [selectedWasteOwnerId, setSelectedWasteOwnerId] =
+    useState<string>("all");
   const [wasteOwners, setWasteOwners] = useState<
     Array<{ id: string; name: string }>
   >([]);
@@ -154,4 +155,3 @@ export function VolumeByWasteOwnerChart({
     </Card>
   );
 }
-

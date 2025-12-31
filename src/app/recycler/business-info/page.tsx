@@ -45,7 +45,7 @@ export default function RecyclerBusinessInfoPage() {
     setIsLoading(true);
     try {
       const profileData = await RecyclerService.getProfile(user.recyclerId);
-      console.log('Profile data from backend:', profileData);
+      console.log("Profile data from backend:", profileData);
       setProfile(profileData);
     } catch (error: any) {
       // If profile doesn't exist (404), set profile to null

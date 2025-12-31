@@ -21,10 +21,19 @@ import {
 } from "@/types/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { AlertCircle, CheckCircle2, Download, FileText, ExternalLink } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Download,
+  FileText,
+  ExternalLink,
+} from "lucide-react";
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { LocationService } from "@/lib/services/location.service";
-import { FileType, IRecyclerProfileFilesWithPreview } from "@/types/file-record";
+import {
+  FileType,
+  IRecyclerProfileFilesWithPreview,
+} from "@/types/file-record";
 
 interface BusinessInfoFormProps {
   initialData?: Partial<CompleteRecyclerAdminProfileFormData> & {
@@ -51,9 +60,10 @@ export function BusinessInfoForm({
   const [success, setSuccess] = useState(false);
   const [locationRefId, setLocationRefId] = useState<string | null>(null);
   const [fullAddress, setFullAddress] = useState<string>("");
-  const [existingFiles, setExistingFiles] = useState<IRecyclerProfileFilesWithPreview | null>(null);
+  const [existingFiles, setExistingFiles] =
+    useState<IRecyclerProfileFilesWithPreview | null>(null);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
-  
+
   // Track if files have been changed (user selected new files)
   // In edit mode, if watch returns a File object, it means user selected a new file
 
@@ -61,7 +71,9 @@ export function BusinessInfoForm({
   const isFormDisabled = !editable || isLoading;
 
   // Helper to convert string date (dd/mm/yyyy) to Date object for form handling
-  const parseFormDate = (dateStr: string | Date | undefined): Date | undefined => {
+  const parseFormDate = (
+    dateStr: string | Date | undefined,
+  ): Date | undefined => {
     if (!dateStr) return undefined;
     if (dateStr instanceof Date) return dateStr;
     if (typeof dateStr !== "string") return undefined;
@@ -82,7 +94,7 @@ export function BusinessInfoForm({
     const value = initialData[fieldName];
     return parseFormDate(value as string | Date | undefined);
   };
-console.log("initialData:", initialData);
+  console.log("initialData:", initialData);
   const {
     register,
     handleSubmit,
@@ -97,7 +109,9 @@ console.log("initialData:", initialData);
       tax_code: initialData?.tax_code || "",
       representative: initialData?.representative || "",
       company_registration_address:
-        (initialData as any)?.location?.address || initialData?.company_registration_address || "",
+        (initialData as any)?.location?.address ||
+        initialData?.company_registration_address ||
+        "",
       business_reg_number: initialData?.business_reg_number || "",
       business_reg_issue_date: getInitialDate("business_reg_issue_date"),
       phone: initialData?.phone || "",
@@ -112,18 +126,17 @@ console.log("initialData:", initialData);
     },
   });
 
-  // Reset form when initialData changes 
+  // Reset form when initialData changes
   useEffect(() => {
     if (initialData) {
+      const addressFromBackend = initialData.company_registration_address || "";
 
-      const addressFromBackend =  initialData.company_registration_address || "";
-      
       // Get location refId/code from backend location object
-      const locationCode = (initialData)?.location?.code;
+      const locationCode = initialData?.location?.code;
       if (locationCode) {
         setLocationRefId(locationCode);
       }
-      
+
       reset({
         vendor_name: initialData.vendor_name || "",
         tax_code: initialData.tax_code || "",
@@ -145,8 +158,15 @@ console.log("initialData:", initialData);
       if (initialData.location_id) {
         setLocationRefId(initialData.location_id);
       }
-      if (initialData.location_address || initialData.company_registration_address) {
-        setFullAddress(initialData.location_address || initialData.company_registration_address || "");
+      if (
+        initialData.location_address ||
+        initialData.company_registration_address
+      ) {
+        setFullAddress(
+          initialData.location_address ||
+            initialData.company_registration_address ||
+            "",
+        );
       }
     }
   }, [initialData, reset]);
@@ -157,7 +177,8 @@ console.log("initialData:", initialData);
       if (profileId) {
         setIsLoadingFiles(true);
         try {
-          const files = await RecyclerService.getProfileFilesWithPreview(profileId);
+          const files =
+            await RecyclerService.getProfileFilesWithPreview(profileId);
           setExistingFiles(files);
         } catch (error) {
           console.error("Error fetching profile files:", error);
@@ -177,7 +198,7 @@ console.log("initialData:", initialData);
 
   const envPermitFile = watch("env_permit_file");
   const businessRegFile = watch("business_reg_file");
-  
+
   // Helper to check if a file is a new File object (user selected new file)
   const isNewFile = (file: File | undefined | null): file is File => {
     return file instanceof File;
@@ -199,15 +220,15 @@ console.log("initialData:", initialData);
         data.env_permit_issue_date instanceof Date
           ? data.env_permit_issue_date
           : data.env_permit_issue_date
-          ? parseFormDate(data.env_permit_issue_date as string)
-          : undefined,
+            ? parseFormDate(data.env_permit_issue_date as string)
+            : undefined,
       );
       const formattedEnvPermitExpiryDate = formatDateToDDMMYYYY(
         data.env_permit_expiry_date instanceof Date
           ? data.env_permit_expiry_date
           : data.env_permit_expiry_date
-          ? parseFormDate(data.env_permit_expiry_date as string)
-          : undefined,
+            ? parseFormDate(data.env_permit_expiry_date as string)
+            : undefined,
       );
       const formattedBusinessRegIssueDate = formatDateToDDMMYYYY(
         data.business_reg_issue_date
@@ -289,7 +310,8 @@ console.log("initialData:", initialData);
           // Refresh files after update
           if (profileId) {
             try {
-              const updatedFiles = await RecyclerService.getProfileFilesWithPreview(profileId);
+              const updatedFiles =
+                await RecyclerService.getProfileFilesWithPreview(profileId);
               setExistingFiles(updatedFiles);
             } catch (error) {
               console.error("Error refreshing files after update:", error);
@@ -523,7 +545,10 @@ console.log("initialData:", initialData);
                     await LocationService.getLocationByRefId(result.refId);
                   setFullAddress(locationDetails.address);
                   // Also update the form field for display
-                  setValue("company_registration_address", locationDetails.address);
+                  setValue(
+                    "company_registration_address",
+                    locationDetails.address,
+                  );
                 } catch (error) {
                   console.error("Failed to fetch location details:", error);
                   setFullAddress(result.display);
@@ -576,8 +601,8 @@ console.log("initialData:", initialData);
                 businessRegIssueDate instanceof Date
                   ? businessRegIssueDate
                   : businessRegIssueDate
-                  ? parseFormDate(businessRegIssueDate as string)
-                  : undefined
+                    ? parseFormDate(businessRegIssueDate as string)
+                    : undefined
               }
               onChange={(date) => setValue("business_reg_issue_date", date)}
               placeholder="Chọn ngày cấp"
@@ -796,70 +821,85 @@ console.log("initialData:", initialData);
         <div className="space-y-6">
           {/* Environmental Permit File */}
           <div>
-            <Label className="mb-2 block">
-              Bản sao giấy phép môi trường
-            </Label>
-            
+            <Label className="mb-2 block">Bản sao giấy phép môi trường</Label>
+
             {/* Display existing file if available */}
-            {existingFiles?.environmentalPermitFile && !isNewFile(envPermitFile) && (
-              <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-gray-600" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {existingFiles.environmentalPermitFile.fileName}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {(existingFiles.environmentalPermitFile.fileSize / 1024).toFixed(2)} KB
-                      </p>
+            {existingFiles?.environmentalPermitFile &&
+              !isNewFile(envPermitFile) && (
+                <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-gray-600" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {existingFiles.environmentalPermitFile.fileName}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {(
+                            existingFiles.environmentalPermitFile.fileSize /
+                            1024
+                          ).toFixed(2)}{" "}
+                          KB
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (
+                            existingFiles.environmentalPermitFile?.signedUrl
+                          ) {
+                            window.open(
+                              existingFiles.environmentalPermitFile.signedUrl,
+                              "_blank",
+                            );
+                          }
+                        }}
+                        disabled={isFormDisabled}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-1" />
+                        Xem
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (
+                            existingFiles.environmentalPermitFile?.signedUrl
+                          ) {
+                            const link = document.createElement("a");
+                            link.href =
+                              existingFiles.environmentalPermitFile.signedUrl;
+                            link.download =
+                              existingFiles.environmentalPermitFile.fileName;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }
+                        }}
+                        disabled={isFormDisabled}
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Tải xuống
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (existingFiles.environmentalPermitFile?.signedUrl) {
-                          window.open(existingFiles.environmentalPermitFile.signedUrl, "_blank");
-                        }
-                      }}
-                      disabled={isFormDisabled}
-                    >
-                      <ExternalLink className="h-4 w-4 mr-1" />
-                      Xem
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (existingFiles.environmentalPermitFile?.signedUrl) {
-                          const link = document.createElement("a");
-                          link.href = existingFiles.environmentalPermitFile.signedUrl;
-                          link.download = existingFiles.environmentalPermitFile.fileName;
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        }
-                      }}
-                      disabled={isFormDisabled}
-                    >
-                      <Download className="h-4 w-4 mr-1" />
-                      Tải xuống
-                    </Button>
-                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* File upload component */}
             <FileUpload
               id="env_permit_file"
-              label={existingFiles?.environmentalPermitFile && !isNewFile(envPermitFile) 
-                ? "Thay đổi file giấy phép môi trường" 
-                : "Tải lên bản sao giấy phép môi trường"}
+              label={
+                existingFiles?.environmentalPermitFile &&
+                !isNewFile(envPermitFile)
+                  ? "Thay đổi file giấy phép môi trường"
+                  : "Tải lên bản sao giấy phép môi trường"
+              }
               value={envPermitFile || null}
               onChange={(file) =>
                 setValue("env_permit_file", file || undefined)
@@ -868,7 +908,9 @@ console.log("initialData:", initialData);
               disabled={isFormDisabled}
             />
             {isLoadingFiles && !existingFiles && (
-              <p className="mt-1 text-sm text-gray-500">Đang tải thông tin file...</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Đang tải thông tin file...
+              </p>
             )}
           </div>
 
@@ -877,7 +919,7 @@ console.log("initialData:", initialData);
             <Label className="mb-2 block">
               Bản sao Giấy phép kinh doanh (không bắt buộc)
             </Label>
-            
+
             {/* Display existing file if available */}
             {existingFiles?.businessRegFile && !isNewFile(businessRegFile) && (
               <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -889,7 +931,10 @@ console.log("initialData:", initialData);
                         {existingFiles.businessRegFile.fileName}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {(existingFiles.businessRegFile.fileSize / 1024).toFixed(2)} KB
+                        {(
+                          existingFiles.businessRegFile.fileSize / 1024
+                        ).toFixed(2)}{" "}
+                        KB
                       </p>
                     </div>
                   </div>
@@ -900,7 +945,10 @@ console.log("initialData:", initialData);
                       size="sm"
                       onClick={() => {
                         if (existingFiles.businessRegFile?.signedUrl) {
-                          window.open(existingFiles.businessRegFile.signedUrl, "_blank");
+                          window.open(
+                            existingFiles.businessRegFile.signedUrl,
+                            "_blank",
+                          );
                         }
                       }}
                       disabled={isFormDisabled}
@@ -916,7 +964,8 @@ console.log("initialData:", initialData);
                         if (existingFiles.businessRegFile?.signedUrl) {
                           const link = document.createElement("a");
                           link.href = existingFiles.businessRegFile.signedUrl;
-                          link.download = existingFiles.businessRegFile.fileName;
+                          link.download =
+                            existingFiles.businessRegFile.fileName;
                           document.body.appendChild(link);
                           link.click();
                           document.body.removeChild(link);
@@ -935,9 +984,11 @@ console.log("initialData:", initialData);
             {/* File upload component */}
             <FileUpload
               id="business_reg_file"
-              label={existingFiles?.businessRegFile && !isNewFile(businessRegFile)
-                ? "Thay đổi file giấy phép kinh doanh"
-                : "Tải lên bản sao Giấy phép kinh doanh (không bắt buộc)"}
+              label={
+                existingFiles?.businessRegFile && !isNewFile(businessRegFile)
+                  ? "Thay đổi file giấy phép kinh doanh"
+                  : "Tải lên bản sao Giấy phép kinh doanh (không bắt buộc)"
+              }
               value={businessRegFile || null}
               onChange={(file) =>
                 setValue("business_reg_file", file || undefined)
@@ -946,7 +997,9 @@ console.log("initialData:", initialData);
               disabled={isFormDisabled}
             />
             {isLoadingFiles && !existingFiles && (
-              <p className="mt-1 text-sm text-gray-500">Đang tải thông tin file...</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Đang tải thông tin file...
+              </p>
             )}
           </div>
         </div>

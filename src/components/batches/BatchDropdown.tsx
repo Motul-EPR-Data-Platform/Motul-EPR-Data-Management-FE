@@ -49,7 +49,7 @@ export function BatchDropdown({
         const data = await BatchService.getActiveBatchesForDropdown(batchType);
         setBatches(data);
         setFilteredBatches(data);
-        
+
         // Set selected batch if value is provided
         if (value) {
           const selected = data.find((b) => b.id === value);
@@ -74,7 +74,7 @@ export function BatchDropdown({
       setFilteredBatches(batches);
     } else {
       const filtered = batches.filter((batch) =>
-        batch.batchName.toLowerCase().includes(query.toLowerCase())
+        batch.batchName.toLowerCase().includes(query.toLowerCase()),
       );
       setFilteredBatches(filtered);
     }
@@ -186,7 +186,9 @@ export function BatchDropdown({
                     <div>
                       <p className="text-sm font-medium">{batch.batchName}</p>
                       <p className="text-xs text-gray-500">
-                        {batch.batchType === BatchType.PORT ? "Cảng" : "Nhà máy"}
+                        {batch.batchType === BatchType.PORT
+                          ? "Cảng"
+                          : "Nhà máy"}
                       </p>
                     </div>
                   </div>
@@ -204,4 +206,3 @@ export function BatchDropdown({
     </div>
   );
 }
-

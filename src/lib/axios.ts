@@ -6,7 +6,7 @@ import { API_BASE_URL, path, ENDPOINTS } from "@/constants/api";
 // --------------------------------------------------
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // 
+  withCredentials: true, //
   headers: {
     "Content-Type": "application/json",
   },

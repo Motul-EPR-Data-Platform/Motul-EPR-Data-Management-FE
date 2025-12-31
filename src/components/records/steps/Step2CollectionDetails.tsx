@@ -95,7 +95,8 @@ export function Step2CollectionDetails({
             disabled={disabled}
           />
           <p className="text-xs text-red-500">
-            Cảnh báo: Ngày này phải là ngày giao hàng chính xác, nếu không sẽ bị Motul từ chối
+            Cảnh báo: Ngày này phải là ngày giao hàng chính xác, nếu không sẽ bị
+            Motul từ chối
           </p>
         </div>
 
@@ -285,6 +286,7 @@ export function Step2CollectionDetails({
                   try {
                     const locationDetails =
                       await LocationService.getLocationByRefId(result.refId);
+                    console.log("Fetched location details:", locationDetails);
                     // Store the full address string for backend and display
                     onFullAddressChange?.(locationDetails.address);
                     onAddressChange?.({

@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  WasteOwnerWithLocation,
-  WasteOwnerType,
-} from "@/types/waste-owner";
+import { WasteOwnerWithLocation, WasteOwnerType } from "@/types/waste-owner";
 import { WasteOwnerTable } from "@/components/waste-owners/WasteOwnerTable";
 import { WasteOwnerDetailDialog } from "@/components/waste-owners/WasteOwnerDetailDialog";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -201,4 +198,3 @@ export default function WasteOwnersPage() {
     </PageLayout>
   );
 }
-

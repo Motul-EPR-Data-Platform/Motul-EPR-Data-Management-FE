@@ -39,7 +39,8 @@ export function BatchDetailDialog({
   const [batches, setBatches] = useState<CollectionBatch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBatchForUpdate, setSelectedBatchForUpdate] = useState<CollectionBatch | null>(null);
+  const [selectedBatchForUpdate, setSelectedBatchForUpdate] =
+    useState<CollectionBatch | null>(null);
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -65,8 +66,10 @@ export function BatchDetailDialog({
     }
   };
 
-  const filteredBatches = batches.filter((batch) =>
-    batch.batchName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false
+  const filteredBatches = batches.filter(
+    (batch) =>
+      batch.batchName?.toLowerCase().includes(searchQuery.toLowerCase()) ??
+      false,
   );
 
   const handleEditClick = (batch: CollectionBatch) => {
@@ -103,8 +106,9 @@ export function BatchDetailDialog({
           <DialogHeader>
             <DialogTitle>Quản lý Lô hàng</DialogTitle>
             <DialogDescription>
-              Xem và quản lý tất cả các lô hàng. Bạn có thể tạo lô hàng mới hoặc cập nhật trạng thái
-              lô hàng bằng cách nhấp vào biểu tượng chỉnh sửa.
+              Xem và quản lý tất cả các lô hàng. Bạn có thể tạo lô hàng mới hoặc
+              cập nhật trạng thái lô hàng bằng cách nhấp vào biểu tượng chỉnh
+              sửa.
             </DialogDescription>
           </DialogHeader>
 
@@ -163,7 +167,10 @@ export function BatchDetailDialog({
                           {getBatchTypeLabel(batch.batchType)}
                         </TableCell>
                         <TableCell className="max-w-xs">
-                          <p className="truncate" title={batch.description || undefined}>
+                          <p
+                            className="truncate"
+                            title={batch.description || undefined}
+                          >
                             {batch.description || "-"}
                           </p>
                         </TableCell>
@@ -173,11 +180,15 @@ export function BatchDetailDialog({
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {new Date(batch.createdAt).toLocaleDateString("vi-VN")}
+                          {new Date(batch.createdAt).toLocaleDateString(
+                            "vi-VN",
+                          )}
                         </TableCell>
                         <TableCell>
                           {batch.closedAt
-                            ? new Date(batch.closedAt).toLocaleDateString("vi-VN")
+                            ? new Date(batch.closedAt).toLocaleDateString(
+                                "vi-VN",
+                              )
                             : "-"}
                         </TableCell>
                         <TableCell className="text-right">
@@ -218,4 +229,3 @@ export function BatchDetailDialog({
     </>
   );
 }
-

@@ -49,4 +49,3 @@ export interface ActiveBatch {
   batchName: string;
   batchType: BatchType;
 }
-

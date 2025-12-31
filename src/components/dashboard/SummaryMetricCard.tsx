@@ -1,7 +1,13 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Clock, CheckCircle2, FileText } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  CheckCircle2,
+  FileText,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SummaryMetricCardProps {
@@ -58,4 +64,3 @@ export function SummaryMetricCard({
     </Card>
   );
 }
-

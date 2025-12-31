@@ -136,9 +136,9 @@ export default function RecordsPage() {
       subtitle="Xem và quản lý tất cả các bản ghi thu gom"
     >
       <div className="space-y-6">
-         {/* Summary Cards */}
+        {/* Summary Cards */}
         <RecordSummaryCards counts={statusCounts} />
-        
+
         {/* Record History Section */}
         <div className="space-y-4">
           <RecordsFilter

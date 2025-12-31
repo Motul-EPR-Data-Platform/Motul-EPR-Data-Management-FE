@@ -64,11 +64,11 @@ export function CreateBatchDialog({
 
       await BatchService.createBatch(dto);
       toast.success("Tạo lô hàng thành công");
-      
+
       // Reset form
       setBatchType("");
       setDescription("");
-      
+
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
@@ -112,8 +112,12 @@ export function CreateBatchDialog({
                 <SelectValue placeholder="Chọn loại lô hàng" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={BatchType.PORT}>Cảng (TTC - HL. LO)</SelectItem>
-                <SelectItem value={BatchType.FACTORY}>Nhà máy (NMXL - LO)</SelectItem>
+                <SelectItem value={BatchType.PORT}>
+                  Cảng (TTC - HL. LO)
+                </SelectItem>
+                <SelectItem value={BatchType.FACTORY}>
+                  Nhà máy (NMXL - LO)
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -160,4 +164,3 @@ export function CreateBatchDialog({
     </Dialog>
   );
 }
-

@@ -30,11 +30,46 @@ export interface TimeSeriesDataPoint {
 }
 
 export const mockRecordsOverTime: TimeSeriesDataPoint[] = [
-  { month: "Jul", "WTP 1": 50, "WTP 2": 30, "WTP 3": 40, "WTP 4": 20, "WTP 5": 35 },
-  { month: "Aug", "WTP 1": 65, "WTP 2": 45, "WTP 3": 55, "WTP 4": 30, "WTP 5": 42 },
-  { month: "Sep", "WTP 1": 80, "WTP 2": 60, "WTP 3": 70, "WTP 4": 45, "WTP 5": 55 },
-  { month: "Oct", "WTP 1": 95, "WTP 2": 75, "WTP 3": 85, "WTP 4": 60, "WTP 5": 70 },
-  { month: "Nov", "WTP 1": 70, "WTP 2": 50, "WTP 3": 60, "WTP 4": 35, "WTP 5": 45 },
+  {
+    month: "Jul",
+    "WTP 1": 50,
+    "WTP 2": 30,
+    "WTP 3": 40,
+    "WTP 4": 20,
+    "WTP 5": 35,
+  },
+  {
+    month: "Aug",
+    "WTP 1": 65,
+    "WTP 2": 45,
+    "WTP 3": 55,
+    "WTP 4": 30,
+    "WTP 5": 42,
+  },
+  {
+    month: "Sep",
+    "WTP 1": 80,
+    "WTP 2": 60,
+    "WTP 3": 70,
+    "WTP 4": 45,
+    "WTP 5": 55,
+  },
+  {
+    month: "Oct",
+    "WTP 1": 95,
+    "WTP 2": 75,
+    "WTP 3": 85,
+    "WTP 4": 60,
+    "WTP 5": 70,
+  },
+  {
+    month: "Nov",
+    "WTP 1": 70,
+    "WTP 2": 50,
+    "WTP 3": 60,
+    "WTP 4": 35,
+    "WTP 5": 45,
+  },
 ];
 
 // Volume by Waste Owner data structure

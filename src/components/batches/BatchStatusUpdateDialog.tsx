@@ -63,11 +63,14 @@ export function BatchStatusUpdateDialog({
         <div className="space-y-4 py-4">
           <div className="p-4 bg-gray-50 rounded-lg space-y-2">
             <p className="text-sm">
-              <span className="font-medium">Tên lô hàng:</span> {batch.batchName}
+              <span className="font-medium">Tên lô hàng:</span>{" "}
+              {batch.batchName}
             </p>
             <p className="text-sm">
               <span className="font-medium">Trạng thái hiện tại:</span>{" "}
-              {batch.status === BatchStatus.ACTIVE ? "Đang hoạt động" : "Đã đóng"}
+              {batch.status === BatchStatus.ACTIVE
+                ? "Đang hoạt động"
+                : "Đã đóng"}
             </p>
           </div>
 
@@ -78,7 +81,9 @@ export function BatchStatusUpdateDialog({
                 <p className="font-medium mb-1">Lưu ý:</p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>Lô hàng phải có ít nhất một bản ghi</li>
-                  <li>Tất cả các bản ghi trong lô hàng phải đã được phê duyệt</li>
+                  <li>
+                    Tất cả các bản ghi trong lô hàng phải đã được phê duyệt
+                  </li>
                   <li>Không thể hoàn tác sau khi đóng lô hàng</li>
                 </ul>
               </div>
@@ -116,4 +121,3 @@ export function BatchStatusUpdateDialog({
     </Dialog>
   );
 }
-

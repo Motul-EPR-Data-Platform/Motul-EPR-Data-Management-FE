@@ -92,13 +92,15 @@ export function WasteOwnerTable({
                 key={wasteOwner.id}
                 className={!isActive ? "opacity-60 bg-muted/30" : ""}
               >
-                <TableCell className="text-center">
-                  {index + 1}
-                </TableCell>
-                <TableCell className={`font-medium ${!isActive ? "text-muted-foreground" : ""}`}>
+                <TableCell className="text-center">{index + 1}</TableCell>
+                <TableCell
+                  className={`font-medium ${!isActive ? "text-muted-foreground" : ""}`}
+                >
                   <div>
                     <div>{wasteOwner.name}</div>
-                    <div className={`text-sm ${!isActive ? "text-muted-foreground/70" : "text-muted-foreground"}`}>
+                    <div
+                      className={`text-sm ${!isActive ? "text-muted-foreground/70" : "text-muted-foreground"}`}
+                    >
                       {wasteOwner.email}
                     </div>
                   </div>

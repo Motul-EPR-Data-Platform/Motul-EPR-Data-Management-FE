@@ -158,10 +158,10 @@ export default function MyRecordsPage() {
             Tạo Bản ghi thu gom mới
           </Button>
         </div>
-       
+
         {/* Summary Cards */}
         <RecordSummaryCards counts={statusCounts} />
-        
+
         {/* Record History Section */}
         <div className="space-y-4">
           <RecordsFilter
