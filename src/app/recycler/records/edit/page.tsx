@@ -11,10 +11,7 @@ import { Step3WarehouseRecycling } from "@/components/records/steps/Step3Warehou
 import { Step4ReviewSubmit } from "@/components/records/steps/Step4ReviewSubmit";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import {
-  CreateDraftDTO,
-  CreateDraftFormData,
-} from "@/types/record";
+import { CreateDraftDTO, CreateDraftFormData } from "@/types/record";
 import { CollectionRecordService } from "@/lib/services/collection-record.service";
 import { DocumentFile } from "@/components/records/DocumentUpload";
 import { WasteOwnerService } from "@/lib/services/waste-owner.service";
