@@ -203,12 +203,11 @@ export function WasteOwnerFormFields({
 
       {/* Phone Field */}
       <div className="grid gap-2">
-        <Label htmlFor="phone">Số điện thoại *</Label>
+        <Label htmlFor="phone">Số điện thoại</Label>
         <Input
           id="phone"
           value={phone || ""}
           onChange={(e) => onPhoneChange?.(e.target.value)}
-          required
           disabled={disabled}
           className={errors.phone ? "border-red-500" : ""}
         />
@@ -217,13 +216,12 @@ export function WasteOwnerFormFields({
 
       {/* Email Field */}
       <div className="grid gap-2">
-        <Label htmlFor="email">Địa chỉ Email *</Label>
+        <Label htmlFor="email">Địa chỉ Email</Label>
         <Input
           id="email"
           type="email"
           value={email || ""}
           onChange={(e) => onEmailChange?.(e.target.value)}
-          required
           disabled={disabled}
           className={errors.email ? "border-red-500" : ""}
         />

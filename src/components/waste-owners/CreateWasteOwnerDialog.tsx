@@ -40,14 +40,14 @@ export function CreateWasteOwnerDialog({
     if (!data.contactPerson || !data.contactPerson.trim()) {
       newErrors.contactPerson = "Người liên hệ là bắt buộc";
     }
-    if (!data.phone || !data.phone.trim()) {
-      newErrors.phone = "Số điện thoại là bắt buộc";
-    }
-    if (!data.email || !data.email.trim()) {
-      newErrors.email = "Email là bắt buộc";
-    } else if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-      newErrors.email = "Email không hợp lệ";
-    }
+    // if (!data.phone || !data.phone.trim()) {
+    //   newErrors.phone = "Số điện thoại là bắt buộc";
+    // }
+    // if (!data.email || !data.email.trim()) {
+    //   newErrors.email = "Email là bắt buộc";
+    // } else if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    //   newErrors.email = "Email không hợp lệ";
+    // }
     // TODO: Add location validation back when location becomes required
     // Location is temporarily optional - no validation needed
 
