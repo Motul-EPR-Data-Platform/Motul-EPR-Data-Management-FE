@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Upload } from "lucide-react";
+import { Upload, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { FileType } from "@/types/file-record";
 import {
   validateFileType,
@@ -145,6 +146,20 @@ export function FileUpload({
     }
   };
 
+  const handleViewFile = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (value) {
+      const url = URL.createObjectURL(value);
+      window.open(url, "_blank");
+      // Clean up the object URL after a delay to free memory
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+    }
+  };
+
+  const isImageFile = (file: File): boolean => {
+    return file.type.startsWith("image/");
+  };
+
   return (
     <div className={cn("space-y-2", className)}>
       {label && (
@@ -187,19 +202,34 @@ export function FileUpload({
         <div className="flex flex-col items-center justify-center space-y-2">
           <Upload className="h-8 w-8 text-gray-400" />
           {value ? (
-            <div className="space-y-2">
+            <div className="space-y-2 w-full">
               <p className="text-sm font-medium text-gray-900">{value.name}</p>
               <p className="text-xs text-gray-500">
                 {(value.size / 1024 / 1024).toFixed(2)} MB
               </p>
-              <button
-                type="button"
-                onClick={handleRemove}
-                className="text-sm text-red-600 hover:text-red-700"
-                disabled={disabled}
-              >
-                Xóa file
-              </button>
+              <div className="flex items-center justify-center gap-2">
+                {isImageFile(value) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleViewFile}
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    disabled={disabled}
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    Xem ảnh
+                  </Button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleRemove}
+                  className="text-sm text-red-600 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50"
+                  disabled={disabled}
+                >
+                  Xóa file
+                </button>
+              </div>
             </div>
           ) : (
             <>

@@ -27,6 +27,7 @@ export default function RecordsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [batchFilter, setBatchFilter] = useState<string | null>(null);
   const [statusCounts, setStatusCounts] = useState<StatusCounts>({
     total: 0,
     pending: 0,
@@ -41,7 +42,7 @@ export default function RecordsPage() {
 
   useEffect(() => {
     filterRecords();
-  }, [records, searchQuery, statusFilter]);
+  }, [records, searchQuery, statusFilter, batchFilter]);
 
   const loadRecords = async () => {
     setIsLoading(true);
@@ -94,6 +95,11 @@ export default function RecordsPage() {
       filtered = filtered.filter((r) => r.status === statusFilter);
     }
 
+    // Filter by batch
+    if (batchFilter) {
+      filtered = filtered.filter((r) => (r as any).batchId === batchFilter);
+    }
+
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -137,6 +143,8 @@ export default function RecordsPage() {
             onSearchChange={setSearchQuery}
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
+            batchFilter={batchFilter}
+            onBatchFilterChange={setBatchFilter}
           />
           <RecordHistorySection
             records={filteredRecords}

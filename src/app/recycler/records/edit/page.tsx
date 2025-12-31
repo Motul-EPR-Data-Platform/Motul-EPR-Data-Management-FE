@@ -112,6 +112,17 @@ export default function EditCollectionRecordPage() {
     }
   }, [recordId]);
 
+  // Helper function to convert signed URL to File object
+  const urlToFile = async (
+    url: string,
+    fileName: string,
+    mimeType: string,
+  ): Promise<File> => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new File([blob], fileName, { type: mimeType });
+  };
+
   const loadRecordAndDropdownData = async () => {
     setIsLoadingRecord(true);
     try {
@@ -122,6 +133,7 @@ export default function EditCollectionRecordPage() {
         wasteTypesRes,
         hazTypesRes,
         recordRes,
+        filesRes,
       ] = await Promise.allSettled([
         WasteOwnerService.getAllWasteOwners({ isActive: true }),
         DefinitionService.getActiveContractTypes(),
@@ -129,6 +141,9 @@ export default function EditCollectionRecordPage() {
         DefinitionService.getActiveHazTypes(),
         recordId
           ? CollectionRecordService.getRecordById(recordId)
+          : Promise.resolve(null),
+        recordId
+          ? CollectionRecordService.getRecordFilesWithPreview(recordId, 3600)
           : Promise.resolve(null),
       ]);
 
@@ -205,11 +220,19 @@ export default function EditCollectionRecordPage() {
             ? record.wasteOwners[0].id
             : record.wasteOwnerId || null;
 
+        // Get HAZ code ID from hazWasteId, hazWaste.id, or hazCodeId
+        const hazCodeId =
+          (record as any).hazWasteId ||
+          (record as any).hazWaste?.id ||
+          (record as any).hazCodeId ||
+          null;
+
         const prefillData: Partial<CreateDraftFormData> = {
+          batchId: (record as any).batchId || null,
           wasteOwnerId,
           contractTypeId: record.contractTypeId || null,
           wasteSourceId: record.wasteSourceId || null,
-          hazCodeId: (record as any).hazCodeId || null,
+          hazCodeId,
           collectedVolumeKg: record.collectedVolumeKg || null,
           vehiclePlate: record.vehiclePlate || null,
           stockpiled: record.stockpiled || null,
@@ -249,15 +272,87 @@ export default function EditCollectionRecordPage() {
           }
         }
 
-        // Load files if available
-        if (record.files) {
-          // Convert evidence photos to DocumentFile format
-          if (
-            record.files.evidencePhotos &&
-            record.files.evidencePhotos.length > 0
-          ) {
-            // Note: We can't convert IFile to DocumentFile directly, so we'll need to handle this
-            // For now, files will need to be re-uploaded if editing
+        // Load and prefill files from preview API
+        if (filesRes.status === "fulfilled" && filesRes.value) {
+          const filesWithPreview = filesRes.value;
+          
+          try {
+            // Convert evidence photos to DocumentFile format (Step 2)
+            if (filesWithPreview.evidencePhotos?.length > 0) {
+              const evidenceDocs: DocumentFile[] = await Promise.all(
+                filesWithPreview.evidencePhotos.map(async (file) => {
+                  const fileObj = await urlToFile(
+                    file.signedUrl,
+                    file.fileName,
+                    file.mimeType,
+                  );
+                  return {
+                    id: file.id,
+                    file: fileObj,
+                    type: "evidence_photo",
+                  };
+                }),
+              );
+              setEvidenceFiles(evidenceDocs);
+            }
+
+            // Convert quality metrics files (Step 3)
+            const qualityDocs: DocumentFile[] = [];
+            
+            // Output quality metrics
+            if (filesWithPreview.outputQualityMetrics) {
+              const fileObj = await urlToFile(
+                filesWithPreview.outputQualityMetrics.signedUrl,
+                filesWithPreview.outputQualityMetrics.fileName,
+                filesWithPreview.outputQualityMetrics.mimeType,
+              );
+              qualityDocs.push({
+                id: filesWithPreview.outputQualityMetrics.id,
+                file: fileObj,
+                type: "output_quality_metrics",
+              });
+            }
+
+            // Quality metrics (before recycling)
+            if (filesWithPreview.qualityMetrics) {
+              const fileObj = await urlToFile(
+                filesWithPreview.qualityMetrics.signedUrl,
+                filesWithPreview.qualityMetrics.fileName,
+                filesWithPreview.qualityMetrics.mimeType,
+              );
+              qualityDocs.push({
+                id: filesWithPreview.qualityMetrics.id,
+                file: fileObj,
+                type: "quality_metrics",
+              });
+            }
+
+            if (qualityDocs.length > 0) {
+              setQualityDocuments(qualityDocs);
+            }
+
+            // Convert recycled photo (Step 3)
+            if (filesWithPreview.recycledPhoto) {
+              const fileObj = await urlToFile(
+                filesWithPreview.recycledPhoto.signedUrl,
+                filesWithPreview.recycledPhoto.fileName,
+                filesWithPreview.recycledPhoto.mimeType,
+              );
+              setRecycledPhoto(fileObj);
+            }
+
+            // Convert stockpile photo (Step 3, if stockpiled)
+            if (filesWithPreview.stockpilePhoto) {
+              const fileObj = await urlToFile(
+                filesWithPreview.stockpilePhoto.signedUrl,
+                filesWithPreview.stockpilePhoto.fileName,
+                filesWithPreview.stockpilePhoto.mimeType,
+              );
+              setStockpilePhoto(fileObj);
+            }
+          } catch (fileError) {
+            console.error("Error loading files:", fileError);
+            toast.warning("Không thể tải một số tệp đính kèm. Vui lòng tải lại nếu cần.");
           }
         }
       } else if (recordRes.status === "rejected") {
@@ -482,6 +577,7 @@ export default function EditCollectionRecordPage() {
       };
 
       const draftData: CreateDraftDTO = {
+        batchId: formData.batchId || null,
         submissionMonth: formatDateDDMMYYYY(
           new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1),
         ),
@@ -561,6 +657,7 @@ export default function EditCollectionRecordPage() {
       };
 
       const draftData: CreateDraftDTO = {
+        batchId: formData.batchId || null,
         submissionMonth: formatDateDDMMYYYY(
           new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1),
         ),

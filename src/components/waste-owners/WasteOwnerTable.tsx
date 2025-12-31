@@ -69,7 +69,7 @@ export function WasteOwnerTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>ID</TableHead>
+            <TableHead>STT</TableHead>
             <TableHead>Tên Chủ nguồn thải</TableHead>
             <TableHead>Loại</TableHead>
             <TableHead>Mã số thuế (MST)</TableHead>
@@ -80,21 +80,25 @@ export function WasteOwnerTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {wasteOwners.map((wasteOwner) => {
+          {wasteOwners.map((wasteOwner, index) => {
             // For individual type, businessCode is CCCD, for others it's MST
             const isIndividual = wasteOwner.wasteOwnerType === "individual";
             const mst = isIndividual ? "-" : wasteOwner.businessCode;
             const cccd = isIndividual ? wasteOwner.businessCode : "-";
+            const isActive = wasteOwner.isActive ?? true;
 
             return (
-              <TableRow key={wasteOwner.id}>
-                <TableCell className="font-mono text-sm">
-                  {wasteOwner.id}
+              <TableRow
+                key={wasteOwner.id}
+                className={!isActive ? "opacity-60 bg-muted/30" : ""}
+              >
+                <TableCell className="text-center">
+                  {index + 1}
                 </TableCell>
-                <TableCell className="font-medium">
+                <TableCell className={`font-medium ${!isActive ? "text-muted-foreground" : ""}`}>
                   <div>
                     <div>{wasteOwner.name}</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className={`text-sm ${!isActive ? "text-muted-foreground/70" : "text-muted-foreground"}`}>
                       {wasteOwner.email}
                     </div>
                   </div>
@@ -104,14 +108,23 @@ export function WasteOwnerTable({
                     variant={getWasteOwnerTypeBadgeVariant(
                       wasteOwner.wasteOwnerType,
                     )}
+                    className={!isActive ? "opacity-60" : ""}
                   >
                     {getWasteOwnerTypeLabel(wasteOwner.wasteOwnerType)}
                   </Badge>
                 </TableCell>
-                <TableCell>{mst}</TableCell>
-                <TableCell>{cccd}</TableCell>
-                <TableCell>{wasteOwner.contactPerson}</TableCell>
-                <TableCell>{wasteOwner.phone}</TableCell>
+                <TableCell className={!isActive ? "text-muted-foreground" : ""}>
+                  {mst}
+                </TableCell>
+                <TableCell className={!isActive ? "text-muted-foreground" : ""}>
+                  {cccd}
+                </TableCell>
+                <TableCell className={!isActive ? "text-muted-foreground" : ""}>
+                  {wasteOwner.contactPerson}
+                </TableCell>
+                <TableCell className={!isActive ? "text-muted-foreground" : ""}>
+                  {wasteOwner.phone}
+                </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
                     {onView && (

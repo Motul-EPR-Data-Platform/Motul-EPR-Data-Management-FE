@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { X, Plus, Upload, File } from "lucide-react";
+import { X, Plus, Upload, File, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileType } from "@/types/file-record";
 import {
@@ -141,6 +141,17 @@ export function DocumentUpload({
     onDocumentsChange(documents.filter((doc) => doc.id !== id));
   };
 
+  const handleViewFile = (file: File) => {
+    const url = URL.createObjectURL(file);
+    window.open(url, "_blank");
+    // Clean up the object URL after a delay to free memory
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+  };
+
+  const isImageFile = (file: File): boolean => {
+    return file.type.startsWith("image/");
+  };
+
   const getDocumentTypeLabel = (type: string) => {
     return documentTypes.find((dt) => dt.value === type)?.label || type;
   };
@@ -174,17 +185,32 @@ export function DocumentUpload({
                   </div>
                 </div>
               </div>
-              {!disabled && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemoveDocument(doc.id)}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                {isImageFile(doc.file) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleViewFile(doc.file)}
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    title="Xem ảnh"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                )}
+                {!disabled && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveDocument(doc.id)}
+                    className="text-red-600 hover:text-red-700"
+                    title="Xóa file"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
         </div>

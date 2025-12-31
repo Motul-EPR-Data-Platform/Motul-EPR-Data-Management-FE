@@ -92,10 +92,10 @@ export function Step2CollectionDetails({
                 onCollectionDateChange(date);
               }
             }}
-            disabled={true}
+            disabled={disabled}
           />
           <p className="text-xs text-red-500">
-            Ngày bị khóa để đảm bảo độ chính xác thông tin, không thể thay đổi
+            Cảnh báo: Ngày này phải là ngày giao hàng chính xác, nếu không sẽ bị Motul từ chối
           </p>
         </div>
 
