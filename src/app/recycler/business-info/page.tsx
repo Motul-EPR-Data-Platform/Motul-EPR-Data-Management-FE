@@ -45,6 +45,7 @@ export default function RecyclerBusinessInfoPage() {
     setIsLoading(true);
     try {
       const profileData = await RecyclerService.getProfile(user.recyclerId);
+      console.log('Profile data from backend:', profileData);
       setProfile(profileData);
     } catch (error: any) {
       // If profile doesn't exist (404), set profile to null
@@ -110,7 +111,7 @@ export default function RecyclerBusinessInfoPage() {
       vendor_name: profile.vendorName || "",
       tax_code: profile.taxCode || "",
       representative: profile.representative || "",
-      company_registration_address: companyRegistrationAddress,
+      company_registration_address: profile.location?.address || "",
       business_reg_number: profile.businessRegNumber || "",
       business_reg_issue_date: parseDate(profile.businessRegIssueDate),
       phone: profile.phone || "",
