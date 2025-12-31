@@ -671,6 +671,9 @@ export default function CreateCollectionRecordPage() {
           );
         }
       }
+
+      // Navigate back to records list after successful save
+      router.push("/recycler/my-records");
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message ||

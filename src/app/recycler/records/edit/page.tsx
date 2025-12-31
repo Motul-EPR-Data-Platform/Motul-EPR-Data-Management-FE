@@ -14,7 +14,6 @@ import { X } from "lucide-react";
 import {
   CreateDraftDTO,
   CreateDraftFormData,
-  CollectionRecordDetail,
 } from "@/types/record";
 import { CollectionRecordService } from "@/lib/services/collection-record.service";
 import { DocumentFile } from "@/components/records/DocumentUpload";
@@ -22,7 +21,6 @@ import { WasteOwnerService } from "@/lib/services/waste-owner.service";
 import { DefinitionService } from "@/lib/services/definition.service";
 import { transformDefinitions } from "@/lib/utils/definitionUtils/definitionTransformers";
 import { toast } from "sonner";
-import { format, parse } from "date-fns";
 import { FileType } from "@/types/file-record";
 import { z } from "zod";
 import { step3ValidationSchema } from "@/lib/validations/record";
@@ -717,6 +715,9 @@ export default function EditCollectionRecordPage() {
           );
         }
       }
+
+      // Navigate back to records list after successful save
+      router.push("/recycler/my-records");
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message ||
