@@ -1,7 +1,7 @@
 "use client";
 
 import { PageLayout } from "@/components/layout/PageLayout";
-import { DashboardSkeleton } from "@/components/skeleton/DashboardSkeleton";
+import { MotulDashboard } from "@/components/dashboard/MotulDashboard";
 
 export default function DashboardPage() {
   return (
@@ -10,7 +10,7 @@ export default function DashboardPage() {
       title="Dashboard"
       subtitle="Overview of your system"
     >
-      <DashboardSkeleton />
+      <MotulDashboard />
     </PageLayout>
   );
 }
