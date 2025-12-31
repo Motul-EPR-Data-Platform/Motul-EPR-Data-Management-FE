@@ -103,13 +103,8 @@ export default function RecyclerBusinessInfoPage() {
       return undefined;
     };
 
-    // Combine location fields into single address string (if location exists)
-    const locationParts = [
-      profile.location?.code,
-      profile.location?.address,
-      profile.location?.city,
-    ].filter(Boolean);
-    const companyRegistrationAddress = locationParts.join(", ") || "";
+    // Use location address if available, otherwise combine location fields
+    const companyRegistrationAddress = profile.location?.address || "";
 
     return {
       vendor_name: profile.vendorName || "",
@@ -126,6 +121,8 @@ export default function RecyclerBusinessInfoPage() {
       env_permit_number: profile.envPermitNumber || "",
       env_permit_issue_date: parseDate(profile.envPermitIssueDate),
       env_permit_expiry_date: parseDate(profile.envPermitExpiryDate),
+      location_id: (profile as any).locationId || null,
+      location_address: companyRegistrationAddress,
     };
   };
 

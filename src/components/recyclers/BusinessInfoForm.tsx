@@ -27,7 +27,10 @@ import { LocationService } from "@/lib/services/location.service";
 import { FileType, IRecyclerProfileFilesWithPreview, IFileWithSignedUrl } from "@/types/file-record";
 
 interface BusinessInfoFormProps {
-  initialData?: Partial<CompleteRecyclerAdminProfileFormData>;
+  initialData?: Partial<CompleteRecyclerAdminProfileFormData> & {
+    location_id?: string | null;
+    location_address?: string;
+  };
   isEditMode?: boolean;
   editable?: boolean; // If false, all inputs are read-only
   onSaveSuccess?: () => void; // Callback when save is successful
@@ -129,6 +132,14 @@ export function BusinessInfoForm({
         env_permit_issue_date: getInitialDate("env_permit_issue_date"),
         env_permit_expiry_date: getInitialDate("env_permit_expiry_date"),
       });
+
+      // Initialize location data from profile
+      if (initialData.location_id) {
+        setLocationRefId(initialData.location_id);
+      }
+      if (initialData.location_address || initialData.company_registration_address) {
+        setFullAddress(initialData.location_address || initialData.company_registration_address || "");
+      }
     }
   }, [initialData, reset]);
 
@@ -202,6 +213,12 @@ export function BusinessInfoForm({
       if (isEditMode && profileId) {
         const dto: UpdateRecyclerProfileDTO = {
           vendorName: data.vendor_name,
+          // Include location if locationRefId is provided (user changed location)
+          ...(locationRefId && {
+            location: {
+              refId: locationRefId,
+            },
+          }),
           taxCode: data.tax_code,
           representative: data.representative,
           phone: data.phone,
@@ -516,7 +533,7 @@ export function BusinessInfoForm({
                 {errors.company_registration_address.message}
               </p>
             )}
-            {!locationRefId && (
+            {!locationRefId && editable && (
               <p className="mt-1 text-sm text-red-600">
                 Vui lòng chọn địa chỉ từ danh sách
               </p>

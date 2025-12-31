@@ -10,6 +10,7 @@ export type RecordStatus =
 
 export interface CollectionRecord {
   readonly id: string;
+  recordName?: string | null; // Record name/identifier (e.g., "DN-170204-20251201")
   batchId: string; // Batch ID
   recyclerId: string;
   createdBy: string;
