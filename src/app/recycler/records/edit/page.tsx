@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ProgressStepper } from "@/components/records/ProgressStepper";
@@ -87,6 +87,30 @@ export default function EditCollectionRecordPage() {
   const [qualityDocuments, setQualityDocuments] = useState<DocumentFile[]>([]);
   const [recycledPhoto, setRecycledPhoto] = useState<File | null>(null);
   const [stockpilePhoto, setStockpilePhoto] = useState<File | null>(null);
+  
+  // Track original file IDs to determine if files are new or existing
+  const originalFileIdsRef = useRef<{
+    evidencePhotos: Set<string>;
+    qualityMetrics: Set<string>;
+    outputQualityMetrics: Set<string>;
+    recycledPhoto: string | null;
+    stockpilePhoto: string | null;
+  }>({
+    evidencePhotos: new Set(),
+    qualityMetrics: new Set(),
+    outputQualityMetrics: new Set(),
+    recycledPhoto: null,
+    stockpilePhoto: null,
+  });
+
+  // Track original File object references for single file uploads
+  const originalFileRefsRef = useRef<{
+    recycledPhoto: File | null;
+    stockpilePhoto: File | null;
+  }>({
+    recycledPhoto: null,
+    stockpilePhoto: null,
+  });
 
   // Data for dropdowns
   const [wasteOwners, setWasteOwners] = useState<
@@ -272,6 +296,19 @@ export default function EditCollectionRecordPage() {
           }
         }
 
+        // Reset file tracking when loading new record
+        originalFileIdsRef.current = {
+          evidencePhotos: new Set(),
+          qualityMetrics: new Set(),
+          outputQualityMetrics: new Set(),
+          recycledPhoto: null,
+          stockpilePhoto: null,
+        };
+        originalFileRefsRef.current = {
+          recycledPhoto: null,
+          stockpilePhoto: null,
+        };
+
         // Load and prefill files from preview API
         if (filesRes.status === "fulfilled" && filesRes.value) {
           const filesWithPreview = filesRes.value;
@@ -286,6 +323,8 @@ export default function EditCollectionRecordPage() {
                     file.fileName,
                     file.mimeType,
                   );
+                  // Track original file ID
+                  originalFileIdsRef.current.evidencePhotos.add(file.id);
                   return {
                     id: file.id,
                     file: fileObj,
@@ -306,6 +345,10 @@ export default function EditCollectionRecordPage() {
                 filesWithPreview.outputQualityMetrics.fileName,
                 filesWithPreview.outputQualityMetrics.mimeType,
               );
+              // Track original file ID
+              originalFileIdsRef.current.outputQualityMetrics.add(
+                filesWithPreview.outputQualityMetrics.id,
+              );
               qualityDocs.push({
                 id: filesWithPreview.outputQualityMetrics.id,
                 file: fileObj,
@@ -319,6 +362,10 @@ export default function EditCollectionRecordPage() {
                 filesWithPreview.qualityMetrics.signedUrl,
                 filesWithPreview.qualityMetrics.fileName,
                 filesWithPreview.qualityMetrics.mimeType,
+              );
+              // Track original file ID
+              originalFileIdsRef.current.qualityMetrics.add(
+                filesWithPreview.qualityMetrics.id,
               );
               qualityDocs.push({
                 id: filesWithPreview.qualityMetrics.id,
@@ -338,6 +385,9 @@ export default function EditCollectionRecordPage() {
                 filesWithPreview.recycledPhoto.fileName,
                 filesWithPreview.recycledPhoto.mimeType,
               );
+              // Track original file ID and file reference
+              originalFileIdsRef.current.recycledPhoto = filesWithPreview.recycledPhoto.id;
+              originalFileRefsRef.current.recycledPhoto = fileObj;
               setRecycledPhoto(fileObj);
             }
 
@@ -348,6 +398,9 @@ export default function EditCollectionRecordPage() {
                 filesWithPreview.stockpilePhoto.fileName,
                 filesWithPreview.stockpilePhoto.mimeType,
               );
+              // Track original file ID and file reference
+              originalFileIdsRef.current.stockpilePhoto = filesWithPreview.stockpilePhoto.id;
+              originalFileRefsRef.current.stockpilePhoto = fileObj;
               setStockpilePhoto(fileObj);
             }
           } catch (fileError) {
@@ -503,11 +556,45 @@ export default function EditCollectionRecordPage() {
     return FileType.EVIDENCE_PHOTO;
   };
 
+  // Helper to check if a file ID is a new temporary ID (not from database)
+  const isNewFileId = (fileId: string): boolean => {
+    // New file IDs are generated as `${Date.now()}-${Math.random()}` which contain a dash and timestamp
+    // Original file IDs from database are UUIDs
+    // Check if it's NOT in any of the original file ID sets
+    return (
+      !originalFileIdsRef.current.evidencePhotos.has(fileId) &&
+      !originalFileIdsRef.current.qualityMetrics.has(fileId) &&
+      !originalFileIdsRef.current.outputQualityMetrics.has(fileId)
+    );
+  };
+
+  // Helper to check if a single File is new (different from original)
+  const isNewSingleFile = (
+    currentFile: File | null,
+    originalFile: File | null,
+  ): boolean => {
+    // If no current file, nothing to upload
+    if (!currentFile) {
+      return false;
+    }
+    // If no original file was tracked, this is a new file
+    if (!originalFile) {
+      return true;
+    }
+    // Compare file references - if they're different objects, it's a new file
+    // File objects can't be directly compared for equality, but we can compare references
+    return currentFile !== originalFile;
+  };
+
   const uploadFilesForRecord = async (recordId: string) => {
     const uploadPromises: Promise<any>[] = [];
 
+    // Only upload evidence photos that are new (not in original set)
     if (evidenceFiles && evidenceFiles.length > 0) {
-      const filesToUpload = evidenceFiles
+      const newEvidenceFiles = evidenceFiles.filter((doc) =>
+        isNewFileId(doc.id),
+      );
+      const filesToUpload = newEvidenceFiles
         .map((doc) => doc.file)
         .filter((file): file is File => file instanceof File);
 
@@ -522,9 +609,10 @@ export default function EditCollectionRecordPage() {
       }
     }
 
+    // Only upload quality documents that are new
     if (qualityDocuments && qualityDocuments.length > 0) {
       for (const doc of qualityDocuments) {
-        if (doc.file instanceof File) {
+        if (doc.file instanceof File && isNewFileId(doc.id)) {
           const category = mapDocumentTypeToFileType(doc.type);
           uploadPromises.push(
             CollectionRecordService.uploadFile(recordId, {
@@ -536,8 +624,11 @@ export default function EditCollectionRecordPage() {
       }
     }
 
-    // Upload stockpile photo (if stockpiled)
-    if (stockpilePhoto instanceof File) {
+    // Upload stockpile photo only if it's new (different from original)
+    if (
+      stockpilePhoto instanceof File &&
+      isNewSingleFile(stockpilePhoto, originalFileRefsRef.current.stockpilePhoto)
+    ) {
       uploadPromises.push(
         CollectionRecordService.uploadFile(recordId, {
           file: stockpilePhoto,
@@ -546,8 +637,11 @@ export default function EditCollectionRecordPage() {
       );
     }
 
-    // Upload recycled photo
-    if (recycledPhoto instanceof File) {
+    // Upload recycled photo only if it's new (different from original)
+    if (
+      recycledPhoto instanceof File &&
+      isNewSingleFile(recycledPhoto, originalFileRefsRef.current.recycledPhoto)
+    ) {
       uploadPromises.push(
         CollectionRecordService.uploadFile(recordId, {
           file: recycledPhoto,
