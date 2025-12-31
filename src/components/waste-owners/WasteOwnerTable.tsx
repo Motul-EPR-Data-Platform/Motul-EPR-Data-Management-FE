@@ -137,7 +137,7 @@ export function WasteOwnerTable({
                         <Eye className="h-4 w-4" />
                       </Button>
                     )}
-                    {onEdit && (
+                    {onEdit && isActive && (
                       <Button
                         variant="ghost"
                         size="icon"
@@ -147,7 +147,7 @@ export function WasteOwnerTable({
                         <Pencil className="h-4 w-4" />
                       </Button>
                     )}
-                    {onDelete && (
+                    {onDelete && isActive && (
                       <Button
                         variant="ghost"
                         size="icon"
