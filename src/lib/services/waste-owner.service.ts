@@ -6,10 +6,11 @@ import {
   UpdateWasteOwnerDTO,
   GetWasteOwnersFilters,
   WasteOwnerResponse,
-  WasteOwnersListResponse,
+  WasteOwnersPaginatedResponse,
   toBackendWasteOwnerType,
   fromBackendWasteOwnerType,
 } from "@/types/waste-owner";
+import { IPaginationParams } from "@/types/pagination";
 
 export const WasteOwnerService = {
   /**
@@ -49,14 +50,16 @@ export const WasteOwnerService = {
   },
 
   /**
-   * Get all waste owners (with optional filters)
+   * Get all waste owners (with optional filters and pagination)
    * GET /api/waste-owners
    */
   async getAllWasteOwners(
     filters?: GetWasteOwnersFilters,
-  ): Promise<WasteOwnersListResponse> {
+    pagination?: IPaginationParams,
+  ): Promise<WasteOwnersPaginatedResponse> {
     const queryParams = new URLSearchParams();
 
+    // Add filter params
     if (filters?.isActive !== undefined) {
       queryParams.append("isActive", String(filters.isActive));
     }
@@ -67,6 +70,26 @@ export const WasteOwnerService = {
         toBackendWasteOwnerType(filters.wasteOwnerType),
       );
     }
+    if (filters?.recyclerId) {
+      queryParams.append("recyclerId", filters.recyclerId);
+    }
+    if (filters?.businessCode) {
+      queryParams.append("businessCode", filters.businessCode);
+    }
+    if (filters?.phone) {
+      queryParams.append("phone", filters.phone);
+    }
+    if (filters?.name) {
+      queryParams.append("name", filters.name);
+    }
+
+    // Add pagination params
+    if (pagination?.page !== undefined) {
+      queryParams.append("page", String(pagination.page));
+    }
+    if (pagination?.limit !== undefined) {
+      queryParams.append("limit", String(pagination.limit));
+    }
 
     const queryString = queryParams.toString();
     const url = queryString
@@ -74,6 +97,7 @@ export const WasteOwnerService = {
       : ENDPOINTS.WASTE_OWNERS.ROOT;
 
     const { data } = await api.get(path.wasteOwners(url));
+    
     // Convert backend types to frontend types
     if (data.data && Array.isArray(data.data)) {
       data.data = data.data.map((item: any) => ({
@@ -81,7 +105,12 @@ export const WasteOwnerService = {
         wasteOwnerType: fromBackendWasteOwnerType(item.wasteOwnerType),
       }));
     }
-    return data;
+    
+    return {
+      data: data.data || [],
+      pagination: data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0, hasNext: false, hasPrev: false },
+      success: data.success,
+    };
   },
 
   /**

@@ -1,3 +1,5 @@
+import { IPaginationParams, IPaginatedResponse } from "./pagination";
+
 // Frontend uses lowercase, backend uses enum values
 // Map: "business" -> "company", "organization" -> "organizational", "individual" -> "individual"
 export type WasteOwnerType = "individual" | "business" | "organization";
@@ -87,6 +89,10 @@ export interface UpdateWasteOwnerDTO {
 export interface GetWasteOwnersFilters {
   isActive?: boolean;
   wasteOwnerType?: WasteOwnerType;
+  recyclerId?: string;
+  businessCode?: string;
+  phone?: string;
+  name?: string;
 }
 
 export interface WasteOwnerResponse {
@@ -97,6 +103,10 @@ export interface WasteOwnerResponse {
 
 export interface WasteOwnersListResponse {
   success: boolean;
-  count: number;
   data: WasteOwnerWithLocation[];
+  pagination: IPaginationParams & { total: number };
+}
+
+export interface WasteOwnersPaginatedResponse extends IPaginatedResponse<WasteOwnerWithLocation> {
+  success?: boolean;
 }

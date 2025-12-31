@@ -7,6 +7,7 @@ import {
   CreateWasteOwnerDTO,
   UpdateWasteOwnerDTO,
 } from "@/types/waste-owner";
+import { IPaginationMeta } from "@/types/pagination";
 import { WasteOwnerTable } from "@/components/waste-owners/WasteOwnerTable";
 import { WasteOwnerDetailDialog } from "@/components/waste-owners/WasteOwnerDetailDialog";
 import { CreateWasteOwnerDialog } from "@/components/waste-owners/CreateWasteOwnerDialog";
@@ -28,9 +29,14 @@ import { toast } from "sonner";
 
 export default function WasteSourcesPage() {
   const [wasteOwners, setWasteOwners] = useState<WasteOwnerWithLocation[]>([]);
-  const [filteredWasteOwners, setFilteredWasteOwners] = useState<
-    WasteOwnerWithLocation[]
-  >([]);
+  const [pagination, setPagination] = useState<IPaginationMeta>({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
@@ -46,17 +52,14 @@ export default function WasteSourcesPage() {
   const canCreate = usePermission("waste-sources.create");
   const canEdit = usePermission("waste-sources.edit");
 
-  useEffect(() => {
-    if (canView) {
-      loadWasteOwners();
-    }
-  }, [canView]);
-
   const loadWasteOwners = async () => {
     setIsLoading(true);
     try {
-      const filters: { isActive?: boolean; wasteOwnerType?: WasteOwnerType } =
-        {};
+      const filters: { 
+        isActive?: boolean; 
+        wasteOwnerType?: WasteOwnerType;
+        name?: string;
+      } = {};
 
       if (selectedStatus !== "all") {
         filters.isActive = selectedStatus === "active";
@@ -66,13 +69,22 @@ export default function WasteSourcesPage() {
         filters.wasteOwnerType = selectedType as WasteOwnerType;
       }
 
-      const response = await WasteOwnerService.getAllWasteOwners(filters);
+      if (searchQuery.trim()) {
+        filters.name = searchQuery.trim();
+      }
+
+      const response = await WasteOwnerService.getAllWasteOwners(
+        filters, 
+        { page: pagination.page, limit: pagination.limit }
+      );
+      
       setWasteOwners(response.data || []);
-      setFilteredWasteOwners(response.data || []);
-    } catch (error: any) {
+      setPagination(response.pagination);
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
       toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
+        err?.response?.data?.message ||
+          err?.message ||
           "Không thể tải danh sách chủ nguồn thải",
       );
     } finally {
@@ -81,27 +93,31 @@ export default function WasteSourcesPage() {
   };
 
   useEffect(() => {
-    loadWasteOwners();
-  }, [selectedType, selectedStatus]);
-
-  useEffect(() => {
-    let filtered = wasteOwners;
-
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (wo) =>
-          wo.name.toLowerCase().includes(query) ||
-          wo.email.toLowerCase().includes(query) ||
-          wo.contactPerson.toLowerCase().includes(query) ||
-          wo.phone.includes(query) ||
-          wo.businessCode.includes(query) ||
-          wo.id.toLowerCase().includes(query),
-      );
+    if (canView) {
+      void loadWasteOwners();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canView, pagination.page, pagination.limit, selectedType, selectedStatus]);
 
-    setFilteredWasteOwners(filtered);
-  }, [searchQuery, wasteOwners]);
+  // Reload from first page when search changes
+  useEffect(() => {
+    if (canView && searchQuery !== undefined) {
+      const delaySearch = setTimeout(() => {
+        setPagination(prev => ({ ...prev, page: 1 }));
+        void loadWasteOwners();
+      }, 500); // Debounce search
+      return () => clearTimeout(delaySearch);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
+
+  const handlePageChange = (page: number) => {
+    setPagination(prev => ({ ...prev, page }));
+  };
+
+  const handlePageSizeChange = (limit: number) => {
+    setPagination(prev => ({ ...prev, page: 1, limit }));
+  };
 
   const handleView = (wasteOwner: WasteOwnerWithLocation) => {
     setSelectedWasteOwner(wasteOwner);
@@ -127,7 +143,7 @@ export default function WasteSourcesPage() {
             "Không thể xóa chủ nguồn thải",
         });
         loadWasteOwners();
-      } catch (error) {
+      } catch {
         // Error handled by toast
       }
     }
@@ -256,7 +272,10 @@ export default function WasteSourcesPage() {
 
         {/* Table */}
         <WasteOwnerTable
-          wasteOwners={filteredWasteOwners}
+          wasteOwners={wasteOwners}
+          pagination={pagination}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
           onView={handleView}
           onEdit={canEdit ? handleEdit : undefined}
           onDelete={handleDelete}
