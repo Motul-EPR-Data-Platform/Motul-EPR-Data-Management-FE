@@ -63,6 +63,7 @@ export const motulSidebarConfig: SidebarConfig = {
       icon: FileCheck,
     },
     { title: "Phân tích", url: "/motul/analytics", icon: BarChart2 },
+    { title: "Chủ nguồn thải", url: "/motul/waste-owners", icon: Factory },
     { title: "Định nghĩa", url: "/motul/definitions", icon: BookOpen },
     {
       title: "Quản lý người dùng",

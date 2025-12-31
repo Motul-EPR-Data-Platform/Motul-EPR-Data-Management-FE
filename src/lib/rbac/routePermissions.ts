@@ -63,6 +63,12 @@ export const routePermissions: RoutePermission[] = [
     permissions: ["account.view"],
   },
   {
+    path: "/motul/waste-owners",
+    organization: "motul",
+    roles: ["Motul Admin", "Motul User"],
+    permissions: ["waste-sources.view"],
+  },
+  {
     path: "/motul/definitions",
     organization: "motul",
     roles: ["Motul Admin", "Motul User"],
