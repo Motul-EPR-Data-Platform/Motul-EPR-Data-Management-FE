@@ -43,6 +43,11 @@ api.interceptors.response.use(
     const original = error.config as any;
 
     if (error.response?.status === 401 && !original?._retry) {
+      // Don't retry if this is already the refresh endpoint (prevent infinite loop)
+      if (original?.url?.includes(ENDPOINTS.AUTH.REFRESH)) {
+        return Promise.reject(error);
+      }
+
       original._retry = true;
 
       if (isRefreshing) {
