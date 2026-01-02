@@ -83,6 +83,21 @@ export default function EditCollectionRecordPage() {
   const [recycledPhoto, setRecycledPhoto] = useState<File | null>(null);
   const [stockpilePhoto, setStockpilePhoto] = useState<File | null>(null);
 
+  // Track original form data to determine which fields have changed
+  const originalFormDataRef = useRef<Partial<CreateDraftFormData>>({});
+  const originalDatesRef = useRef<{
+    collectionDate: Date | null;
+    recycledDate: Date | undefined;
+  }>({
+    collectionDate: null,
+    recycledDate: undefined,
+  });
+  const originalLocationRef = useRef<{
+    locationRefId: string;
+  }>({
+    locationRefId: "",
+  });
+
   // Track original file IDs to determine if files are new or existing
   const originalFileIdsRef = useRef<{
     evidencePhotos: Set<string>;
@@ -260,18 +275,22 @@ export default function EditCollectionRecordPage() {
           collectedPricePerKg: record.collectedPricePerKg || null,
         };
         setFormData(prefillData);
+        // Store original form data for change detection
+        originalFormDataRef.current = { ...prefillData };
 
         // Prefill dates
         if (record.deliveryDate) {
           const parsedDate = parseDate(record.deliveryDate);
           if (parsedDate) {
             setCollectionDate(parsedDate);
+            originalDatesRef.current.collectionDate = parsedDate;
           }
         }
         if (record.recycledDate) {
           const parsedDate = parseDate(record.recycledDate);
           if (parsedDate) {
             setRecycledDate(parsedDate);
+            originalDatesRef.current.recycledDate = parsedDate;
           }
         }
 
@@ -288,6 +307,7 @@ export default function EditCollectionRecordPage() {
           // Try to extract location refId if available
           if (record.pickupLocationId) {
             setLocationRefId(record.pickupLocationId);
+            originalLocationRef.current.locationRefId = record.pickupLocationId;
           }
         }
 
@@ -585,6 +605,86 @@ export default function EditCollectionRecordPage() {
     return currentFile !== originalFile;
   };
 
+  // Helper to check if a field value has changed from original
+  const hasFieldChanged = <T,>(currentValue: T, originalValue: T): boolean => {
+    // Handle null/undefined cases
+    if (currentValue === null && originalValue === null) return false;
+    if (currentValue === undefined && originalValue === undefined) return false;
+    if (currentValue === null && originalValue === undefined) return false;
+    if (currentValue === undefined && originalValue === null) return false;
+    
+    // Compare values
+    return currentValue !== originalValue;
+  };
+
+  // Helper to check if date has changed
+  const hasDateChanged = (currentDate: Date | undefined | null, originalDate: Date | undefined | null): boolean => {
+    if (!currentDate && !originalDate) return false;
+    if (!currentDate || !originalDate) return true;
+    return currentDate.getTime() !== originalDate.getTime();
+  };
+
+  // Build payload with null for unchanged fields
+  const buildDraftPayload = (): CreateDraftDTO => {
+    const formatDateDDMMYYYY = (date: Date): string => {
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+
+    const original = originalFormDataRef.current;
+
+    // For each field, send the new value if changed, otherwise null
+    return {
+      batchId: hasFieldChanged(formData.batchId, original.batchId)
+        ? (formData.batchId || null)
+        : null,
+      submissionMonth: hasDateChanged(collectionDate, originalDatesRef.current.collectionDate)
+        ? formatDateDDMMYYYY(new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1))
+        : null,
+      collectedVolumeKg: hasFieldChanged(formData.collectedVolumeKg, original.collectedVolumeKg)
+        ? (formData.collectedVolumeKg || null)
+        : null,
+      deliveryDate: hasDateChanged(collectionDate, originalDatesRef.current.collectionDate)
+        ? formatDateDDMMYYYY(collectionDate)
+        : null,
+      vehiclePlate: hasFieldChanged(formData.vehiclePlate, original.vehiclePlate)
+        ? (formData.vehiclePlate || null)
+        : null,
+      stockpiled: hasFieldChanged(formData.stockpiled, original.stockpiled)
+        ? (formData.stockpiled ?? false)
+        : null,
+      stockpileVolumeKg: hasFieldChanged(formData.stockpileVolumeKg, original.stockpileVolumeKg)
+        ? (formData.stockpileVolumeKg || null)
+        : null,
+      recycledDate: hasDateChanged(recycledDate, originalDatesRef.current.recycledDate)
+        ? (recycledDate ? formatDateDDMMYYYY(recycledDate) : null)
+        : null,
+      recycledVolumeKg: hasFieldChanged(formData.recycledVolumeKg, original.recycledVolumeKg)
+        ? (formData.recycledVolumeKg || null)
+        : null,
+      wasteOwnerIds: hasFieldChanged(formData.wasteOwnerId, original.wasteOwnerId)
+        ? (formData.wasteOwnerId ? [formData.wasteOwnerId] : [])
+        : null,
+      contractTypeId: hasFieldChanged(formData.contractTypeId, original.contractTypeId)
+        ? (formData.contractTypeId || null)
+        : null,
+      wasteSourceId: hasFieldChanged(formData.wasteSourceId, original.wasteSourceId)
+        ? (formData.wasteSourceId || null)
+        : null,
+      hazWasteId: hasFieldChanged(formData.hazWasteId, original.hazWasteId)
+        ? (formData.hazWasteId || null)
+        : null,
+      pickupLocation: hasFieldChanged(locationRefId, originalLocationRef.current.locationRefId)
+        ? (locationRefId ? { refId: locationRefId } : null)
+        : null,
+      collectedPricePerKg: hasFieldChanged(formData.collectedPricePerKg, original.collectedPricePerKg)
+        ? (formData.collectedPricePerKg || null)
+        : null,
+    };
+  };
+
   const uploadFilesForRecord = async (recordId: string) => {
     const uploadPromises: Promise<any>[] = [];
 
@@ -665,32 +765,8 @@ export default function EditCollectionRecordPage() {
 
     setIsLoading(true);
     try {
-      const formatDateDDMMYYYY = (date: Date): string => {
-        const day = String(date.getDate()).padStart(2, "0");
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-      };
-
-      const draftData: CreateDraftDTO = {
-        batchId: formData.batchId || null,
-        submissionMonth: formatDateDDMMYYYY(
-          new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1),
-        ),
-        collectedVolumeKg: formData.collectedVolumeKg || null,
-        deliveryDate: formatDateDDMMYYYY(collectionDate),
-        vehiclePlate: formData.vehiclePlate || null,
-        stockpiled: formData.stockpiled ?? false,
-        stockpileVolumeKg: formData.stockpileVolumeKg || null,
-        recycledDate: recycledDate ? formatDateDDMMYYYY(recycledDate) : null,
-        recycledVolumeKg: formData.recycledVolumeKg || null,
-        wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
-        contractTypeId: formData.contractTypeId || null,
-        wasteSourceId: formData.wasteSourceId || null,
-        hazWasteId: formData.hazWasteId || null,
-        pickupLocation: locationRefId ? { refId: locationRefId } : null,
-        collectedPricePerKg: formData.collectedPricePerKg || null,
-      };
+      // Build payload with null for unchanged fields
+      const draftData = buildDraftPayload();
 
       await CollectionRecordService.updateDraft(draftId, draftData);
       toast.success("Đã cập nhật bản nháp");
@@ -748,32 +824,8 @@ export default function EditCollectionRecordPage() {
 
     setIsLoading(true);
     try {
-      const formatDateDDMMYYYY = (date: Date): string => {
-        const day = String(date.getDate()).padStart(2, "0");
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-      };
-
-      const draftData: CreateDraftDTO = {
-        batchId: formData.batchId || null,
-        submissionMonth: formatDateDDMMYYYY(
-          new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1),
-        ),
-        collectedVolumeKg: formData.collectedVolumeKg || null,
-        deliveryDate: formatDateDDMMYYYY(collectionDate),
-        vehiclePlate: formData.vehiclePlate || null,
-        stockpiled: formData.stockpiled ?? false,
-        stockpileVolumeKg: formData.stockpileVolumeKg || null,
-        recycledDate: recycledDate ? formatDateDDMMYYYY(recycledDate) : null,
-        recycledVolumeKg: formData.recycledVolumeKg || null,
-        wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
-        contractTypeId: formData.contractTypeId || null,
-        wasteSourceId: formData.wasteSourceId || null,
-        hazWasteId: formData.hazWasteId || null,
-        pickupLocation: locationRefId ? { refId: locationRefId } : null,
-        collectedPricePerKg: formData.collectedPricePerKg || null,
-      };
+      // Build payload with null for unchanged fields
+      const draftData = buildDraftPayload();
 
       // Update draft first
       await CollectionRecordService.updateDraft(draftId, draftData);
