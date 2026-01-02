@@ -621,19 +621,19 @@ export default function CreateCollectionRecordPage() {
         contractTypeId: formData.contractTypeId || null,
         // Backend expects UUID for wasteSourceId (waste type ID)
         wasteSourceId: formData.wasteSourceId || null,
-        // Explicitly set hazCodeId - use null if undefined, empty string, or null
-        hazCodeId:
-          formData.hazCodeId && formData.hazCodeId.trim() !== ""
-            ? formData.hazCodeId
+        // Explicitly set hazWasteId - use null if undefined, empty string, or null
+        hazWasteId:
+          formData.hazWasteId && formData.hazWasteId.trim() !== ""
+            ? formData.hazWasteId
             : null,
         pickupLocation: locationRefId ? { refId: locationRefId } : null,
         collectedPricePerKg: formData.collectedPricePerKg || null,
       };
 
-      console.log("Saving draft with hazCodeId:", {
-        formDataHazCodeId: formData.hazCodeId,
-        formDataHazCodeIdType: typeof formData.hazCodeId,
-        hazCodeId: draftData.hazCodeId,
+      console.log("Saving draft with hazWasteId:", {
+        formDatahazWasteId: formData.hazWasteId,
+        formDatahazWasteIdType: typeof formData.hazWasteId,
+        hazWasteId: draftData.hazWasteId,
         fullFormData: JSON.stringify(formData, null, 2),
         fullDraftData: JSON.stringify(draftData, null, 2),
       });
@@ -733,9 +733,9 @@ export default function CreateCollectionRecordPage() {
           wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
           contractTypeId: formData.contractTypeId || null,
           wasteSourceId: formData.wasteSourceId || null,
-          hazCodeId:
-            formData.hazCodeId && formData.hazCodeId.trim() !== ""
-              ? formData.hazCodeId
+          hazWasteId:
+            formData.hazWasteId && formData.hazWasteId.trim() !== ""
+              ? formData.hazWasteId
               : null,
           pickupLocation: locationRefId ? { refId: locationRefId } : null,
           collectedPricePerKg: formData.collectedPricePerKg || null,
@@ -816,7 +816,7 @@ export default function CreateCollectionRecordPage() {
   };
 
   const getSelectedHazCodeName = () => {
-    const hazType = hazTypes.find((ht) => ht.id === formData.hazCodeId);
+    const hazType = hazTypes.find((ht) => ht.id === formData.hazWasteId);
     if (hazType) {
       const hazCode = hazType.haz_code || hazType.code || "";
       const displayName = hazType.name || hazType.code || "";

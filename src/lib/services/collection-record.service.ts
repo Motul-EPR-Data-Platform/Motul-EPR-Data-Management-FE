@@ -63,7 +63,7 @@ export const CollectionRecordService = {
     dto: UpdateDraftDTO,
   ): Promise<CollectionRecord> {
     console.log("Updating draft with payload:", JSON.stringify(dto, null, 2));
-    console.log("hazCodeId in payload:", dto.hazCodeId);
+    console.log("hazWasteId in payload:", dto.hazWasteId);
     const { data } = await api.put(
       path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.DRAFT_BY_ID(id)),
       dto,

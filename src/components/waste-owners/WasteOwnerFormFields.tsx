@@ -177,8 +177,16 @@ export function WasteOwnerFormFields({
           }}
           label="Địa chỉ chi tiết"
           placeholder="Tìm hoặc chọn từ danh sách...."
+          required={!disabled}
           disabled={disabled}
           error={errors.locationRefId}
+        />
+        {/* Hidden input for form validation */}
+        <input
+          type="hidden"
+          name="locationRefId"
+          value={locationRefId || ""}
+          required={!disabled}
         />
         {errors.locationRefId && (
           <p className="text-sm text-red-500">{errors.locationRefId}</p>

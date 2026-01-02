@@ -145,17 +145,17 @@ export function Step2CollectionDetails({
 
         {/* HAZ Code */}
         <div className="grid gap-2">
-          <Label htmlFor="hazCodeId">Mã HAZ</Label>
+          <Label htmlFor="hazWasteId">Mã HAZ</Label>
           <Select
-            value={formData.hazCodeId ? String(formData.hazCodeId) : "__none__"}
+            value={formData.hazWasteId ? String(formData.hazWasteId) : "__none__"}
             onValueChange={(value) => {
               const newValue = value === "__none__" ? null : value;
               console.log("HAZ Code dropdown changed:", {
                 selectedValue: value,
                 newValue,
-                currentFormDataHazCodeId: formData.hazCodeId,
+                currentFormDatahazWasteId: formData.hazWasteId,
               });
-              onChange("hazCodeId", newValue);
+              onChange("hazWasteId", newValue);
             }}
             disabled={disabled}
           >
@@ -188,8 +188,8 @@ export function Step2CollectionDetails({
                 })}
             </SelectContent>
           </Select>
-          {errors.hazCodeId && (
-            <p className="text-sm text-red-500">{errors.hazCodeId}</p>
+          {errors.hazWasteId && (
+            <p className="text-sm text-red-500">{errors.hazWasteId}</p>
           )}
         </div>
 

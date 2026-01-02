@@ -141,6 +141,7 @@ export function LocationAutocomplete({
               onBlur={handleInputBlur}
               placeholder={placeholder}
               disabled={disabled}
+              required={required}
               className={cn(
                 "pl-10 w-full",
                 error && "border-red-500",

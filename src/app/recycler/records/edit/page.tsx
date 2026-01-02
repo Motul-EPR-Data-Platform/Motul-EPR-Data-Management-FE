@@ -239,11 +239,11 @@ export default function EditCollectionRecordPage() {
             ? record.wasteOwners[0].id
             : record.wasteOwnerId || null;
 
-        // Get HAZ code ID from hazWasteId, hazWaste.id, or hazCodeId
-        const hazCodeId =
+        // Get HAZ code ID from hazWasteId, hazWaste.id, or hazWasteId
+        const hazWasteId =
           (record as any).hazWasteId ||
           (record as any).hazWaste?.id ||
-          (record as any).hazCodeId ||
+          (record as any).hazWasteId ||
           null;
 
         const prefillData: Partial<CreateDraftFormData> = {
@@ -251,7 +251,7 @@ export default function EditCollectionRecordPage() {
           wasteOwnerId,
           contractTypeId: record.contractTypeId || null,
           wasteSourceId: record.wasteSourceId || null,
-          hazCodeId,
+          hazWasteId,
           collectedVolumeKg: record.collectedVolumeKg || null,
           vehiclePlate: record.vehiclePlate || null,
           stockpiled: record.stockpiled || null,
@@ -687,7 +687,7 @@ export default function EditCollectionRecordPage() {
         wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
         contractTypeId: formData.contractTypeId || null,
         wasteSourceId: formData.wasteSourceId || null,
-        hazCodeId: formData.hazCodeId || null,
+        hazWasteId: formData.hazWasteId || null,
         pickupLocation: locationRefId ? { refId: locationRefId } : null,
         collectedPricePerKg: formData.collectedPricePerKg || null,
       };
@@ -770,7 +770,7 @@ export default function EditCollectionRecordPage() {
         wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
         contractTypeId: formData.contractTypeId || null,
         wasteSourceId: formData.wasteSourceId || null,
-        hazCodeId: formData.hazCodeId || null,
+        hazWasteId: formData.hazWasteId || null,
         pickupLocation: locationRefId ? { refId: locationRefId } : null,
         collectedPricePerKg: formData.collectedPricePerKg || null,
       };
@@ -819,7 +819,7 @@ export default function EditCollectionRecordPage() {
   };
 
   const getSelectedHazCodeName = () => {
-    const hazType = hazTypes.find((ht) => ht.id === formData.hazCodeId);
+    const hazType = hazTypes.find((ht) => ht.id === formData.hazWasteId);
     if (hazType) {
       const hazCode = hazType.haz_code || hazType.code || "";
       const displayName = hazType.name || hazType.code || "";
