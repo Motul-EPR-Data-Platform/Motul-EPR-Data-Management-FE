@@ -108,7 +108,7 @@ export const WasteOwnerService = {
     
     return {
       data: data.data || [],
-      pagination: data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0, hasNext: false, hasPrev: false },
+      pagination: data.pagination || { page: 1, limit: 100, total: 0, totalPages: 0, hasNext: false, hasPrev: false },
       success: data.success,
     };
   },
