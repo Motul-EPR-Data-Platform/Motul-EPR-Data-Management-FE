@@ -12,10 +12,6 @@ export const ENDPOINTS = {
       WASTE_TRANSFER_ADMIN: "/register/waste-transfer-admin",
       WASTE_TRANSFER: "/register/waste-transfer",
     },
-    COMPLETE_PROFILE: {
-      RECYCLER_ADMIN: "/recycler-admin/complete-profile",
-      WASTE_TRANSFER_ADMIN: "/waste-transfer-admin/complete-profile",
-    },
     LOGIN: "/login",
     LOGOUT: "/logout",
     ME: "/me",
@@ -48,6 +44,7 @@ export const ENDPOINTS = {
     ROOT: "/wtp-admin",
     PROFILE: (id: string) => `/profile/${id}`,
     USERS: "/users",
+    COMPLETE_PROFILE: "/complete-profile",
     PENDING_INVITATIONS: "/pending-invitations",
   },
   DEFINITIONS: {

@@ -94,7 +94,6 @@ export function BusinessInfoForm({
     const value = initialData[fieldName];
     return parseFormDate(value as string | Date | undefined);
   };
-  console.log("initialData:", initialData);
   const {
     register,
     handleSubmit,
@@ -350,7 +349,7 @@ export function BusinessInfoForm({
               businessRegFile,
               FileType.BUSINESS_REG_FILE,
             );
-            businessRegFileId = uploadResult.fileId || uploadResult.file.id;
+            businessRegFileId = uploadResult.id;
           } catch (fileError: any) {
             setError(
               fileError?.response?.data?.message ||
@@ -368,8 +367,7 @@ export function BusinessInfoForm({
               envPermitFile,
               FileType.ENVIRONMENTAL_PERMIT_FILE,
             );
-            environmentalPermitFileId =
-              uploadResult.fileId || uploadResult.file.id;
+            environmentalPermitFileId = uploadResult.id;
           } catch (fileError: any) {
             setError(
               fileError?.response?.data?.message ||
@@ -427,7 +425,6 @@ export function BusinessInfoForm({
             environmentalPermitFileId: environmentalPermitFileId,
           },
         };
-
         await AuthService.completeRecyclerAdminProfile(dto);
         await refreshUser();
 

@@ -62,7 +62,7 @@ export const AuthService = {
   ): Promise<AppUser> {
     const response = await api.post<{ data: AppUser }>(
       path.recycler(ENDPOINTS.RECYCLER.COMPLETE_PROFILE),
-      dto,
+      { recyclerProfile: dto },
     );
     // Extract nested data if present, otherwise use response.data directly
     return (response.data as any).data || response.data;
@@ -110,7 +110,7 @@ export const AuthService = {
     dto: CompleteWasteTransferAdminProfileDTO,
   ): Promise<AppUser> {
     const response = await api.post<{ data: AppUser }>(
-      path.auth(ENDPOINTS.AUTH.COMPLETE_PROFILE.WASTE_TRANSFER_ADMIN),
+      path.wtp(ENDPOINTS.WTP.COMPLETE_PROFILE),
       { wasteTransferPointProfile: dto },
     );
     // Extract nested data if present, otherwise use response.data directly

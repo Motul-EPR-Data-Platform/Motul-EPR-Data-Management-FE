@@ -326,7 +326,7 @@ export const ROUTE_ERROR_MESSAGES: Record<string, ErrorMessageMap> = {
     },
   },
 
-  [ENDPOINTS.AUTH.COMPLETE_PROFILE.RECYCLER_ADMIN]: {
+  [path.recycler(ENDPOINTS.RECYCLER.COMPLETE_PROFILE)]: {
     codes: {
       "4003": "Vui lòng hoàn thiện thông tin doanh nghiệp",
       "4004": "Thông tin doanh nghiệp không hợp lệ",
@@ -352,7 +352,7 @@ export const ROUTE_ERROR_MESSAGES: Record<string, ErrorMessageMap> = {
     },
   },
 
-  [ENDPOINTS.AUTH.COMPLETE_PROFILE.WASTE_TRANSFER_ADMIN]: {
+  [path.wtp(ENDPOINTS.WTP.COMPLETE_PROFILE)]: {
     codes: {
       "4003": "Vui lòng hoàn thiện thông tin doanh nghiệp",
       "4004": "Thông tin doanh nghiệp không hợp lệ",
