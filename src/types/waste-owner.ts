@@ -76,6 +76,7 @@ export interface CreateWasteOwnerDTO {
 
 export interface UpdateWasteOwnerDTO {
   name?: string;
+  businessCode?: string;
   contactPerson?: string | null;
   phone?: string | null;
   email?: string | null;

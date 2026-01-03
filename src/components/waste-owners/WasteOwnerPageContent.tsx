@@ -123,9 +123,10 @@ export function WasteOwnerPageContent({
         name?: string;
         businessCode?: string;
       },
-      paginationParams: IPaginationParams
+      paginationParams: IPaginationParams,
+      noCache?: boolean
     ) => {
-      const response = await WasteOwnerService.getAllWasteOwners(filters, paginationParams);
+      const response = await WasteOwnerService.getAllWasteOwners(filters, paginationParams, noCache);
       return {
         data: response.data || [],
         pagination: response.pagination,
@@ -200,7 +201,12 @@ export function WasteOwnerPageContent({
             err?.message ||
             "Không thể xóa chủ nguồn thải",
         });
-        await reload();
+
+        // Wait a moment for backend to fully commit the deletion
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        // Reload with noCache to force fresh data after deletion
+        await reload({ noCache: true });
       } catch {
         // Error handled by toast
       }
@@ -208,37 +214,67 @@ export function WasteOwnerPageContent({
   };
 
   const handleCreateWasteOwner = async (dto: CreateWasteOwnerDTO) => {
-    if (onCreate) {
-      await onCreate(dto);
-    } else {
-      await toast.promise(WasteOwnerService.createWasteOwner(dto), {
-        loading: "Đang tạo chủ nguồn thải...",
-        success: "Tạo chủ nguồn thải thành công",
-        error: (err) =>
-          err?.response?.data?.message ||
-          err?.message ||
-          "Không thể tạo chủ nguồn thải. Vui lòng thử lại.",
-      });
+    try {
+      if (onCreate) {
+        await onCreate(dto);
+      } else {
+        await toast.promise(WasteOwnerService.createWasteOwner(dto), {
+          loading: "Đang tạo chủ nguồn thải...",
+          success: "Tạo chủ nguồn thải thành công",
+          error: (err) =>
+            err?.response?.data?.message ||
+            err?.message ||
+            "Không thể tạo chủ nguồn thải. Vui lòng thử lại.",
+        });
+      }
+
+      // Close dialog first
+      setIsCreateDialogOpen(false);
+
+      // Wait a moment for backend to fully commit the transaction
+      // This ensures the new item is available when we fetch
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      // Reset to page 1 and reload with new page value
+      // Pass page: 1 and noCache: true to force fresh data
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      await reload({ page: 1, limit: pagination.limit, noCache: true });
+    } catch (error) {
+      // Error already handled by toast or onCreate callback
+      console.error("Error creating waste owner:", error);
     }
-    await reload();
-    setIsCreateDialogOpen(false);
   };
 
   const handleUpdateWasteOwner = async (id: string, dto: UpdateWasteOwnerDTO) => {
-    if (onUpdate) {
-      await onUpdate(id, dto);
-    } else {
-      await toast.promise(WasteOwnerService.updateWasteOwner(id, dto), {
-        loading: "Đang cập nhật chủ nguồn thải...",
-        success: "Cập nhật chủ nguồn thải thành công",
-        error: (err) =>
-          err?.response?.data?.message ||
-          err?.message ||
-          "Không thể cập nhật chủ nguồn thải. Vui lòng thử lại.",
-      });
+    try {
+      if (onUpdate) {
+        await onUpdate(id, dto);
+      } else {
+        await toast.promise(WasteOwnerService.updateWasteOwner(id, dto), {
+          loading: "Đang cập nhật chủ nguồn thải...",
+          success: "Cập nhật chủ nguồn thải thành công",
+          error: (err) =>
+            err?.response?.data?.message ||
+            err?.message ||
+            "Không thể cập nhật chủ nguồn thải. Vui lòng thử lại.",
+        });
+      }
+
+      // Close dialog first
+      setIsEditDialogOpen(false);
+
+      // Wait a moment for backend to fully commit the transaction
+      // This ensures the updated item is available when we fetch
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      // Reload data to show updated information
+      // Keep current page since we're updating an existing item
+      // Use noCache: true to force fresh data
+      await reload({ noCache: true });
+    } catch (error) {
+      // Error already handled by toast or onUpdate callback
+      console.error("Error updating waste owner:", error);
     }
-    await reload();
-    setIsEditDialogOpen(false);
   };
 
   // Filter options

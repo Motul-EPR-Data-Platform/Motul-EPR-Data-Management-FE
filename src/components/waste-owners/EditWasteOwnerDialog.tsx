@@ -13,6 +13,7 @@ import {
   WasteOwnerWithLocation,
 } from "@/types/waste-owner";
 import { WasteOwnerForm } from "./WasteOwnerForm";
+import { validateUpdateWasteOwner } from "@/lib/validations/waste-owner";
 
 interface EditWasteOwnerDialogProps {
   open: boolean;
@@ -30,36 +31,16 @@ export function EditWasteOwnerDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const validateForm = (data: UpdateWasteOwnerDTO): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (data.name !== undefined && !data.name.trim()) {
-      newErrors.name = "Tên là bắt buộc";
-    }
-    if (data.contactPerson !== undefined && !data.contactPerson.trim()) {
-      newErrors.contactPerson = "Người liên hệ là bắt buộc";
-    }
-    // if (data.phone !== undefined && !data.phone.trim()) {
-    //   newErrors.phone = "Số điện thoại là bắt buộc";
-    // }
-    // if (data.email !== undefined) {
-    //   if (!data.email.trim()) {
-    //     newErrors.email = "Email là bắt buộc";
-    //   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-    //     newErrors.email = "Email không hợp lệ";
-    //   }
-    // }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (dto: UpdateWasteOwnerDTO | any) => {
     if (!wasteOwner) return;
 
     const updateData = dto as UpdateWasteOwnerDTO;
 
-    if (!validateForm(updateData)) {
+    // Use Zod validation
+    const validation = validateUpdateWasteOwner(updateData);
+
+    if (!validation.success) {
+      setErrors(validation.errors || {});
       return;
     }
 

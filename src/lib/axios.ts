@@ -31,6 +31,15 @@ api.interceptors.request.use((config) => {
   if (config.data instanceof FormData && config.headers) {
     delete config.headers["Content-Type"];
   }
+
+  // Add cache-busting query parameter if noCache option is set
+  // This avoids CORS preflight issues that custom headers might cause
+  if ((config as any).noCache && config.url) {
+    // Handle both absolute and relative URLs
+    const separator = config.url.includes("?") ? "&" : "?";
+    config.url = `${config.url}${separator}_nocache=${Date.now()}`;
+  }
+
   return config;
 });
 

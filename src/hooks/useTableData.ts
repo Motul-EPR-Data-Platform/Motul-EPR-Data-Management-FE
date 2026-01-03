@@ -4,7 +4,8 @@ import { IPaginationMeta, IPaginationParams } from "@/types/pagination";
 interface UseTableDataOptions<T, F> {
   fetchData: (
     filters: F,
-    pagination: IPaginationParams
+    pagination: IPaginationParams,
+    noCache?: boolean
   ) => Promise<{
     data: T[];
     pagination: IPaginationMeta;
@@ -20,7 +21,7 @@ interface UseTableDataReturn<T> {
   data: T[];
   isLoading: boolean;
   error: Error | null;
-  reload: () => Promise<void>;
+  reload: (options?: { page?: number; limit?: number; noCache?: boolean }) => Promise<void>;
 }
 
 /**
@@ -83,10 +84,14 @@ export function useTableData<T, F>(
       const currentPagination = paginationRef.current;
       const currentFilters = filtersRef.current;
 
-      const response = await fetchData(currentFilters, {
-        page: currentPagination.page,
-        limit: currentPagination.limit,
-      });
+      const response = await fetchData(
+        currentFilters,
+        {
+          page: currentPagination.page,
+          limit: currentPagination.limit,
+        },
+        false // Normal load uses cache
+      );
       setData(response.data || []);
 
       // Update pagination if callback provided - only update metadata, not page/limit
@@ -128,9 +133,55 @@ export function useTableData<T, F>(
     void loadData();
   }, [loadData]);
 
-  const reload = useCallback(async () => {
-    await loadData();
-  }, [loadData]);
+  // Reload function that forces a fresh fetch using latest state
+  // Accepts optional pagination override and noCache flag
+  const reload = useCallback(async (options?: { page?: number; limit?: number; noCache?: boolean }) => {
+    if (!enabled) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Use provided options or fall back to current pagination
+      const pageToUse = options?.page ?? pagination.page;
+      const limitToUse = options?.limit ?? pagination.limit;
+
+      const response = await fetchData(
+        filters,
+        {
+          page: pageToUse,
+          limit: limitToUse,
+        },
+        options?.noCache
+      );
+
+      setData(response.data || []);
+
+      // Update pagination if callback provided
+      if (setPagination && response.pagination) {
+        setPagination({
+          page: pageToUse,
+          limit: limitToUse,
+          total: response.pagination.total,
+          totalPages: response.pagination.totalPages,
+          hasNext: response.pagination.hasNext,
+          hasPrev: response.pagination.hasPrev,
+        });
+      }
+    } catch (err) {
+      const error =
+        err instanceof Error
+          ? err
+          : new Error(err?.toString() || "Unknown error");
+      setError(error);
+      setData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchData, enabled, setPagination, filters, pagination]);
 
   return {
     data,

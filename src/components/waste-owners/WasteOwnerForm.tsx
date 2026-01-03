@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { WasteOwnerFormFields } from "./WasteOwnerFormFields";
 import { WasteOwnerLocationFields } from "./WasteOwnerLocationFields";
@@ -10,6 +13,12 @@ import {
   WasteOwnerWithLocation,
   WasteOwnerType,
 } from "@/types/waste-owner";
+import {
+  createWasteOwnerSchema,
+  updateWasteOwnerSchema,
+  type CreateWasteOwnerValidationData,
+  type UpdateWasteOwnerValidationData,
+} from "@/lib/validations/waste-owner";
 
 interface WasteOwnerFormProps {
   // Initial data (for edit/view mode)
@@ -35,7 +44,7 @@ export function WasteOwnerForm({
   initialData,
   mode,
   isLoading = false,
-  errors = {},
+  errors: externalErrors = {},
   onSubmit,
   onCancel,
   submitButtonText,
@@ -45,147 +54,154 @@ export function WasteOwnerForm({
   const isEditMode = mode === "edit";
   const isCreateMode = mode === "create";
 
-  const [formData, setFormData] = useState<{
-    wasteOwnerType: WasteOwnerType;
-    name: string;
-    businessCode: string;
-    contactPerson?: string;
-    phone?: string;
-    email?: string;
-    locationRefId?: string;
-    fullAddress?: string; // Full address string for display
-    isActive?: boolean;
-  }>({
-    wasteOwnerType: "business",
-    name: "",
-    businessCode: "",
-    contactPerson: "",
-    phone: "+84 ",
-    email: "",
-    locationRefId: "",
-    fullAddress: "",
-    isActive: true,
-  });
+  // Determine which schema to use based on mode
+  const schema = isCreateMode
+    ? createWasteOwnerSchema
+    : updateWasteOwnerSchema;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors: formErrors },
+    setValue,
+    watch,
+    reset,
+  } = useForm<CreateWasteOwnerValidationData | UpdateWasteOwnerValidationData>(
+    {
+      resolver: zodResolver(schema),
+      defaultValues: {
+        wasteOwnerType: initialData?.wasteOwnerType || "business",
+        name: initialData?.name || "",
+        businessCode: initialData?.businessCode || "",
+        contactPerson: initialData?.contactPerson || "",
+        phone: initialData?.phone || "+84 ",
+        email: initialData?.email || "",
+        ...(isEditMode && { isActive: initialData?.isActive ?? true }),
+      },
+    },
+  );
+
+  // Watch form values
+  const wasteOwnerType = (watch("wasteOwnerType") ||
+    "business") as WasteOwnerType;
+  const name = watch("name") || "";
+  const businessCode = watch("businessCode") || "";
+  const contactPerson = watch("contactPerson");
+  const phone = watch("phone");
+  const email = watch("email");
+  const isActive =
+    isEditMode && "isActive" in watch()
+      ? (watch("isActive" as any) as boolean | undefined)
+      : undefined;
+  const [locationRefId, setLocationRefId] = React.useState<string>("");
+  const [fullAddress, setFullAddress] = React.useState<string>("");
 
   // Initialize form data from initialData
   useEffect(() => {
     if (initialData) {
-      setFormData({
+      reset({
         wasteOwnerType: initialData.wasteOwnerType || "business",
         name: initialData.name,
         businessCode: initialData.businessCode,
         contactPerson: initialData.contactPerson || "",
-        phone: initialData.phone || "",
+        phone: initialData.phone || "+84 ",
         email: initialData.email || "",
-        locationRefId: initialData.location?.refId || "",
-        fullAddress: initialData.location?.address || "",
-        isActive: initialData.isActive,
+        ...(isEditMode && { isActive: initialData.isActive }),
       });
+      setLocationRefId(initialData.location?.refId || "");
+      setFullAddress(initialData.location?.address || "");
     } else if (isCreateMode) {
       // Reset to defaults for create mode
-      setFormData({
+      reset({
         wasteOwnerType: "business",
         name: "",
         businessCode: "",
         contactPerson: "",
         phone: "+84 ",
         email: "",
-        locationRefId: "",
-        fullAddress: "",
-        isActive: true,
       });
+      setLocationRefId("");
+      setFullAddress("");
     }
-  }, [initialData, isCreateMode]);
+  }, [initialData, isCreateMode, isEditMode, reset]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Merge form errors with external errors
+  const errors = { ...formErrors, ...externalErrors };
+
+  const onSubmitForm = async (
+    data: CreateWasteOwnerValidationData | UpdateWasteOwnerValidationData,
+  ) => {
     if (!onSubmit || isViewMode) return;
 
-    if (isCreateMode) {
-      const createData: CreateWasteOwnerDTO = {
-        name: formData.name,
-        businessCode: formData.businessCode,
-        contactPerson: formData.contactPerson || null,
-        phone: formData.phone || null,
-        email: formData.email || null,
-        wasteOwnerType: formData.wasteOwnerType,
-        // TODO: Make location required again after backend implementation is complete
-        // Only include location if locationRefId is provided (temporary - location is optional)
-        ...(formData.locationRefId && formData.locationRefId.trim()
+    if (isCreateMode && "name" in data && "businessCode" in data) {
+      const createData = data as CreateWasteOwnerValidationData;
+      const submitData: CreateWasteOwnerDTO = {
+        name: createData.name,
+        businessCode: createData.businessCode,
+        contactPerson: createData.contactPerson || null,
+        phone: createData.phone || null,
+        email: createData.email || null,
+        wasteOwnerType: createData.wasteOwnerType,
+        // Only include location if locationRefId is provided
+        ...(locationRefId && locationRefId.trim()
           ? {
               location: {
-                refId: formData.locationRefId,
+                refId: locationRefId,
               },
             }
           : {}),
       };
-      await onSubmit(createData);
+      await onSubmit(submitData);
     } else if (isEditMode) {
       const updateData: UpdateWasteOwnerDTO = {
-        name: formData.name,
-        contactPerson: formData.contactPerson || null,
-        phone: formData.phone || null,
-        email: formData.email || null,
-        wasteOwnerType: formData.wasteOwnerType,
-        isActive: formData.isActive,
-        location: formData.locationRefId
-          ? { refId: formData.locationRefId }
-          : undefined,
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.businessCode !== undefined && {
+          businessCode: data.businessCode,
+        }),
+        ...(data.contactPerson !== undefined && {
+          contactPerson: data.contactPerson || null,
+        }),
+        ...(data.phone !== undefined && { phone: data.phone || null }),
+        ...(data.email !== undefined && { email: data.email || null }),
+        ...(data.wasteOwnerType !== undefined && {
+          wasteOwnerType: data.wasteOwnerType,
+        }),
+        ...("isActive" in data &&
+          data.isActive !== undefined && { isActive: data.isActive }),
+        ...(locationRefId && { location: { refId: locationRefId } }),
       };
       await onSubmit(updateData);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-6">
       {/* Basic Information Section */}
       <div className="space-y-4">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase">
           Thông tin cơ bản
         </h3>
         <WasteOwnerFormFields
-          wasteOwnerType={formData.wasteOwnerType}
-          name={formData.name}
-          businessCode={formData.businessCode}
-          contactPerson={formData.contactPerson || ""}
-          phone={formData.phone || ""}
-          email={formData.email || ""}
-          locationRefId={formData.locationRefId || ""}
-          fullAddress={formData.fullAddress || ""}
-          isActive={formData.isActive}
+          register={register}
+          setValue={setValue}
+          watch={watch}
+          wasteOwnerType={wasteOwnerType}
+          name={name}
+          businessCode={businessCode}
+          contactPerson={contactPerson || ""}
+          phone={phone || ""}
+          email={email || ""}
+          locationRefId={locationRefId}
+          fullAddress={fullAddress}
+          isActive={isActive}
           disabled={isViewMode || isLoading}
           errors={errors}
           showTypeSelector={!isViewMode}
           showActiveStatus={isEditMode}
           showId={isViewMode || isEditMode}
           id={initialData?.id}
-          onTypeChange={(value) =>
-            setFormData((prev) => ({ ...prev, wasteOwnerType: value }))
-          }
-          onNameChange={(value) =>
-            setFormData((prev) => ({ ...prev, name: value }))
-          }
-          onBusinessCodeChange={(value) =>
-            setFormData((prev) => ({ ...prev, businessCode: value }))
-          }
-          onContactPersonChange={(value) =>
-            setFormData((prev) => ({ ...prev, contactPerson: value }))
-          }
-          onPhoneChange={(value) =>
-            setFormData((prev) => ({ ...prev, phone: value }))
-          }
-          onEmailChange={(value) =>
-            setFormData((prev) => ({ ...prev, email: value }))
-          }
-          onLocationRefIdChange={(value) =>
-            setFormData((prev) => ({ ...prev, locationRefId: value }))
-          }
-          onFullAddressChange={(value) =>
-            setFormData((prev) => ({ ...prev, fullAddress: value }))
-          }
-          onActiveChange={(value) =>
-            setFormData((prev) => ({ ...prev, isActive: value }))
-          }
+          onLocationRefIdChange={(value) => setLocationRefId(value)}
+          onFullAddressChange={(value) => setFullAddress(value)}
         />
       </div>
 

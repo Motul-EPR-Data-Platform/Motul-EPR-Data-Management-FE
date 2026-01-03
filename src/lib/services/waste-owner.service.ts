@@ -56,6 +56,7 @@ export const WasteOwnerService = {
   async getAllWasteOwners(
     filters?: GetWasteOwnersFilters,
     pagination?: IPaginationParams,
+    noCache?: boolean,
   ): Promise<WasteOwnersPaginatedResponse> {
     const queryParams = new URLSearchParams();
 
@@ -96,7 +97,9 @@ export const WasteOwnerService = {
       ? `${ENDPOINTS.WASTE_OWNERS.ROOT}?${queryString}`
       : ENDPOINTS.WASTE_OWNERS.ROOT;
 
-    const { data } = await api.get(path.wasteOwners(url));
+    const { data } = await api.get(path.wasteOwners(url), {
+      ...(noCache && { noCache: true } as any),
+    });
 
     // Convert backend types to frontend types
     if (data.data && Array.isArray(data.data)) {
@@ -141,6 +144,9 @@ export const WasteOwnerService = {
     const backendDto: any = { ...dto };
     if (dto.wasteOwnerType) {
       backendDto.wasteOwnerType = toBackendWasteOwnerType(dto.wasteOwnerType);
+    }
+    if (dto.businessCode) {
+      backendDto.businessCode = dto.businessCode;
     }
     // Convert empty strings to null for optional fields
     if (dto.contactPerson !== undefined) {
