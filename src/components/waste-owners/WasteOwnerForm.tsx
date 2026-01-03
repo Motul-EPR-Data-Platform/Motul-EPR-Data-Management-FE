@@ -71,7 +71,7 @@ export function WasteOwnerForm({
   useEffect(() => {
     if (initialData) {
       setFormData({
-        wasteOwnerType: initialData.wasteOwnerType,
+        wasteOwnerType: initialData.wasteOwnerType || "business",
         name: initialData.name,
         businessCode: initialData.businessCode,
         contactPerson: initialData.contactPerson || "",
@@ -81,8 +81,21 @@ export function WasteOwnerForm({
         fullAddress: initialData.location?.address || "",
         isActive: initialData.isActive,
       });
+    } else if (isCreateMode) {
+      // Reset to defaults for create mode
+      setFormData({
+        wasteOwnerType: "business",
+        name: "",
+        businessCode: "",
+        contactPerson: "",
+        phone: "+84 ",
+        email: "",
+        locationRefId: "",
+        fullAddress: "",
+        isActive: true,
+      });
     }
-  }, [initialData]);
+  }, [initialData, isCreateMode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

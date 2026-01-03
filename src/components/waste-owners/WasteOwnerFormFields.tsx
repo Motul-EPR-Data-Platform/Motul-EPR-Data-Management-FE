@@ -93,7 +93,8 @@ export function WasteOwnerFormFields({
         <div className="grid gap-2">
           <Label htmlFor="wasteOwnerType">Loại *</Label>
           <Select
-            value={wasteOwnerType}
+            key={`waste-owner-type-${wasteOwnerType}`} // Force re-render when type changes
+            value={wasteOwnerType || "business"}
             onValueChange={(value) => onTypeChange(value as WasteOwnerType)}
             required
             disabled={disabled}
@@ -104,7 +105,7 @@ export function WasteOwnerFormFields({
             <SelectContent>
               <SelectItem value="business">Doanh nghiệp (DN)</SelectItem>
               <SelectItem value="individual">Cá nhân (CN)</SelectItem>
-              <SelectItem value="organization">Tổ chức (TC)</SelectItem>
+              <SelectItem value="organization">Hộ kinh doanh (HKD)</SelectItem>
             </SelectContent>
           </Select>
         </div>

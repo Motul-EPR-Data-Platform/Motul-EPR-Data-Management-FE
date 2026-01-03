@@ -7,7 +7,7 @@ export function getWasteOwnerTypeLabel(type: WasteOwnerType | string): string {
     case "business":
       return "Doanh nghiệp";
     case "organization":
-      return "Tổ chức";
+      return "Hộ kinh doanh";
     default:
       return type;
   }
@@ -35,7 +35,7 @@ export function getNameLabel(type: WasteOwnerType | string): string {
     case "business":
       return "Tên Doanh nghiệp *";
     case "organization":
-      return "Tên Tổ chức *";
+      return "Tên Hộ kinh doanh *";
     default:
       return "Tên *";
   }

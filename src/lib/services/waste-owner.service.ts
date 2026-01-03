@@ -97,7 +97,7 @@ export const WasteOwnerService = {
       : ENDPOINTS.WASTE_OWNERS.ROOT;
 
     const { data } = await api.get(path.wasteOwners(url));
-    
+
     // Convert backend types to frontend types
     if (data.data && Array.isArray(data.data)) {
       data.data = data.data.map((item: any) => ({
@@ -105,7 +105,7 @@ export const WasteOwnerService = {
         wasteOwnerType: fromBackendWasteOwnerType(item.wasteOwnerType),
       }));
     }
-    
+
     return {
       data: data.data || [],
       pagination: data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0, hasNext: false, hasPrev: false },

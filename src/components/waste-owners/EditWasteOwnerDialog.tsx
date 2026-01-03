@@ -87,6 +87,7 @@ export function EditWasteOwnerDialog({
           </DialogDescription>
         </DialogHeader>
         <WasteOwnerForm
+          key={wasteOwner.id} // Force re-render when wasteOwner changes
           initialData={wasteOwner}
           mode="edit"
           isLoading={isLoading}
