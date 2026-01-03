@@ -108,7 +108,11 @@ export function useTaggedSearch({
       const newUrl = params.toString()
         ? `${window.location.pathname}?${params.toString()}`
         : window.location.pathname;
-      router.replace(newUrl, { scroll: false });
+
+      // Defer router update to avoid calling it during render
+      queueMicrotask(() => {
+        router.replace(newUrl, { scroll: false });
+      });
     },
     [router, searchParams, searchParamName, tagParamName, defaultTag, tags]
   );

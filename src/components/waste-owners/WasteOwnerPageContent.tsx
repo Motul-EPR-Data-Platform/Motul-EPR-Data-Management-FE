@@ -162,15 +162,21 @@ export function WasteOwnerPageContent({
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  // Handlers
+  // Handlers - update filter and reset page together
   const handleTypeChange = (value: string) => {
     updateFilterParams({ type: value });
-    resetToPageOne();
+    // Reset page if not already on page 1
+    if (pagination.page !== 1) {
+      resetToPageOne();
+    }
   };
 
   const handleStatusChange = (value: string) => {
     updateFilterParams({ status: value });
-    resetToPageOne();
+    // Reset page if not already on page 1
+    if (pagination.page !== 1) {
+      resetToPageOne();
+    }
   };
 
   const handleView = (wasteOwner: WasteOwnerWithLocation) => {

@@ -117,24 +117,35 @@ export function usePaginationWithURL(
   }, [searchParams, urlPage, urlLimit, syncToURL]);
 
   // Update URL when pagination changes (if syncToURL is enabled)
-  const updateURL = useCallback(
-    (page: number, limit: number) => {
-      if (!syncToURL) return;
+  // Use useEffect to avoid calling router during render
+  useEffect(() => {
+    if (!syncToURL) return;
 
-      const params = new URLSearchParams(searchParams.toString());
-      const pageParam = paramNames.page || "page";
-      const limitParam = paramNames.limit || "limit";
+    const params = new URLSearchParams(searchParams.toString());
+    const pageParam = paramNames.page || "page";
+    const limitParam = paramNames.limit || "limit";
 
-      if (page === initialPage) {
+    const currentPage = pagination.page;
+    const currentLimit = pagination.limit;
+
+    // Check if URL needs updating
+    const urlPage = searchParams.get(pageParam);
+    const urlLimit = searchParams.get(limitParam);
+    const urlPageNum = urlPage ? parseInt(urlPage, 10) : initialPage;
+    const urlLimitNum = urlLimit ? parseInt(urlLimit, 10) : initialLimit;
+
+    // Only update if different from URL
+    if (currentPage !== urlPageNum || currentLimit !== urlLimitNum) {
+      if (currentPage === initialPage) {
         params.delete(pageParam);
       } else {
-        params.set(pageParam, String(page));
+        params.set(pageParam, String(currentPage));
       }
 
-      if (limit === initialLimit) {
+      if (currentLimit === initialLimit) {
         params.delete(limitParam);
       } else {
-        params.set(limitParam, String(limit));
+        params.set(limitParam, String(currentLimit));
       }
 
       const newUrl = params.toString()
@@ -143,32 +154,31 @@ export function usePaginationWithURL(
 
       // Use router.replace to avoid adding to history
       router.replace(newUrl, { scroll: false });
-    },
-    [router, syncToURL, searchParams, paramNames, initialPage, initialLimit]
-  );
+    }
+    // Only depend on pagination values, not the whole object
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagination.page, pagination.limit, syncToURL, router, searchParams, paramNames, initialPage, initialLimit]);
 
   const handlePageChange = useCallback(
     (page: number) => {
       setPagination((prev) => {
         const newPagination = { ...prev, page };
-        updateURL(newPagination.page, newPagination.limit);
         onPageChange?.(page);
         return newPagination;
       });
     },
-    [updateURL, onPageChange]
+    [onPageChange]
   );
 
   const handlePageSizeChange = useCallback(
     (limit: number) => {
       setPagination((prev) => {
         const newPagination = { ...prev, page: 1, limit };
-        updateURL(newPagination.page, newPagination.limit);
         onLimitChange?.(limit);
         return newPagination;
       });
     },
-    [updateURL, onLimitChange]
+    [onLimitChange]
   );
 
   const resetPagination = useCallback(() => {
@@ -181,16 +191,16 @@ export function usePaginationWithURL(
       hasPrev: false,
     };
     setPagination(reset);
-    updateURL(reset.page, reset.limit);
-  }, [initialPage, initialLimit, updateURL]);
+  }, [initialPage, initialLimit]);
 
   const resetToPageOne = useCallback(() => {
     setPagination((prev) => {
-      const newPagination = { ...prev, page: 1 };
-      updateURL(newPagination.page, newPagination.limit);
-      return newPagination;
+      if (prev.page === 1) {
+        return prev; // No change needed
+      }
+      return { ...prev, page: 1 };
     });
-  }, [updateURL]);
+  }, []);
 
   return {
     pagination,

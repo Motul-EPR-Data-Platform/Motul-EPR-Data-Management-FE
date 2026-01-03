@@ -67,7 +67,7 @@ export function useURLParams<T extends URLParamConfig>(
     return initialParams;
   });
 
-  // Update URL params
+  // Update URL params - defer router update to avoid render issues
   const updateParams = useCallback(
     (updates: Partial<{ [K in keyof T]: T[K]["defaultValue"] }>) => {
       const newParams = new URLSearchParams(searchParams.toString());
@@ -90,7 +90,11 @@ export function useURLParams<T extends URLParamConfig>(
       const newUrl = newParams.toString()
         ? `${window.location.pathname}?${newParams.toString()}`
         : window.location.pathname;
-      router.replace(newUrl, { scroll: false });
+
+      // Defer router update to avoid calling it during render
+      queueMicrotask(() => {
+        router.replace(newUrl, { scroll: false });
+      });
     },
     [router, searchParams]
   );
