@@ -1,0 +1,438 @@
+"use client";
+
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { CollectionRecordDetail, RecordStatus, GetRecordsFilters } from "@/types/record";
+import { IPaginationParams } from "@/types/pagination";
+import { RecordsTable } from "./RecordsTable";
+import { RecordSummaryCards } from "./RecordSummaryCards";
+import { TableFilters } from "@/components/ui/TableFilters";
+import { FilterSelect } from "@/components/ui/FilterSelect";
+import { TaggedSearchBar, SearchTag } from "@/components/ui/tagged-search-bar";
+import { Button } from "@/components/ui/button";
+import { Plus, MoreHorizontal } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { BatchDetailDialog } from "@/components/batches/BatchDetailDialog";
+import { useTaggedSearch } from "@/hooks/useTaggedSearch";
+import { useURLParams } from "@/hooks/useURLParams";
+import { usePaginationWithURL } from "@/hooks/usePaginationWithURL";
+import { useTableData } from "@/hooks/useTableData";
+import { CollectionRecordService } from "@/lib/services/collection-record.service";
+import { BatchService } from "@/lib/services/batch.service";
+import { CollectionBatch } from "@/types/batch";
+import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+// Search tags configuration for records
+const recordSearchTags: SearchTag[] = [
+  { value: "id", label: "Mã hồ sơ" },
+  { value: "wasteOwner", label: "Chủ nguồn thải" },
+  { value: "vehiclePlate", label: "Biển số xe" },
+];
+
+interface RecordPageContentProps {
+  // Mode configuration
+  mode: "motul" | "recycler"; // motul = admin view, recycler = recycler view
+
+  // Permissions
+  canCreate?: boolean;
+  canEdit?: boolean;
+
+  // Callbacks
+  onView?: (record: CollectionRecordDetail) => void;
+  onEdit?: (record: CollectionRecordDetail) => void;
+}
+
+export function RecordPageContent({
+  mode,
+  canCreate = false,
+  canEdit = false,
+  onView,
+  onEdit,
+}: RecordPageContentProps) {
+  const router = useRouter();
+
+  // URL params for filters - memoize config to prevent recreation
+  const filterConfig = useMemo(
+    () => ({
+      status: { defaultValue: "all" },
+      batchId: { defaultValue: "all" },
+      startDate: { defaultValue: "" },
+      endDate: { defaultValue: "" },
+    }),
+    []
+  );
+  const { params: filterParams, updateParams: updateFilterParams } = useURLParams(filterConfig);
+
+  // Batch filter state
+  const [batches, setBatches] = useState<CollectionBatch[]>([]);
+  const [isLoadingBatches, setIsLoadingBatches] = useState(false);
+  const [isBatchDetailDialogOpen, setIsBatchDetailDialogOpen] = useState(false);
+
+  // Fetch batches
+  useEffect(() => {
+    const fetchBatches = async () => {
+      setIsLoadingBatches(true);
+      try {
+        const data = await BatchService.getAllBatches();
+        setBatches(data);
+      } catch (error) {
+        console.error("Error fetching batches:", error);
+      } finally {
+        setIsLoadingBatches(false);
+      }
+    };
+
+    fetchBatches();
+  }, []);
+
+  // Tagged search
+  const {
+    searchQuery,
+    debouncedSearchQuery,
+    selectedTag: searchField,
+    setSearchQuery,
+    setSelectedTag: setSearchField,
+  } = useTaggedSearch({
+    tags: recordSearchTags,
+    defaultTag: "id",
+    searchParamName: "search",
+    tagParamName: "searchField",
+  });
+
+  // Pagination with URL sync
+  const { pagination, setPagination, handlePageChange, handlePageSizeChange, resetToPageOne } =
+    usePaginationWithURL({
+      initialPage: 1,
+      initialLimit: 20,
+    });
+
+  // Build filters for API call - memoized to prevent infinite loops
+  const filters = useMemo(() => {
+    const filterObj: Omit<GetRecordsFilters, "page" | "limit"> = {};
+
+    if (filterParams.status !== "all") {
+      filterObj.status = filterParams.status as RecordStatus;
+    }
+
+    if (filterParams.startDate && filterParams.endDate) {
+      filterObj.startDate = filterParams.startDate;
+      filterObj.endDate = filterParams.endDate;
+    }
+
+    // Use debounced search value for API call based on selected search field
+    // Note: Backend doesn't support search by these fields directly, so we'll filter client-side
+    // or we can add backend support later
+
+    return filterObj;
+  }, [filterParams.status, filterParams.startDate, filterParams.endDate]);
+
+  // Memoize fetchData function to prevent recreation on every render
+  const fetchData = useCallback(
+    async (
+      filters: Omit<GetRecordsFilters, "page" | "limit">,
+      paginationParams: IPaginationParams,
+      noCache?: boolean
+    ) => {
+      const response = await CollectionRecordService.getAllRecords(filters, paginationParams, noCache);
+      return {
+        data: response.data || [],
+        pagination: response.pagination || {
+          page: paginationParams.page || 1,
+          limit: paginationParams.limit || 20,
+          total: response.count || response.data?.length || 0,
+          totalPages: Math.ceil((response.count || response.data?.length || 0) / (paginationParams.limit || 20)),
+          hasNext: false,
+          hasPrev: false,
+        },
+      };
+    },
+    []
+  );
+
+  // Table data fetching
+  const { data: records, isLoading, error, reload } = useTableData({
+    fetchData,
+    filters,
+    pagination,
+    setPagination,
+    enabled: true,
+  });
+
+  // Calculate status counts from pagination metadata
+  // We'll update this when we get the response
+  const [statusCounts, setStatusCounts] = useState({
+    total: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    draft: 0,
+  });
+
+  // Fetch status counts separately on mount
+  useEffect(() => {
+    const fetchStatusCounts = async () => {
+      try {
+        // Fetch all records without pagination to get total count
+        const allResponse = await CollectionRecordService.getAllRecords({}, { page: 1, limit: 1 });
+        const total = allResponse.pagination?.total || allResponse.count || 0;
+
+        // Fetch counts for each status
+        const [pendingResponse, approvedResponse, rejectedResponse, draftResponse] = await Promise.all([
+          CollectionRecordService.getAllRecords({ status: "pending" }, { page: 1, limit: 1 }),
+          CollectionRecordService.getAllRecords({ status: "approved" }, { page: 1, limit: 1 }),
+          CollectionRecordService.getAllRecords({ status: "rejected" }, { page: 1, limit: 1 }),
+          CollectionRecordService.getAllRecords({ status: "draft" }, { page: 1, limit: 1 }),
+        ]);
+
+        setStatusCounts({
+          total,
+          pending: pendingResponse.pagination?.total || pendingResponse.count || 0,
+          approved: approvedResponse.pagination?.total || approvedResponse.count || 0,
+          rejected: rejectedResponse.pagination?.total || rejectedResponse.count || 0,
+          draft: draftResponse.pagination?.total || draftResponse.count || 0,
+        });
+      } catch (err) {
+        console.error("Error fetching status counts:", err);
+        // Don't show error toast for status counts, just log it
+      }
+    };
+
+    fetchStatusCounts();
+  }, []); // Only fetch once on mount
+
+  // Handle errors
+  useEffect(() => {
+    if (error) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Không thể tải danh sách bản ghi"
+      );
+    }
+  }, [error]);
+
+  // Handlers - update filter and reset page together
+  const handleStatusChange = (value: string) => {
+    updateFilterParams({ status: value });
+    if (pagination.page !== 1) {
+      resetToPageOne();
+    }
+  };
+
+  const handleBatchChange = (value: string) => {
+    updateFilterParams({ batchId: value });
+    if (pagination.page !== 1) {
+      resetToPageOne();
+    }
+  };
+
+  const handleStartDateChange = (value: string) => {
+    updateFilterParams({ startDate: value });
+    if (pagination.page !== 1) {
+      resetToPageOne();
+    }
+  };
+
+  const handleEndDateChange = (value: string) => {
+    updateFilterParams({ endDate: value });
+    if (pagination.page !== 1) {
+      resetToPageOne();
+    }
+  };
+
+  const handleViewRecord = (record: CollectionRecordDetail) => {
+    if (onView) {
+      onView(record);
+    } else {
+      if (mode === "motul") {
+        router.push(`/motul/records/view?id=${record.id}`);
+      } else {
+        router.push(`/recycler/records/view?id=${record.id}`);
+      }
+    }
+  };
+
+  const handleEditRecord = (record: CollectionRecordDetail) => {
+    if (record.status === "draft") {
+      if (onEdit) {
+        onEdit(record);
+      } else {
+        router.push(`/recycler/records/edit?id=${record.id}`);
+      }
+    } else {
+      toast.info("Chỉ có thể chỉnh sửa bản nháp");
+    }
+  };
+
+  // Filter client-side by search query and batch if needed
+  const filteredRecords = useMemo(() => {
+    let filtered = [...records];
+
+    // Filter by batch (client-side)
+    if (filterParams.batchId && filterParams.batchId !== "all") {
+      filtered = filtered.filter((record) => record.batchId === filterParams.batchId);
+    }
+
+    // Filter by search query
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase();
+      filtered = filtered.filter((record) => {
+        if (searchField === "id") {
+          return (
+            record.id.toLowerCase().includes(query) ||
+            record.recordName?.toLowerCase().includes(query)
+          );
+        } else if (searchField === "wasteOwner") {
+          const wasteOwner =
+            record.wasteOwner ||
+            (record.wasteOwners && record.wasteOwners.length > 0 ? record.wasteOwners[0] : null);
+          return (
+            wasteOwner?.name?.toLowerCase().includes(query) ||
+            wasteOwner?.businessCode?.toLowerCase().includes(query)
+          );
+        } else if (searchField === "vehiclePlate") {
+          return record.vehiclePlate?.toLowerCase().includes(query);
+        }
+        return false;
+      });
+    }
+
+    return filtered;
+  }, [records, debouncedSearchQuery, searchField, filterParams.batchId]);
+
+  // Filter options
+  const statusOptions = [
+    { value: "all", label: "Tất cả trạng thái" },
+    { value: "draft", label: "Bản nháp" },
+    { value: "pending", label: "Đang chờ duyệt" },
+    { value: "approved", label: "Đã được phê duyệt" },
+    { value: "rejected", label: "Bị từ chối" },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Summary Cards */}
+      <RecordSummaryCards counts={statusCounts} />
+
+      {/* Filter and Search Section */}
+      <TableFilters
+        title="Tất cả Bản ghi"
+        subtitle="Quản lý bản ghi thu gom"
+        search={
+          <TaggedSearchBar
+            value={searchQuery}
+            selectedTag={searchField}
+            tags={recordSearchTags}
+            onValueChange={setSearchQuery}
+            onTagChange={setSearchField}
+            placeholder="Tìm kiếm..."
+          />
+        }
+        filters={[
+          <FilterSelect
+            key="status"
+            value={filterParams.status as string}
+            options={statusOptions}
+            onChange={handleStatusChange}
+            placeholder="Tất cả trạng thái"
+          />,
+          <div key="batch" className="flex gap-2">
+            <Select
+              value={filterParams.batchId as string}
+              onValueChange={handleBatchChange}
+              disabled={isLoadingBatches}
+            >
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Tất cả lô hàng" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả lô hàng</SelectItem>
+                {batches.map((batch) => (
+                  <SelectItem key={batch.id} value={batch.id}>
+                    {batch.batchName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsBatchDetailDialogOpen(true)}
+              className="px-3"
+              title="Xem chi tiết lô hàng"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </div>,
+        ]}
+        headerContent={
+          <div className="flex gap-2 items-end">
+            <div className="grid gap-1">
+              <Label htmlFor="startDate" className="text-xs text-muted-foreground">
+                Từ ngày
+              </Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={filterParams.startDate as string}
+                onChange={(e) => handleStartDateChange(e.target.value)}
+                className="w-[140px] h-9"
+              />
+            </div>
+            <div className="grid gap-1">
+              <Label htmlFor="endDate" className="text-xs text-muted-foreground">
+                Đến ngày
+              </Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={filterParams.endDate as string}
+                onChange={(e) => handleEndDateChange(e.target.value)}
+                className="w-[140px] h-9"
+              />
+            </div>
+          </div>
+        }
+        actions={
+          mode === "recycler" && canCreate ? (
+            <Button
+              onClick={() => router.push("/recycler/records/create")}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Tạo Bản ghi thu gom mới
+            </Button>
+          ) : undefined
+        }
+      />
+
+      {/* Batch Detail Dialog */}
+      <BatchDetailDialog
+        open={isBatchDetailDialogOpen}
+        onOpenChange={setIsBatchDetailDialogOpen}
+      />
+
+      {/* Table */}
+      <RecordsTable
+        records={filteredRecords}
+        isLoading={isLoading}
+        onView={handleViewRecord}
+        onEdit={mode === "recycler" && canEdit ? handleEditRecord : undefined}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
+    </div>
+  );
+}
+

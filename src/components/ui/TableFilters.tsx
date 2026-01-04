@@ -6,6 +6,8 @@ interface TableFiltersProps {
   search?: ReactNode; // TaggedSearchBar or Input
   filters?: ReactNode[]; // Array of FilterSelect components
   actions?: ReactNode; // Action buttons (Create, Export, etc.)
+  bottomContent?: ReactNode; // Content to display below the main filter row
+  headerContent?: ReactNode; // Content to display in the header (top right)
   title?: string;
   subtitle?: string;
   className?: string;
@@ -32,18 +34,23 @@ export function TableFilters({
   search,
   filters,
   actions,
+  bottomContent,
+  headerContent,
   title,
   subtitle,
   className = "",
 }: TableFiltersProps) {
   return (
     <div className={`rounded-lg border bg-card p-6 space-y-4 ${className}`}>
-      {(title || subtitle) && (
-        <div className="space-y-1">
-          {title && <h2 className="text-lg font-semibold">{title}</h2>}
-          {subtitle && (
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
-          )}
+      {(title || subtitle || headerContent) && (
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            {title && <h2 className="text-lg font-semibold">{title}</h2>}
+            {subtitle && (
+              <p className="text-sm text-muted-foreground">{subtitle}</p>
+            )}
+          </div>
+          {headerContent && <div className="flex items-end gap-2">{headerContent}</div>}
         </div>
       )}
 
@@ -60,6 +67,8 @@ export function TableFilters({
 
         {actions && <div className="flex items-center">{actions}</div>}
       </div>
+
+      {bottomContent && <div>{bottomContent}</div>}
     </div>
   );
 }

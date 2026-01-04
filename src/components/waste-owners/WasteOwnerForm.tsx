@@ -198,8 +198,6 @@ export function WasteOwnerForm({
           errors={errors}
           showTypeSelector={!isViewMode}
           showActiveStatus={isEditMode}
-          showId={isViewMode || isEditMode}
-          id={initialData?.id}
           onLocationRefIdChange={(value) => setLocationRefId(value)}
           onFullAddressChange={(value) => setFullAddress(value)}
         />

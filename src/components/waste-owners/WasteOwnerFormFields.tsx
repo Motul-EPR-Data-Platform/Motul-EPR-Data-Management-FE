@@ -60,8 +60,6 @@ interface WasteOwnerFormFieldsProps {
   >;
   showTypeSelector?: boolean;
   showActiveStatus?: boolean;
-  showId?: boolean;
-  id?: string;
 
   // Location handlers (not in schema, handled separately)
   onLocationRefIdChange?: (value: string) => void;
@@ -85,21 +83,11 @@ export function WasteOwnerFormFields({
   errors = {},
   showTypeSelector = true,
   showActiveStatus = false,
-  showId = false,
-  id,
   onLocationRefIdChange,
   onFullAddressChange,
 }: WasteOwnerFormFieldsProps) {
   return (
     <div className="grid gap-4">
-      {/* ID Field (for view/edit mode) */}
-      {showId && id && (
-        <div className="grid gap-2">
-          <Label>ID</Label>
-          <Input value={id} disabled className="font-mono" />
-        </div>
-      )}
-
       {/* Type Selector */}
       {showTypeSelector ? (
         <div className="grid gap-2">

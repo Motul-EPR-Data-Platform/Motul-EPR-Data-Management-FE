@@ -83,11 +83,13 @@ export const CollectionRecordService = {
   },
 
   /**
-   * Get all collection records (with optional filters)
+   * Get all collection records (with optional filters and pagination)
    * GET /api/collection-records
    */
   async getAllRecords(
-    filters?: GetRecordsFilters,
+    filters?: Omit<GetRecordsFilters, "page" | "limit">,
+    paginationParams?: { page?: number; limit?: number },
+    noCache?: boolean,
   ): Promise<CollectionRecordsListResponse> {
     const queryParams = new URLSearchParams();
 
@@ -113,11 +115,17 @@ export const CollectionRecordService = {
     if (filters?.submissionMonth) {
       queryParams.append("submissionMonth", filters.submissionMonth);
     }
-    if (filters?.page) {
-      queryParams.append("page", filters.page.toString());
+    if (filters?.startDate) {
+      queryParams.append("startDate", filters.startDate);
     }
-    if (filters?.limit) {
-      queryParams.append("limit", filters.limit.toString());
+    if (filters?.endDate) {
+      queryParams.append("endDate", filters.endDate);
+    }
+    if (paginationParams?.page) {
+      queryParams.append("page", paginationParams.page.toString());
+    }
+    if (paginationParams?.limit) {
+      queryParams.append("limit", paginationParams.limit.toString());
     }
 
     const queryString = queryParams.toString();
@@ -125,7 +133,9 @@ export const CollectionRecordService = {
       ? `${ENDPOINTS.COLLECTION_RECORDS.ROOT}?${queryString}`
       : ENDPOINTS.COLLECTION_RECORDS.ROOT;
 
-    const { data } = await api.get(url);
+    const { data } = await api.get(url, {
+      ...(noCache && { headers: { "Cache-Control": "no-cache" } }),
+    });
 
     // Normalize backend status to frontend status
     if (data.data && Array.isArray(data.data)) {
