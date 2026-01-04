@@ -14,13 +14,14 @@ import { CreateDraftFormData } from "@/types/record";
 import { BatchDropdown } from "@/components/batches/BatchDropdown";
 import { BatchDetailDialog } from "@/components/batches/BatchDetailDialog";
 import { BatchType } from "@/types/batch";
+import { SearchableWasteOwnerSelect } from "@/components/waste-owners/SearchableWasteOwnerSelect";
 
 interface Step1WasteSourceInfoProps {
   formData: Partial<CreateDraftFormData>;
   errors?: Record<string, string>;
   onChange: (field: keyof CreateDraftFormData, value: any) => void;
   disabled?: boolean;
-  wasteOwners?: Array<{ id: string; name: string }>;
+  wasteOwners?: Array<{ id: string; name: string }>; // Optional, kept for backward compatibility
   contractTypes?: Array<{ id: string; name: string; code: string }>;
   wasteTypes?: Array<{
     id: string;
@@ -65,31 +66,15 @@ export function Step1WasteSourceInfo({
           />
           {/* Waste Owner Selection */}
           <div className="grid gap-2">
-            <Label htmlFor="wasteOwnerId">
-              Tên Chủ nguồn thải <span className="text-red-500">*</span>
-            </Label>
-            <Select
-              value={formData.wasteOwnerId || ""}
-              onValueChange={(value) => onChange("wasteOwnerId", value || null)}
+            <SearchableWasteOwnerSelect
+              value={formData.wasteOwnerId || null}
+              onChange={(wasteOwnerId) => onChange("wasteOwnerId", wasteOwnerId)}
+              label="Tên Chủ nguồn thải"
+              required
               disabled={disabled}
-            >
-              <SelectTrigger
-                id="wasteOwnerId"
-                className={errors.wasteOwnerId ? "border-red-500" : ""}
-              >
-                <SelectValue placeholder="Tìm hoặc chọn từ danh sách...." />
-              </SelectTrigger>
-              <SelectContent>
-                {wasteOwners.map((owner) => (
-                  <SelectItem key={owner.id} value={owner.id}>
-                    {owner.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.wasteOwnerId && (
-              <p className="text-sm text-red-500">{errors.wasteOwnerId}</p>
-            )}
+              error={errors.wasteOwnerId}
+              placeholder="Tìm hoặc chọn từ danh sách...."
+            />
           </div>
 
           {/* Classification (Contract Type) */}
