@@ -168,23 +168,6 @@ export function Step1WasteSourceInfo({
               <p className="text-sm text-red-500">{errors.wasteSourceId}</p>
             )}
           </div>
-
-          {/* Waste Generation Source */}
-          <div className="grid gap-2">
-            <Label htmlFor="wasteGenerationSource">
-              Nguồn phát sinh chất thải
-            </Label>
-            <Select disabled={disabled}>
-              <SelectTrigger id="wasteGenerationSource">
-                <SelectValue placeholder="Drop down" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="production">Sản xuất</SelectItem>
-                <SelectItem value="service">Dịch vụ</SelectItem>
-                <SelectItem value="other">Khác</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
       </div>
 
