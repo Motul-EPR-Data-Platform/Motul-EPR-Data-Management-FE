@@ -9,11 +9,15 @@ import { toast } from "sonner";
 import { validateStep, ValidationContext } from "@/lib/validations/collectionRecordValidation";
 import { loadDropdownData, DropdownData } from "@/lib/utils/collectionRecordDataLoader";
 import {
-  formatDateDDMMYYYY,
   getSelectedContractTypeName,
   getSelectedWasteSourceName,
   getSelectedHazCodeName,
 } from "@/lib/utils/collectionRecordHelpers";
+import {
+  buildDraftDTO as buildDraftDTOUtil,
+  buildPartialDraftDTO as buildPartialDraftDTOUtil,
+  type OriginalFormData,
+} from "@/lib/utils/collectionRecordDTOBuilder";
 import {
   uploadFilesForRecordCreate,
   uploadFilesForRecordEdit,
@@ -21,6 +25,10 @@ import {
   OriginalFileRefs,
   OriginalFileIds,
 } from "@/lib/utils/collectionRecordFileUpload";
+import {
+  handleSaveDraft as handleSaveDraftUtil,
+  handleSubmitRecord as handleSubmitRecordUtil,
+} from "@/lib/utils/collectionRecordHandlers";
 
 export type FormMode = "create" | "edit";
 
@@ -99,6 +107,7 @@ export interface UseCollectionRecordFormReturn {
   originalFileIdsRef: React.MutableRefObject<OriginalFileIds>;
   originalFileRefsRef: React.MutableRefObject<OriginalFileRefs>;
   setIsLoadingRecord: (loading: boolean) => void;
+  setOriginalFormData: (data: Partial<CreateDraftFormData>, collectionDate: Date, recycledDate: Date | undefined, locationRefId: string) => void;
 }
 
 export function useCollectionRecordForm(
@@ -171,6 +180,24 @@ export function useCollectionRecordForm(
     recycledPhoto: null,
     stockpilePhoto: null,
   });
+
+  // Original form data (for edit mode - to track changes)
+  const originalFormDataRef = useRef<OriginalFormData | null>(null);
+
+  // Function to set original form data (called when record is loaded in edit mode)
+  const setOriginalFormData = useCallback((
+    data: Partial<CreateDraftFormData>,
+    collectionDateValue: Date,
+    recycledDateValue: Date | undefined,
+    locationRefIdValue: string,
+  ) => {
+    originalFormDataRef.current = {
+      formData: { ...data },
+      collectionDate: new Date(collectionDateValue),
+      recycledDate: recycledDateValue ? new Date(recycledDateValue) : undefined,
+      locationRefId: locationRefIdValue,
+    };
+  }, []);
 
   // Load dropdown data
   useEffect(() => {
@@ -284,93 +311,33 @@ export function useCollectionRecordForm(
     }
   }, [mode, onRecordLoad]);
 
-  // Build DTO from form data
+  // Build DTO from form data (full DTO for create)
   const buildDraftDTO = useCallback((): CreateDraftDTO => {
-    return {
-      batchId: formData.batchId || null,
-      submissionMonth: formatDateDDMMYYYY(
-        new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1),
-      ),
-      collectedVolumeKg: formData.collectedVolumeKg || null,
-      deliveryDate: formatDateDDMMYYYY(collectionDate),
-      vehiclePlate: formData.vehiclePlate || null,
-      stockpiled: formData.stockpiled ?? false,
-      stockpileVolumeKg: formData.stockpileVolumeKg || null,
-      recycledDate: recycledDate ? formatDateDDMMYYYY(recycledDate) : null,
-      recycledVolumeKg: formData.recycledVolumeKg || null,
-      wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
-      contractTypeId: formData.contractTypeId || null,
-      wasteSourceId: formData.wasteSourceId || null,
-      hazWasteId:
-        formData.hazWasteId && formData.hazWasteId.trim() !== ""
-          ? formData.hazWasteId
-          : null,
-      pickupLocation: locationRefId ? { refId: locationRefId } : null,
-      collectedPricePerKg: formData.collectedPricePerKg || null,
-    };
+    return buildDraftDTOUtil(formData, collectionDate, recycledDate, locationRefId);
   }, [formData, collectionDate, recycledDate, locationRefId]);
 
   // Save draft handler
   const handleSaveDraft = useCallback(async () => {
     setIsLoading(true);
     try {
-      const draftData = buildDraftDTO();
-      let currentDraftId = draftId;
-
-      if (currentDraftId) {
-        // Update existing draft
-        await CollectionRecordService.updateDraft(currentDraftId, draftData);
-        toast.success("Đã cập nhật bản nháp");
-      } else {
-        // Create new draft
-        const result = await CollectionRecordService.createDraft(draftData);
-        currentDraftId = result.id;
-        setDraftId(currentDraftId);
-        toast.success("Đã lưu bản nháp");
-      }
-
-      // Upload files after draft is created/updated
-      if (
-        currentDraftId &&
-        (evidenceFiles.length > 0 ||
-          qualityDocuments.length > 0 ||
-          recycledPhoto ||
-          stockpilePhoto)
-      ) {
-        try {
-          if (mode === "create") {
-            await uploadFilesForRecordCreate(
-              currentDraftId,
-              evidenceFiles,
-              qualityDocuments,
-              recycledPhoto,
-              stockpilePhoto,
-              uploadedFilesRef,
-            );
-          } else {
-            await uploadFilesForRecordEdit(
-              currentDraftId,
-              evidenceFiles,
-              qualityDocuments,
-              recycledPhoto,
-              stockpilePhoto,
-              originalFileIdsRef.current,
-              originalFileRefsRef.current,
-            );
-          }
-          toast.success("Đã tải lên tài liệu");
-        } catch (fileError: any) {
-          console.error("Error uploading files:", fileError);
-          toast.error(
-            fileError?.response?.data?.message ||
-              fileError?.message ||
-              "Đã lưu bản nháp nhưng không thể tải lên một số tài liệu",
-          );
-        }
-      }
-
-      // Navigate back to records list after successful save
-      router.push("/recycler/my-records");
+      await handleSaveDraftUtil({
+        mode,
+        draftId,
+        formData,
+        collectionDate,
+        recycledDate,
+        locationRefId,
+        evidenceFiles,
+        qualityDocuments,
+        recycledPhoto,
+        stockpilePhoto,
+        originalFormData: originalFormDataRef.current,
+        uploadedFilesRef,
+        originalFileIdsRef,
+        originalFileRefsRef,
+        setDraftId,
+        router,
+      });
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message ||
@@ -381,13 +348,20 @@ export function useCollectionRecordForm(
       setIsLoading(false);
     }
   }, [
-    buildDraftDTO,
+    mode,
     draftId,
+    formData,
+    collectionDate,
+    recycledDate,
+    locationRefId,
     evidenceFiles,
     qualityDocuments,
     recycledPhoto,
     stockpilePhoto,
-    mode,
+    uploadedFilesRef,
+    originalFileIdsRef,
+    originalFileRefsRef,
+    setDraftId,
     router,
   ]);
 
@@ -409,93 +383,51 @@ export function useCollectionRecordForm(
       return;
     }
 
-    let currentDraftId = draftId;
-
-    // Create draft if it doesn't exist
-    if (!currentDraftId) {
-      setIsLoading(true);
-      try {
-        const draftData = buildDraftDTO();
-        const result = await CollectionRecordService.createDraft(draftData);
-        currentDraftId = result.id;
-        setDraftId(currentDraftId);
-      } catch (error: any) {
-        toast.error(
-          error?.response?.data?.message ||
-            error?.message ||
-            "Không thể tạo bản nháp",
-        );
-        setIsLoading(false);
-        return;
-      }
-    }
-
-    // Upload files before submitting
-    if (
-      currentDraftId &&
-      (evidenceFiles.length > 0 ||
-        qualityDocuments.length > 0 ||
-        recycledPhoto ||
-        stockpilePhoto)
-    ) {
-      try {
-        if (mode === "create") {
-          await uploadFilesForRecordCreate(
-            currentDraftId,
-            evidenceFiles,
-            qualityDocuments,
-            recycledPhoto,
-            stockpilePhoto,
-            uploadedFilesRef,
-          );
-        } else {
-          await uploadFilesForRecordEdit(
-            currentDraftId,
-            evidenceFiles,
-            qualityDocuments,
-            recycledPhoto,
-            stockpilePhoto,
-            originalFileIdsRef.current,
-            originalFileRefsRef.current,
-          );
-        }
-      } catch (fileError: any) {
-        console.error("Error uploading files:", fileError);
-        toast.error(
-          fileError?.response?.data?.message ||
-            fileError?.message ||
-            "Không thể tải lên một số tài liệu. Vui lòng thử lại.",
-        );
-        setIsLoading(false);
-        return;
-      }
-    }
-
-    // Submit the record
     setIsLoading(true);
     try {
-      await CollectionRecordService.submitRecord(currentDraftId!);
-      toast.success("Đã gửi bản ghi để phê duyệt");
-      router.push("/recycler/my-records");
+      await handleSubmitRecordUtil({
+        mode,
+        draftId,
+        formData,
+        collectionDate,
+        recycledDate,
+        locationRefId,
+        evidenceFiles,
+        qualityDocuments,
+        recycledPhoto,
+        stockpilePhoto,
+        uploadedFilesRef,
+        originalFileIdsRef,
+        originalFileRefsRef,
+        setDraftId,
+        router,
+      });
     } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Không thể gửi bản ghi",
-      );
+      // Error is already handled in handleSubmitRecordUtil
+      if (error?.message === "Vehicle plate is required") {
+        setCurrentStep(2);
+        setErrors((prev) => ({ ...prev, vehiclePlate: "Biển số xe là bắt buộc" }));
+      }
     } finally {
       setIsLoading(false);
     }
   }, [
     validateCurrentStep,
     formData.vehiclePlate,
+    mode,
     draftId,
-    buildDraftDTO,
+    formData,
+    collectionDate,
+    recycledDate,
+    locationRefId,
     evidenceFiles,
     qualityDocuments,
     recycledPhoto,
     stockpilePhoto,
-    mode,
+    uploadedFilesRef,
+    originalFileIdsRef,
+    originalFileRefsRef,
+    setDraftId,
     router,
   ]);
 
@@ -594,6 +526,7 @@ export function useCollectionRecordForm(
     originalFileIdsRef: originalFileIdsRef as MutableRefObject<OriginalFileIds>,
     originalFileRefsRef: originalFileRefsRef as MutableRefObject<OriginalFileRefs>,
     setIsLoadingRecord,
+    setOriginalFormData,
   };
 }
 

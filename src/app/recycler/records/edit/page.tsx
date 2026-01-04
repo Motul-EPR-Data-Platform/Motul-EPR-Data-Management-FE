@@ -78,6 +78,7 @@ export default function EditCollectionRecordPage() {
     getSelectedHazCodeName,
     originalFileIdsRef,
     originalFileRefsRef,
+    setOriginalFormData,
   } = useCollectionRecordForm({ mode: "edit", recordId });
 
   const [batchName, setBatchName] = useState<string | undefined>();
@@ -148,20 +149,25 @@ export default function EditCollectionRecordPage() {
           setFormData(prefillData);
 
           // Prefill dates
+          let parsedCollectionDate = new Date();
           if (record.deliveryDate) {
             const parsedDate = parseDate(record.deliveryDate);
             if (parsedDate) {
+              parsedCollectionDate = parsedDate;
               setCollectionDate(parsedDate);
             }
           }
+          let parsedRecycledDate: Date | undefined = undefined;
           if (record.recycledDate) {
             const parsedDate = parseDate(record.recycledDate);
             if (parsedDate) {
+              parsedRecycledDate = parsedDate;
               setRecycledDate(parsedDate);
             }
           }
 
           // Prefill location data
+          let locationRefIdValue = "";
           if (record.pickupLocation) {
             setFullAddress(record.pickupLocation.address || "");
             if (
@@ -172,9 +178,13 @@ export default function EditCollectionRecordPage() {
               setLongitude(record.pickupLocation.longitude);
             }
             if (record.pickupLocationId) {
+              locationRefIdValue = record.pickupLocationId;
               setLocationRefId(record.pickupLocationId);
             }
           }
+
+          // Store original form data for change tracking
+          setOriginalFormData(prefillData, parsedCollectionDate, parsedRecycledDate, locationRefIdValue);
 
           // Reset file tracking when loading new record
           originalFileIdsRef.current = {
