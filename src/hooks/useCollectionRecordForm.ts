@@ -7,6 +7,7 @@ import { CollectionRecordService } from "@/lib/services/collection-record.servic
 import { WasteOwnerService } from "@/lib/services/waste-owner.service";
 import { toast } from "sonner";
 import { validateStep, ValidationContext } from "@/lib/validations/collectionRecordValidation";
+import { validateRecordSubmission } from "@/lib/validations/record";
 import { loadDropdownData, DropdownData } from "@/lib/utils/collectionRecordDataLoader";
 import {
   getSelectedContractTypeName,
@@ -367,19 +368,39 @@ export function useCollectionRecordForm(
 
   // Submit handler
   const handleSubmit = useCallback(async () => {
-    // Validate all steps
-    if (!validateCurrentStep()) {
-      setCurrentStep(1);
+    // Validate all fields using Zod (except wasteSourceId and stockpiled)
+    const validationResult = validateRecordSubmission({
+      formData,
+      locationRefId,
+      collectionDate,
+      recycledDate,
+      recycledPhoto,
+      evidenceFiles,
+      qualityDocuments,
+    });
+
+    if (!validationResult.success) {
+      // Set errors and navigate to the appropriate step
+      setErrors(validationResult.errors);
+
+      // Navigate to the first step with errors
+      if (validationResult.errors.wasteOwnerId || validationResult.errors.contractTypeId || validationResult.errors.wasteSourceId || validationResult.errors.hazWasteId || validationResult.errors.batchId) {
+        setCurrentStep(1);
+      } else if (validationResult.errors.collectedVolumeKg || validationResult.errors.vehiclePlate || validationResult.errors.locationRefId || validationResult.errors.collectionDate || validationResult.errors.collectedPricePerKg) {
+        setCurrentStep(2);
+      } else if (validationResult.errors.recycledVolumeKg || validationResult.errors.recycledPhoto || validationResult.errors.evidenceFiles || validationResult.errors.recycledDate || validationResult.errors.qualityDocuments) {
+        setCurrentStep(3);
+      } else {
+        setCurrentStep(1);
+      }
+
+      toast.error("Vui lòng kiểm tra lại các trường bắt buộc");
       return;
     }
 
-    // Ensure vehicle plate is present
-    if (!formData.vehiclePlate || formData.vehiclePlate.trim() === "") {
-      toast.error(
-        "Biển số xe là bắt buộc. Vui lòng quay lại bước 2 để nhập biển số xe.",
-      );
-      setCurrentStep(2);
-      setErrors((prev) => ({ ...prev, vehiclePlate: "Biển số xe là bắt buộc" }));
+    // Validate all steps (legacy validation for step navigation)
+    if (!validateCurrentStep()) {
+      setCurrentStep(1);
       return;
     }
 
@@ -396,6 +417,7 @@ export function useCollectionRecordForm(
         qualityDocuments,
         recycledPhoto,
         stockpilePhoto,
+        originalFormData: originalFormDataRef.current,
         uploadedFilesRef,
         originalFileIdsRef,
         originalFileRefsRef,
@@ -412,8 +434,14 @@ export function useCollectionRecordForm(
       setIsLoading(false);
     }
   }, [
+    formData,
+    locationRefId,
+    collectionDate,
+    recycledDate,
+    recycledPhoto,
+    evidenceFiles,
+    qualityDocuments,
     validateCurrentStep,
-    formData.vehiclePlate,
     mode,
     draftId,
     formData,

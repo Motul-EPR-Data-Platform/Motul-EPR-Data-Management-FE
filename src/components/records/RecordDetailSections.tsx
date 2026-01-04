@@ -91,14 +91,6 @@ export function WasteSourceInfoSection({ record }: RecordDetailSectionsProps) {
             </p>
           </div>
         </div>
-        {record.wasteSource?.name && (
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">
-              Nguồn phát sinh chất thải
-            </p>
-            <p className="font-medium">{record.wasteSource.name}</p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

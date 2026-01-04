@@ -23,8 +23,14 @@ export const validateStep = (
   const newErrors: Record<string, string> = {};
 
   if (step === 1) {
+    if (!formData.batchId) {
+      newErrors.batchId = "Vui lòng chọn Lô hàng";
+    }
     if (!formData.wasteOwnerId) {
       newErrors.wasteOwnerId = "Vui lòng chọn Chủ nguồn thải";
+    }
+    if (!formData.contractTypeId) {
+      newErrors.contractTypeId = "Vui lòng chọn Phân loại hợp đồng";
     }
     if (!formData.wasteSourceId) {
       newErrors.wasteSourceId = "Vui lòng chọn Loại chất thải";
@@ -40,6 +46,15 @@ export const validateStep = (
     }
     if (!formData.vehiclePlate || formData.vehiclePlate.trim() === "") {
       newErrors.vehiclePlate = "Biển số xe là bắt buộc";
+    }
+    if (!formData.hazWasteId) {
+      newErrors.hazWasteId = "Vui lòng chọn Loại chất thải";
+    }
+    if (!formData.collectedPricePerKg || formData.collectedPricePerKg <= 0) {
+      newErrors.collectedPricePerKg = "Giá thu gom là bắt buộc";
+    }
+    if (!formData.deliveryDate) {
+      newErrors.deliveryDate = "Ngày giao hàng là bắt buộc";
     }
   }
 

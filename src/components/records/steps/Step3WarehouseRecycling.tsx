@@ -139,9 +139,7 @@ export function Step3WarehouseRecycling({
         {/* Recycling Date */}
         <div className="grid gap-2">
           <Label htmlFor="recycledDate">
-            Ngày hoàn thành tái chế
-            {/* Disabled required indicator for now */}
-            {/* <span className="text-red-500">*</span> */}
+            Ngày hoàn thành tái chế <span className="text-red-500">*</span>
           </Label>
           <DatePicker
             value={recycledDate}
@@ -211,7 +209,9 @@ export function Step3WarehouseRecycling({
 
         {/* Quality Documents Upload */}
         <div className="space-y-2">
-          <Label>Tải lên tài liệu chất lượng</Label>
+          <Label>
+            Tải lên tài liệu chất lượng <span className="text-red-500">*</span>
+          </Label>
           <DocumentUpload
             documents={qualityDocuments}
             onDocumentsChange={(files) => onQualityDocumentsChange?.(files)}

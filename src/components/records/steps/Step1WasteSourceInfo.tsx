@@ -79,7 +79,9 @@ export function Step1WasteSourceInfo({
 
           {/* Classification (Contract Type) */}
           <div className="grid gap-2">
-            <Label htmlFor="contractTypeId">Phân loại hợp đồng</Label>
+            <Label htmlFor="contractTypeId">
+              Phân loại hợp đồng <span className="text-red-500">*</span>
+            </Label>
             <Select
               value={formData.contractTypeId || ""}
               onValueChange={(value) =>
@@ -165,23 +167,6 @@ export function Step1WasteSourceInfo({
             {errors.wasteSourceId && (
               <p className="text-sm text-red-500">{errors.wasteSourceId}</p>
             )}
-          </div>
-
-          {/* Waste Generation Source */}
-          <div className="grid gap-2">
-            <Label htmlFor="wasteGenerationSource">
-              Nguồn phát sinh chất thải
-            </Label>
-            <Select disabled={disabled}>
-              <SelectTrigger id="wasteGenerationSource">
-                <SelectValue placeholder="Drop down" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="production">Sản xuất</SelectItem>
-                <SelectItem value="service">Dịch vụ</SelectItem>
-                <SelectItem value="other">Khác</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
       </div>

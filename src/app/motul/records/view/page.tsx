@@ -184,7 +184,7 @@ export default function MotulRecordDetailPage() {
         { label: "Chi tiết bản ghi" },
       ]}
       title={`Xem xét Bản ghi: ${formattedWasteOwnerType}-${formattedHazWasteCode}-${formattedRecycledDate}`}
-      subtitle={`Được nộp bởi ${record.wasteOwner?.name || (record.wasteOwners && record.wasteOwners.length > 0 ? record.wasteOwners[0].name : "N/A")}`}
+      subtitle={`Được nộp bởi ${record.recycler?.vendorName || "N/A"}`}
     >
       <div className="space-y-6">
         {/* Back Button and Status Badge */}

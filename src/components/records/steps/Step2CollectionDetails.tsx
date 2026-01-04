@@ -84,7 +84,9 @@ export function Step2CollectionDetails({
       <div className="space-y-6">
         {/* Collection Date */}
         <div className="grid gap-2">
-          <Label htmlFor="deliveryDate">Ngày thu gom</Label>
+          <Label htmlFor="deliveryDate">
+            Ngày thu gom <span className="text-red-500">*</span>
+          </Label>
           <DatePicker
             value={collectionDate}
             onChange={(date: Date | undefined) => {
@@ -145,7 +147,9 @@ export function Step2CollectionDetails({
 
         {/* HAZ Code */}
         <div className="grid gap-2">
-          <Label htmlFor="hazWasteId">Mã HAZ</Label>
+          <Label htmlFor="hazWasteId">
+            Mã HAZ <span className="text-red-500">*</span>
+          </Label>
           <Select
             value={formData.hazWasteId ? String(formData.hazWasteId) : "__none__"}
             onValueChange={(value) => {
@@ -195,7 +199,9 @@ export function Step2CollectionDetails({
 
         {/* Collected Price Per Kg */}
         <div className="grid gap-2">
-          <Label htmlFor="collectedPricePerKg">Giá thu gom (VNĐ/kg)</Label>
+          <Label htmlFor="collectedPricePerKg">
+            Giá thu gom (VNĐ/kg) <span className="text-red-500">*</span>
+          </Label>
           <Input
             id="collectedPricePerKg"
             type="number"
@@ -315,7 +321,9 @@ export function Step2CollectionDetails({
 
         {/* Evidence Upload */}
         <div className="space-y-2">
-          <Label>Tải lên bằng chứng</Label>
+          <Label>
+            Tải lên bằng chứng <span className="text-red-500">*</span>
+          </Label>
           <p className="text-sm text-muted-foreground mb-4">
             Tải lên bằng chứng gồm: Ảnh chụp đầu thải, Biển số xe, Biên bản giao
             nhận, Phiếu cân...
