@@ -34,6 +34,11 @@ import {
   FileType,
   IRecyclerProfileFilesWithPreview,
 } from "@/types/file-record";
+import { useRef } from "react";
+import {
+  buildPartialRecyclerProfileDTO,
+  type OriginalRecyclerProfileData,
+} from "@/lib/utils/recyclerProfileDTOBuilder";
 
 interface BusinessInfoFormProps {
   initialData?: Partial<CompleteRecyclerAdminProfileFormData> & {
@@ -66,6 +71,9 @@ export function BusinessInfoForm({
 
   // Track if files have been changed (user selected new files)
   // In edit mode, if watch returns a File object, it means user selected a new file
+
+  // Original form data (for edit mode - to track changes)
+  const originalFormDataRef = useRef<OriginalRecyclerProfileData | null>(null);
 
   // If not editable, disable all form interactions
   const isFormDisabled = !editable || isLoading;
@@ -131,7 +139,7 @@ export function BusinessInfoForm({
       const addressFromBackend = initialData.company_registration_address || "";
 
       // Get location refId/code from backend location object
-      const locationCode = initialData?.location?.code;
+      const locationCode = (initialData as any)?.location?.code;
       if (locationCode) {
         setLocationRefId(locationCode);
       }
@@ -167,8 +175,40 @@ export function BusinessInfoForm({
             "",
         );
       }
+
+      // Store original form data for change tracking (edit mode only)
+      if (isEditMode && initialData) {
+        const formattedBusinessRegIssueDate = formatDateToDDMMYYYY(
+          getInitialDate("business_reg_issue_date"),
+        );
+        const formattedEnvPermitIssueDate = formatDateToDDMMYYYY(
+          getInitialDate("env_permit_issue_date"),
+        );
+        const formattedEnvPermitExpiryDate = formatDateToDDMMYYYY(
+          getInitialDate("env_permit_expiry_date"),
+        );
+
+        const locationCode = (initialData as any)?.location?.code;
+        originalFormDataRef.current = {
+          vendor_name: initialData.vendor_name || "",
+          tax_code: initialData.tax_code || "",
+          representative: initialData.representative || "",
+          company_registration_address: addressFromBackend,
+          business_reg_number: initialData.business_reg_number || "",
+          business_reg_issue_date: formattedBusinessRegIssueDate,
+          phone: initialData.phone || "",
+          contact_email: initialData.contact_email || "",
+          contact_point: initialData.contact_point || "",
+          contact_phone: initialData.contact_phone || "",
+          google_map_link: initialData.google_map_link || "",
+          env_permit_number: initialData.env_permit_number || "",
+          env_permit_issue_date: formattedEnvPermitIssueDate || "",
+          env_permit_expiry_date: formattedEnvPermitExpiryDate || "",
+          locationRefId: initialData.location_id || locationCode || "",
+        };
+      }
     }
-  }, [initialData, reset]);
+  }, [initialData, reset, isEditMode]);
 
   // Fetch existing files when profileId is available (both edit and view mode)
   useEffect(() => {
@@ -239,30 +279,25 @@ export function BusinessInfoForm({
 
       // If in edit mode and profileId exists, use update endpoint
       if (isEditMode && profileId) {
-        const dto: UpdateRecyclerProfileDTO = {
-          vendorName: data.vendor_name,
-          // Include location if locationRefId is provided (user changed location)
-          ...(locationRefId && {
-            location: {
-              refId: locationRefId,
-            },
-          }),
-          taxCode: data.tax_code,
-          representative: data.representative,
-          phone: data.phone,
-          contactEmail: data.contact_email,
-          contactPoint: data.contact_point,
-          contactPhone: data.contact_phone,
-          businessRegNumber: data.business_reg_number,
-          businessRegIssueDate: formattedBusinessRegIssueDate,
-          googleMapLink: data.google_map_link,
-          envPermitNumber: data.env_permit_number,
-          envPermitIssueDate: formattedEnvPermitIssueDate,
-          envPermitExpiryDate: formattedEnvPermitExpiryDate,
-        };
+        // Build partial DTO with only changed fields
+        if (!originalFormDataRef.current) {
+          throw new Error("Original form data is required for edit mode");
+        }
 
-        // Step 1: Update profile metadata
-        await RecyclerService.updateProfile(profileId, dto);
+        const partialDTO = buildPartialRecyclerProfileDTO(
+          data,
+          locationRefId || undefined,
+          formattedBusinessRegIssueDate,
+          formattedEnvPermitIssueDate,
+          formattedEnvPermitExpiryDate,
+          originalFormDataRef.current,
+        );
+
+        // Only update if there are changes
+        if (Object.keys(partialDTO).length > 0) {
+          // Step 1: Update profile metadata
+          await RecyclerService.updateProfile(profileId, partialDTO);
+        }
 
         // Step 2: Update files separately if user selected new files
         const fileUpdatePromises: Promise<any>[] = [];
@@ -349,7 +384,7 @@ export function BusinessInfoForm({
               businessRegFile,
               FileType.BUSINESS_REG_FILE,
             );
-            businessRegFileId = uploadResult.id;
+            businessRegFileId = uploadResult.fileId || (uploadResult as any).id;
           } catch (fileError: any) {
             setError(
               fileError?.response?.data?.message ||
@@ -367,7 +402,7 @@ export function BusinessInfoForm({
               envPermitFile,
               FileType.ENVIRONMENTAL_PERMIT_FILE,
             );
-            environmentalPermitFileId = uploadResult.id;
+            environmentalPermitFileId = uploadResult.fileId || (uploadResult as any).id;
           } catch (fileError: any) {
             setError(
               fileError?.response?.data?.message ||
