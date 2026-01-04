@@ -396,6 +396,7 @@ export function useCollectionRecordForm(
         qualityDocuments,
         recycledPhoto,
         stockpilePhoto,
+        originalFormData: originalFormDataRef.current,
         uploadedFilesRef,
         originalFileIdsRef,
         originalFileRefsRef,
