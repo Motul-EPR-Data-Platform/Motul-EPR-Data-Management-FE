@@ -19,9 +19,30 @@ import {
 } from "./wasteOwnerUtils";
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { LocationService } from "@/lib/services/location.service";
+import {
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
+  FieldErrors,
+} from "react-hook-form";
+import {
+  CreateWasteOwnerValidationData,
+  UpdateWasteOwnerValidationData,
+} from "@/lib/validations/waste-owner";
 
 interface WasteOwnerFormFieldsProps {
-  // Form data
+  // React Hook Form props
+  register: UseFormRegister<
+    CreateWasteOwnerValidationData | UpdateWasteOwnerValidationData
+  >;
+  setValue: UseFormSetValue<
+    CreateWasteOwnerValidationData | UpdateWasteOwnerValidationData
+  >;
+  watch: UseFormWatch<
+    CreateWasteOwnerValidationData | UpdateWasteOwnerValidationData
+  >;
+
+  // Form data (from watch)
   wasteOwnerType: WasteOwnerType;
   name: string;
   businessCode: string;
@@ -34,25 +55,21 @@ interface WasteOwnerFormFieldsProps {
 
   // Form state
   disabled?: boolean;
-  errors?: Record<string, string>;
+  errors?: FieldErrors<
+    CreateWasteOwnerValidationData | UpdateWasteOwnerValidationData
+  >;
   showTypeSelector?: boolean;
   showActiveStatus?: boolean;
-  showId?: boolean;
-  id?: string;
 
-  // Handlers
-  onTypeChange?: (value: WasteOwnerType) => void;
-  onNameChange?: (value: string) => void;
-  onBusinessCodeChange?: (value: string) => void;
-  onContactPersonChange?: (value: string) => void;
-  onPhoneChange?: (value: string) => void;
-  onEmailChange?: (value: string) => void;
+  // Location handlers (not in schema, handled separately)
   onLocationRefIdChange?: (value: string) => void;
   onFullAddressChange?: (value: string) => void;
-  onActiveChange?: (value: boolean) => void;
 }
 
 export function WasteOwnerFormFields({
+  register,
+  setValue,
+  watch,
   wasteOwnerType,
   name,
   businessCode,
@@ -66,47 +83,43 @@ export function WasteOwnerFormFields({
   errors = {},
   showTypeSelector = true,
   showActiveStatus = false,
-  showId = false,
-  id,
-  onTypeChange,
-  onNameChange,
-  onBusinessCodeChange,
-  onContactPersonChange,
-  onPhoneChange,
-  onEmailChange,
   onLocationRefIdChange,
   onFullAddressChange,
-  onActiveChange,
 }: WasteOwnerFormFieldsProps) {
   return (
     <div className="grid gap-4">
-      {/* ID Field (for view/edit mode) */}
-      {showId && id && (
-        <div className="grid gap-2">
-          <Label>ID</Label>
-          <Input value={id} disabled className="font-mono" />
-        </div>
-      )}
-
       {/* Type Selector */}
-      {showTypeSelector && onTypeChange ? (
+      {showTypeSelector ? (
         <div className="grid gap-2">
           <Label htmlFor="wasteOwnerType">Loại *</Label>
           <Select
-            value={wasteOwnerType}
-            onValueChange={(value) => onTypeChange(value as WasteOwnerType)}
+            key={`waste-owner-type-${wasteOwnerType}`} // Force re-render when type changes
+            value={wasteOwnerType || "business"}
+            onValueChange={(value) =>
+              setValue("wasteOwnerType", value as WasteOwnerType, {
+                shouldValidate: true,
+              })
+            }
             required
             disabled={disabled}
           >
-            <SelectTrigger id="wasteOwnerType">
+            <SelectTrigger
+              id="wasteOwnerType"
+              className={errors.wasteOwnerType ? "border-red-500" : ""}
+            >
               <SelectValue placeholder="Chọn loại" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="business">Doanh nghiệp (DN)</SelectItem>
               <SelectItem value="individual">Cá nhân (CN)</SelectItem>
-              <SelectItem value="organization">Tổ chức (TC)</SelectItem>
+              <SelectItem value="organization">Hộ kinh doanh (HKD)</SelectItem>
             </SelectContent>
           </Select>
+          {errors.wasteOwnerType && (
+            <p className="text-sm text-red-500">
+              {errors.wasteOwnerType.message}
+            </p>
+          )}
         </div>
       ) : (
         // Type Display (read-only)
@@ -126,13 +139,14 @@ export function WasteOwnerFormFields({
         <Input
           id="name"
           placeholder="VD..."
-          value={name}
-          onChange={(e) => onNameChange?.(e.target.value)}
+          {...register("name")}
           required
           disabled={disabled}
           className={errors.name ? "border-red-500" : ""}
         />
-        {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+        {errors.name && (
+          <p className="text-sm text-red-500">{errors.name.message}</p>
+        )}
       </div>
 
       {/* Business Code / CCCD Field */}
@@ -145,14 +159,15 @@ export function WasteOwnerFormFields({
           placeholder={
             wasteOwnerType === "individual" ? "001122334455" : "0123456789"
           }
-          value={businessCode}
-          onChange={(e) => onBusinessCodeChange?.(e.target.value)}
+          {...register("businessCode")}
           required={!disabled}
           disabled={disabled}
           className={errors.businessCode ? "border-red-500" : ""}
         />
         {errors.businessCode && (
-          <p className="text-sm text-red-500">{errors.businessCode}</p>
+          <p className="text-sm text-red-500">
+            {errors.businessCode.message}
+          </p>
         )}
       </div>
 
@@ -179,7 +194,7 @@ export function WasteOwnerFormFields({
           placeholder="Tìm hoặc chọn từ danh sách...."
           required={!disabled}
           disabled={disabled}
-          error={errors.locationRefId}
+          error={(errors.location as any)?.refId?.message}
         />
         {/* Hidden input for form validation */}
         <input
@@ -188,8 +203,11 @@ export function WasteOwnerFormFields({
           value={locationRefId || ""}
           required={!disabled}
         />
-        {errors.locationRefId && (
-          <p className="text-sm text-red-500">{errors.locationRefId}</p>
+        {(errors.location as any) && (
+          <p className="text-sm text-red-500">
+            {(errors.location as any).refId?.message ||
+              (errors.location as any).message}
+          </p>
         )}
       </div>
 
@@ -198,14 +216,15 @@ export function WasteOwnerFormFields({
         <Label htmlFor="contactPerson">Người liên hệ *</Label>
         <Input
           id="contactPerson"
-          value={contactPerson || ""}
-          onChange={(e) => onContactPersonChange?.(e.target.value)}
+          {...register("contactPerson")}
           required
           disabled={disabled}
           className={errors.contactPerson ? "border-red-500" : ""}
         />
         {errors.contactPerson && (
-          <p className="text-sm text-red-500">{errors.contactPerson}</p>
+          <p className="text-sm text-red-500">
+            {errors.contactPerson.message}
+          </p>
         )}
       </div>
 
@@ -214,12 +233,13 @@ export function WasteOwnerFormFields({
         <Label htmlFor="phone">Số điện thoại</Label>
         <Input
           id="phone"
-          value={phone || ""}
-          onChange={(e) => onPhoneChange?.(e.target.value)}
+          {...register("phone")}
           disabled={disabled}
           className={errors.phone ? "border-red-500" : ""}
         />
-        {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
+        {errors.phone && (
+          <p className="text-sm text-red-500">{errors.phone.message}</p>
+        )}
       </div>
 
       {/* Email Field */}
@@ -228,24 +248,32 @@ export function WasteOwnerFormFields({
         <Input
           id="email"
           type="email"
-          value={email || ""}
-          onChange={(e) => onEmailChange?.(e.target.value)}
+          {...register("email")}
           disabled={disabled}
           className={errors.email ? "border-red-500" : ""}
         />
-        {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+        {errors.email && (
+          <p className="text-sm text-red-500">{errors.email.message}</p>
+        )}
       </div>
 
       {/* Active Status (for edit mode) */}
-      {showActiveStatus && onActiveChange && (
+      {showActiveStatus && (
         <div className="grid gap-2">
           <Label htmlFor="isActive">Trạng thái</Label>
           <Select
             value={isActive ? "active" : "inactive"}
-            onValueChange={(value) => onActiveChange(value === "active")}
+            onValueChange={(value) =>
+              setValue("isActive" as any, value === "active", {
+                shouldValidate: true,
+              })
+            }
             disabled={disabled}
           >
-            <SelectTrigger id="isActive">
+            <SelectTrigger
+              id="isActive"
+              className={(errors as any).isActive ? "border-red-500" : ""}
+            >
               <SelectValue placeholder="Chọn trạng thái" />
             </SelectTrigger>
             <SelectContent>
@@ -253,6 +281,11 @@ export function WasteOwnerFormFields({
               <SelectItem value="inactive">Không hoạt động</SelectItem>
             </SelectContent>
           </Select>
+          {(errors as any).isActive && (
+            <p className="text-sm text-red-500">
+              {(errors as any).isActive.message}
+            </p>
+          )}
         </div>
       )}
     </div>

@@ -34,7 +34,8 @@ const getStatusBadgeVariant = (
   | "destructive"
   | "outline"
   | "success"
-  | "warning" => {
+  | "warning"
+  | "info" => {
   switch (status) {
     case "approved":
       return "success";
@@ -44,6 +45,8 @@ const getStatusBadgeVariant = (
       return "destructive";
     case "draft":
       return "outline";
+    case "EDITED_BY_RECYCLER":
+      return "info";
     default:
       return "outline";
   }
@@ -59,6 +62,8 @@ const getStatusLabel = (status: string): string => {
       return "Bị từ chối";
     case "draft":
       return "Bản nháp";
+    case "EDITED_BY_RECYCLER":
+      return "Đã cập nhật";
     default:
       return status;
   }

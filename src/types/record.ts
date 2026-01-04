@@ -6,7 +6,8 @@ export type RecordStatus =
   | "pending"
   | "submitted"
   | "approved"
-  | "rejected";
+  | "rejected"
+  | "EDITED_BY_RECYCLER";
 
 export interface CollectionRecord {
   readonly id: string;
@@ -188,6 +189,8 @@ export interface GetRecordsFilters {
   status?: RecordStatus | "SUBMITTED"; // Backend uses "SUBMITTED", frontend uses "submitted" or "pending"
   recyclerId?: string;
   submissionMonth?: string; // ISO date string (YYYY-MM)
+  startDate?: string; // ISO date string (YYYY-MM-DD)
+  endDate?: string; // ISO date string (YYYY-MM-DD)
   page?: number;
   limit?: number;
 }

@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ProgressStepper } from "@/components/records/ProgressStepper";
 import { FormNavigationButtons } from "@/components/records/FormNavigationButtons";
@@ -11,17 +10,8 @@ import { Step3WarehouseRecycling } from "@/components/records/steps/Step3Warehou
 import { Step4ReviewSubmit } from "@/components/records/steps/Step4ReviewSubmit";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { CreateDraftDTO, CreateDraftFormData } from "@/types/record";
-import { CollectionRecordService } from "@/lib/services/collection-record.service";
-import { DocumentFile } from "@/components/records/DocumentUpload";
-import { WasteOwnerService } from "@/lib/services/waste-owner.service";
-import { DefinitionService } from "@/lib/services/definition.service";
-import { transformDefinitions } from "@/lib/utils/definitionUtils/definitionTransformers";
-import { toast } from "sonner";
-import { format } from "date-fns";
-import { FileType } from "@/types/file-record";
-import { z } from "zod";
-import { step3ValidationSchema } from "@/lib/validations/record";
+import { useCollectionRecordForm } from "@/hooks/useCollectionRecordForm";
+import { BatchService } from "@/lib/services/batch.service";
 
 const STEPS = [
   { number: 1, label: "Thông tin Chủ nguồn thải" },
@@ -31,801 +21,67 @@ const STEPS = [
 ];
 
 export default function CreateCollectionRecordPage() {
-  const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<Partial<CreateDraftFormData>>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [draftId, setDraftId] = useState<string | null>(null);
+  const {
+    currentStep,
+    setCurrentStep,
+    isLoading,
+    formData,
+    errors,
+    collectionDate,
+    setCollectionDate,
+    recycledDate,
+    setRecycledDate,
+    locationRefId,
+    setLocationRefId,
+    fullAddress,
+    setFullAddress,
+    address,
+    setAddress,
+    latitude,
+    setLatitude,
+    longitude,
+    setLongitude,
+    evidenceFiles,
+    setEvidenceFiles,
+    qualityDocuments,
+    setQualityDocuments,
+    recycledPhoto,
+    setRecycledPhoto,
+    stockpilePhoto,
+    setStockpilePhoto,
+    dropdownData,
+    handleFieldChange,
+    handleNext,
+    handleBack,
+    handleRedo,
+    handleSaveDraft,
+    handleSubmit,
+    handleCancel,
+    getSelectedWasteOwnerName,
+    getSelectedContractTypeName,
+    getSelectedWasteSourceName,
+    getSelectedHazCodeName,
+  } = useCollectionRecordForm({ mode: "create" });
 
-  // Additional form state
-  const [collectionDate, setCollectionDate] = useState<Date>(new Date());
-  const [recycledDate, setRecycledDate] = useState<Date | undefined>();
-  const [locationRefId, setLocationRefId] = useState<string>("");
-  const [latitude, setLatitude] = useState<number>(10.8231);
-  const [longitude, setLongitude] = useState<number>(106.6297);
-  const [fullAddress, setFullAddress] = useState<string>(""); // Full address string from location service
-  const [address, setAddress] = useState<{
-    houseNumber?: string;
-    street?: string;
-    ward?: string;
-    district?: string;
-    province?: string;
-  }>({});
-  const [evidenceFiles, setEvidenceFiles] = useState<DocumentFile[]>([]);
-  const [qualityDocuments, setQualityDocuments] = useState<DocumentFile[]>([]);
-  const [recycledPhoto, setRecycledPhoto] = useState<File | null>(null);
-  const [stockpilePhoto, setStockpilePhoto] = useState<File | null>(null);
+  const [batchName, setBatchName] = useState<string | undefined>();
 
-  // Track uploaded files to avoid re-uploading unchanged files
-  const uploadedFilesRef = useRef<{
-    evidenceFiles: Set<string>; // Set of file identifiers (name-size-lastModified)
-    qualityMetricsFiles: Set<string>;
-    outputQualityMetricsFiles: Set<string>;
-    recycledPhoto: string | null;
-    stockpilePhoto: string | null;
-  }>({
-    evidenceFiles: new Set(),
-    qualityMetricsFiles: new Set(),
-    outputQualityMetricsFiles: new Set(),
-    recycledPhoto: null,
-    stockpilePhoto: null,
-  });
-
-  // Helper to generate file identifier
-  const getFileId = (file: File): string => {
-    return `${file.name}-${file.size}-${file.lastModified}`;
-  };
-
-  // Reset uploaded files tracking (call when starting a new record)
-  const resetUploadedFilesTracking = () => {
-    uploadedFilesRef.current = {
-      evidenceFiles: new Set(),
-      qualityMetricsFiles: new Set(),
-      outputQualityMetricsFiles: new Set(),
-      recycledPhoto: null,
-      stockpilePhoto: null,
-    };
-  };
-
-  // Data for dropdowns
-  const [wasteOwners, setWasteOwners] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
-  const [contractTypes, setContractTypes] = useState<
-    Array<{ id: string; name: string; code: string }>
-  >([]);
-  const [wasteTypes, setWasteTypes] = useState<
-    Array<{ id: string; name: string; code?: string; hazCode?: string }>
-  >([]);
-  const [hazTypes, setHazTypes] = useState<
-    Array<{ id: string; code: string; name?: string; haz_code?: string }>
-  >([]);
-
-  // Load dropdown data
+  // Fetch batch name when batchId changes
   useEffect(() => {
-    loadDropdownData();
-  }, []);
-
-  const loadDropdownData = async () => {
-    try {
-      const [wasteOwnersRes, contractTypesRes, wasteTypesRes, hazTypesRes] =
-        await Promise.allSettled([
-          WasteOwnerService.getAllWasteOwners({ isActive: true }),
-          DefinitionService.getActiveContractTypes(),
-          DefinitionService.getActiveWasteTypes(),
-          DefinitionService.getActiveHazTypes(),
-        ]);
-
-      if (wasteOwnersRes.status === "fulfilled") {
-        setWasteOwners(
-          wasteOwnersRes.value.data.map((wo) => ({
-            id: wo.id,
-            name: wo.name,
-          })),
-        );
-      }
-
-      if (contractTypesRes.status === "fulfilled") {
-        // Debug: Log the raw response to see the structure
-        console.log("Raw contract types response:", contractTypesRes.value);
-
-        // Use the transformer utility which handles nested structure
-        const transformedDefinitions = transformDefinitions(
-          contractTypesRes.value,
-        );
-        console.log("Transformed definitions:", transformedDefinitions);
-
-        // Map to the format needed for the dropdown
-        const transformed = transformedDefinitions.map((def) => {
-          // The transformer extracts data into def.data
-          // For contract types, data should have name and code
-          const contractData = def.data;
-
-          console.log(
-            "Definition:",
-            def.id,
-            "Data:",
-            contractData,
-            "Full def:",
-            def,
-          );
-
-          // Extract name and code
-          const name = contractData?.name || contractData?.code || "";
-          const code = contractData?.code || "";
-
-          // If still no name, check the original raw data
-          if (!name && contractTypesRes.value) {
-            const original = contractTypesRes.value.find(
-              (ct: any) => String(ct.id) === String(def.id),
-            );
-            if (original) {
-              const originalName =
-                original.definition_contract_type?.name ||
-                original.data?.name ||
-                original.name;
-              const originalCode =
-                original.definition_contract_type?.code ||
-                original.data?.code ||
-                original.code;
-
-              return {
-                id: def.id,
-                name: originalName || originalCode || "Unknown",
-                code: originalCode || "",
-              };
-            }
-          }
-
-          return {
-            id: def.id, // Use the definition ID as the value
-            name: name || "Unknown", // Should have name from nested data
-            code: code,
-          };
-        });
-
-        setContractTypes(transformed);
-        console.log("Final contract types for dropdown:", transformed);
-      }
-
-      if (wasteTypesRes.status === "fulfilled") {
-        // Transform waste types similar to contract types
-        const transformedDefinitions = transformDefinitions(
-          wasteTypesRes.value,
-        );
-
-        const transformed = transformedDefinitions.map((def) => {
-          const wasteTypeData = def.data as any; // Type assertion since data can be different types
-
-          // Extract name, code, and hazCode from nested data
-          const name = wasteTypeData?.name || wasteTypeData?.code || "";
-          const code = wasteTypeData?.code || "";
-          const hazCode =
-            wasteTypeData?.hazCode || wasteTypeData?.haz_code || "";
-
-          // Fallback to original data if needed
-          if (!name && wasteTypesRes.value) {
-            const original = wasteTypesRes.value.find(
-              (wt: any) => String(wt.id) === String(def.id),
-            );
-            if (original) {
-              const originalName =
-                original.definition_waste_type?.name ||
-                original.data?.name ||
-                original.name;
-              const originalCode =
-                original.definition_waste_type?.code ||
-                original.data?.code ||
-                original.code;
-              const originalHazCode =
-                original.definition_waste_type?.haz_code ||
-                original.data?.hazCode ||
-                original.hazCode;
-
-              return {
-                id: def.id,
-                name: originalName || originalCode || "Unknown",
-                code: originalCode || "",
-                hazCode: originalHazCode || "",
-              };
-            }
-          }
-
-          return {
-            id: def.id, // Use the definition ID (UUID) as the value
-            name: name || "Unknown",
-            code: code,
-            hazCode: hazCode,
-          };
-        });
-
-        setWasteTypes(transformed);
-        console.log("Final waste types for dropdown:", transformed);
-      }
-
-      if (hazTypesRes.status === "fulfilled") {
-        const transformedDefinitions = transformDefinitions(hazTypesRes.value);
-        const transformed = transformedDefinitions
-          .map((def) => {
-            const hazTypeData = def.data as any;
-            return {
-              id: def.id,
-              code: hazTypeData?.code || "",
-              name: hazTypeData?.name || hazTypeData?.code || "",
-              haz_code:
-                hazTypeData?.hazCode ||
-                hazTypeData?.haz_code ||
-                hazTypeData?.code ||
-                "",
-            };
-          })
-          .filter((hazType) => hazType.id && hazType.id.trim() !== ""); // Filter out any with empty IDs
-        setHazTypes(transformed);
-        console.log("Final HAZ types for dropdown:", transformed);
-      }
-    } catch (error) {
-      console.error("Error loading dropdown data:", error);
-    }
-  };
-
-  const handleFieldChange = (field: keyof CreateDraftFormData, value: any) => {
-    console.log("handleFieldChange:", {
-      field,
-      value,
-      currentFormData: formData,
-    });
-    setFormData((prev) => {
-      const updated = { ...prev, [field]: value };
-      console.log("Updated formData:", updated);
-      return updated;
-    });
-    // Clear error when user changes field
-    if (errors[field as string]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field as string];
-        return newErrors;
-      });
-    }
-  };
-
-  const validateStep = (step: number): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (step === 1) {
-      if (!formData.wasteOwnerId) {
-        newErrors.wasteOwnerId = "Vui lòng chọn Chủ nguồn thải";
-      }
-      if (!formData.wasteSourceId) {
-        newErrors.wasteSourceId = "Vui lòng chọn Loại chất thải";
-      }
-    }
-
-    if (step === 2) {
-      if (!formData.collectedVolumeKg || formData.collectedVolumeKg <= 0) {
-        newErrors.collectedVolumeKg = "Khối lượng thu gom là bắt buộc";
-      }
-      if (!locationRefId) {
-        newErrors.locationRefId = "Địa chỉ thu gom là bắt buộc";
-      }
-      if (!formData.vehiclePlate || formData.vehiclePlate.trim() === "") {
-        newErrors.vehiclePlate = "Biển số xe là bắt buộc";
-      }
-    }
-
-    if (step === 3) {
-      // Use Zod validation for Step 3
-      try {
-        const step3Data = {
-          stockpiled: formData.stockpiled ?? false,
-          stockpileVolumeKg: formData.stockpileVolumeKg ?? null,
-          recycledVolumeKg: formData.recycledVolumeKg ?? 0,
-          recycledPhoto: recycledPhoto,
-          stockpilePhoto: stockpilePhoto ?? null,
-        };
-
-        step3ValidationSchema.parse(step3Data);
-      } catch (error: any) {
-        if (error instanceof z.ZodError) {
-          error.issues.forEach((issue) => {
-            const field = issue.path[0] as string;
-            if (field) {
-              newErrors[field] = issue.message;
-            }
-          });
-        } else {
-          // Fallback validation
-          if (!formData.recycledVolumeKg || formData.recycledVolumeKg <= 0) {
-            newErrors.recycledVolumeKg = "Khối lượng tái chế là bắt buộc";
-          }
-          if (!recycledPhoto) {
-            newErrors.recycledPhoto = "Ảnh sản phẩm đã tái chế là bắt buộc";
-          }
-          if (formData.stockpiled === true) {
-            if (
-              !formData.stockpileVolumeKg ||
-              formData.stockpileVolumeKg <= 0
-            ) {
-              newErrors.stockpileVolumeKg =
-                "Khối lượng lưu kho là bắt buộc khi chọn lưu kho";
-            }
-            if (!stockpilePhoto) {
-              newErrors.stockpilePhoto =
-                "Ảnh nhập kho là bắt buộc khi chọn lưu kho";
-            }
-          }
-        }
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleNext = () => {
-    if (!validateStep(currentStep)) {
-      return;
-    }
-
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleRedo = () => {
-    if (confirm("Bạn có chắc chắn muốn làm lại toàn bộ thông tin?")) {
-      setFormData({});
-      setErrors({});
-      setCurrentStep(1);
-      setCollectionDate(new Date());
-      setRecycledDate(undefined);
-      setLocationRefId("");
-      setFullAddress("");
-      setAddress({});
-      setEvidenceFiles([]);
-      setQualityDocuments([]);
-      setRecycledPhoto(null);
-      setDraftId(null);
-    }
-  };
-
-  // Helper function to map document type to FileType
-  const mapDocumentTypeToFileType = (docType: string): FileType => {
-    // Map evidence document types to EVIDENCE_PHOTO
-    if (
-      ["phieu-can", "bien-ban-giao-nhan", "bien-so-xe", "khac"].includes(
-        docType,
-      )
-    ) {
-      return FileType.EVIDENCE_PHOTO;
-    }
-    // Map quality document types
-    if (docType === "chat-luong-truoc-tai-che") {
-      return FileType.QUALITY_METRICS;
-    }
-    if (docType === "chat-luong-sau-tai-che") {
-      return FileType.OUTPUT_QUALITY_METRICS;
-    }
-    // Default to evidence photo
-    return FileType.EVIDENCE_PHOTO;
-  };
-
-  // Upload files for a record - only uploads changed files
-  const uploadFilesForRecord = async (recordId: string) => {
-    const uploadPromises: Promise<any>[] = [];
-
-    // Upload evidence photos (from Step 2) - only new/changed files
-    if (evidenceFiles && evidenceFiles.length > 0) {
-      const evidencePhotos = evidenceFiles
-        .filter(
-          (doc) =>
-            doc &&
-            doc.file &&
-            ["phieu-can", "bien-ban-giao-nhan", "bien-so-xe", "khac"].includes(
-              doc.type,
-            ),
-        )
-        .map((doc) => doc.file)
-        .filter((file): file is File => file instanceof File);
-
-      // Filter out already uploaded files
-      const newEvidencePhotos = evidencePhotos.filter((file) => {
-        const fileId = getFileId(file);
-        return !uploadedFilesRef.current.evidenceFiles.has(fileId);
-      });
-
-      if (newEvidencePhotos.length > 0) {
-        console.log(
-          "Uploading new evidence photos:",
-          newEvidencePhotos.length,
-          newEvidencePhotos.map((f) => f.name),
-        );
-        uploadPromises.push(
-          CollectionRecordService.uploadMultipleFiles(
-            recordId,
-            newEvidencePhotos,
-            FileType.EVIDENCE_PHOTO,
-          ).then(() => {
-            // Mark as uploaded
-            newEvidencePhotos.forEach((file) => {
-              uploadedFilesRef.current.evidenceFiles.add(getFileId(file));
-            });
-          }),
-        );
-      } else {
-        console.log("No new evidence photos to upload (all already uploaded)");
-      }
-    }
-
-    // Upload stockpile photo (from Step 3) - only if changed
-    if (stockpilePhoto) {
-      const fileId = getFileId(stockpilePhoto);
-      if (uploadedFilesRef.current.stockpilePhoto !== fileId) {
-        console.log("Uploading stockpile photo:", stockpilePhoto.name);
-        uploadPromises.push(
-          CollectionRecordService.uploadFile(recordId, {
-            file: stockpilePhoto,
-            category: FileType.STOCKPILE_PHOTO,
-          }).then(() => {
-            uploadedFilesRef.current.stockpilePhoto = fileId;
-          }),
-        );
-      } else {
-        console.log("Stockpile photo already uploaded, skipping");
-      }
-    }
-
-    // Upload recycled photo (from Step 3) - only if changed
-    if (recycledPhoto) {
-      const fileId = getFileId(recycledPhoto);
-      if (uploadedFilesRef.current.recycledPhoto !== fileId) {
-        console.log("Uploading recycled photo:", recycledPhoto.name);
-        uploadPromises.push(
-          CollectionRecordService.uploadFile(recordId, {
-            file: recycledPhoto,
-            category: FileType.RECYCLED_PHOTO,
-          }).then(() => {
-            uploadedFilesRef.current.recycledPhoto = fileId;
-          }),
-        );
-      } else {
-        console.log("Recycled photo already uploaded, skipping");
-      }
-    }
-
-    // Upload quality documents (from Step 3) - only new/changed files
-    if (qualityDocuments && qualityDocuments.length > 0) {
-      const qualityMetricsFiles = qualityDocuments
-        .filter(
-          (doc) => doc && doc.file && doc.type === "chat-luong-truoc-tai-che",
-        )
-        .map((doc) => doc.file)
-        .filter((file): file is File => file instanceof File);
-
-      const outputQualityMetricsFiles = qualityDocuments
-        .filter(
-          (doc) => doc && doc.file && doc.type === "chat-luong-sau-tai-che",
-        )
-        .map((doc) => doc.file)
-        .filter((file): file is File => file instanceof File);
-
-      // Filter out already uploaded quality metrics files
-      const newQualityMetricsFiles = qualityMetricsFiles.filter((file) => {
-        const fileId = getFileId(file);
-        return !uploadedFilesRef.current.qualityMetricsFiles.has(fileId);
-      });
-
-      if (newQualityMetricsFiles.length > 0) {
-        console.log(
-          "Uploading new quality metrics files:",
-          newQualityMetricsFiles.length,
-        );
-        uploadPromises.push(
-          CollectionRecordService.uploadMultipleFiles(
-            recordId,
-            newQualityMetricsFiles,
-            FileType.QUALITY_METRICS,
-          ).then(() => {
-            // Mark as uploaded
-            newQualityMetricsFiles.forEach((file) => {
-              uploadedFilesRef.current.qualityMetricsFiles.add(getFileId(file));
-            });
-          }),
-        );
-      } else if (qualityMetricsFiles.length > 0) {
-        console.log(
-          "No new quality metrics files to upload (all already uploaded)",
-        );
-      }
-
-      // Filter out already uploaded output quality metrics files
-      const newOutputQualityMetricsFiles = outputQualityMetricsFiles.filter(
-        (file) => {
-          const fileId = getFileId(file);
-          return !uploadedFilesRef.current.outputQualityMetricsFiles.has(
-            fileId,
-          );
-        },
-      );
-
-      if (newOutputQualityMetricsFiles.length > 0) {
-        console.log(
-          "Uploading new output quality metrics files:",
-          newOutputQualityMetricsFiles.length,
-        );
-        uploadPromises.push(
-          CollectionRecordService.uploadMultipleFiles(
-            recordId,
-            newOutputQualityMetricsFiles,
-            FileType.OUTPUT_QUALITY_METRICS,
-          ).then(() => {
-            // Mark as uploaded
-            newOutputQualityMetricsFiles.forEach((file) => {
-              uploadedFilesRef.current.outputQualityMetricsFiles.add(
-                getFileId(file),
-              );
-            });
-          }),
-        );
-      } else if (outputQualityMetricsFiles.length > 0) {
-        console.log(
-          "No new output quality metrics files to upload (all already uploaded)",
-        );
-      }
-    }
-
-    // Execute all uploads in parallel
-    if (uploadPromises.length > 0) {
-      await Promise.all(uploadPromises);
-      console.log("File uploads completed successfully");
-    } else {
-      console.log("No new files to upload (all files already uploaded)");
-    }
-  };
-
-  const handleSaveDraft = async () => {
-    setIsLoading(true);
-    try {
-      // Helper function to convert Date to dd/mm/yyyy format
-      const formatDateDDMMYYYY = (date: Date): string => {
-        const day = String(date.getDate()).padStart(2, "0");
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-      };
-
-      // Transform form data to backend DTO format
-      const draftData: CreateDraftDTO = {
-        // Backend expects dates in dd/mm/yyyy format
-        batchId: formData.batchId || null,
-        submissionMonth: formatDateDDMMYYYY(
-          new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1),
-        ),
-        collectedVolumeKg: formData.collectedVolumeKg || null,
-        deliveryDate: formatDateDDMMYYYY(collectionDate),
-        vehiclePlate: formData.vehiclePlate || null,
-        stockpiled: formData.stockpiled ?? false,
-        stockpileVolumeKg: formData.stockpileVolumeKg || null,
-        recycledDate: recycledDate ? formatDateDDMMYYYY(recycledDate) : null,
-        recycledVolumeKg: formData.recycledVolumeKg || null,
-        // Backend expects array - convert single ID to array
-        // Must be an array even if empty (backend RPC function expects array format)
-        wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
-        contractTypeId: formData.contractTypeId || null,
-        // Backend expects UUID for wasteSourceId (waste type ID)
-        wasteSourceId: formData.wasteSourceId || null,
-        // Explicitly set hazWasteId - use null if undefined, empty string, or null
-        hazWasteId:
-          formData.hazWasteId && formData.hazWasteId.trim() !== ""
-            ? formData.hazWasteId
-            : null,
-        pickupLocation: locationRefId ? { refId: locationRefId } : null,
-        collectedPricePerKg: formData.collectedPricePerKg || null,
-      };
-
-      console.log("Saving draft with hazWasteId:", {
-        formDatahazWasteId: formData.hazWasteId,
-        formDatahazWasteIdType: typeof formData.hazWasteId,
-        hazWasteId: draftData.hazWasteId,
-        fullFormData: JSON.stringify(formData, null, 2),
-        fullDraftData: JSON.stringify(draftData, null, 2),
-      });
-
-      let currentDraftId = draftId;
-
-      if (currentDraftId) {
-        // For update, use the same DTO structure
-        await CollectionRecordService.updateDraft(currentDraftId, draftData);
-        toast.success("Đã cập nhật bản nháp");
-      } else {
-        const result = await CollectionRecordService.createDraft(draftData);
-        currentDraftId = result.id;
-        setDraftId(currentDraftId);
-        toast.success("Đã lưu bản nháp");
-      }
-
-      // Upload files after draft is created/updated
-      if (
-        currentDraftId &&
-        (evidenceFiles.length > 0 ||
-          qualityDocuments.length > 0 ||
-          recycledPhoto ||
-          stockpilePhoto)
-      ) {
+    const fetchBatchName = async () => {
+      if (formData.batchId) {
         try {
-          await uploadFilesForRecord(currentDraftId);
-          toast.success("Đã tải lên tài liệu");
-        } catch (fileError: any) {
-          console.error("Error uploading files:", fileError);
-          toast.error(
-            fileError?.response?.data?.message ||
-              fileError?.message ||
-              "Đã lưu bản nháp nhưng không thể tải lên một số tài liệu",
-          );
+          const batchDetail = await BatchService.getBatchById(formData.batchId);
+          setBatchName(batchDetail.batch.batchName);
+        } catch (error) {
+          console.error("Error fetching batch name:", error);
+          setBatchName(undefined);
         }
+      } else {
+        setBatchName(undefined);
       }
-
-      // Navigate back to records list after successful save
-      router.push("/recycler/my-records");
-    } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Không thể lưu bản nháp",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!validateStep(4)) {
-      setCurrentStep(1);
-      return;
-    }
-
-    // Ensure vehicle plate is present before submitting
-    if (!formData.vehiclePlate || formData.vehiclePlate.trim() === "") {
-      toast.error(
-        "Biển số xe là bắt buộc. Vui lòng quay lại bước 2 để nhập biển số xe.",
-      );
-      setCurrentStep(2);
-      setErrors({ ...errors, vehiclePlate: "Biển số xe là bắt buộc" });
-      return;
-    }
-
-    let currentDraftId = draftId;
-
-    if (!currentDraftId) {
-      // Save draft first
-      setIsLoading(true);
-      try {
-        const formatDateDDMMYYYY = (date: Date): string => {
-          const day = String(date.getDate()).padStart(2, "0");
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const year = date.getFullYear();
-          return `${day}/${month}/${year}`;
-        };
-
-        const draftData: CreateDraftDTO = {
-          batchId: formData.batchId || null,
-          submissionMonth: formatDateDDMMYYYY(
-            new Date(
-              collectionDate.getFullYear(),
-              collectionDate.getMonth(),
-              1,
-            ),
-          ),
-          collectedVolumeKg: formData.collectedVolumeKg || null,
-          deliveryDate: formatDateDDMMYYYY(collectionDate),
-          vehiclePlate: formData.vehiclePlate || null,
-          stockpiled: formData.stockpiled ?? false,
-          stockpileVolumeKg: formData.stockpileVolumeKg || null,
-          recycledDate: recycledDate ? formatDateDDMMYYYY(recycledDate) : null,
-          recycledVolumeKg: formData.recycledVolumeKg || null,
-          wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
-          contractTypeId: formData.contractTypeId || null,
-          wasteSourceId: formData.wasteSourceId || null,
-          hazWasteId:
-            formData.hazWasteId && formData.hazWasteId.trim() !== ""
-              ? formData.hazWasteId
-              : null,
-          pickupLocation: locationRefId ? { refId: locationRefId } : null,
-          collectedPricePerKg: formData.collectedPricePerKg || null,
-        };
-
-        const result = await CollectionRecordService.createDraft(draftData);
-        currentDraftId = result.id;
-        setDraftId(currentDraftId);
-      } catch (error: any) {
-        toast.error(
-          error?.response?.data?.message ||
-            error?.message ||
-            "Không thể tạo bản nháp",
-        );
-        setIsLoading(false);
-        return;
-      }
-    }
-
-    // Upload files before submitting
-    if (
-      currentDraftId &&
-      (evidenceFiles.length > 0 ||
-        qualityDocuments.length > 0 ||
-        recycledPhoto ||
-        stockpilePhoto)
-    ) {
-      try {
-        await uploadFilesForRecord(currentDraftId);
-      } catch (fileError: any) {
-        console.error("Error uploading files:", fileError);
-        toast.error(
-          fileError?.response?.data?.message ||
-            fileError?.message ||
-            "Không thể tải lên một số tài liệu. Vui lòng thử lại.",
-        );
-        setIsLoading(false);
-        return;
-      }
-    }
-
-    // Submit the record
-    setIsLoading(true);
-    try {
-      await CollectionRecordService.submitRecord(currentDraftId!);
-      toast.success("Đã gửi bản ghi để phê duyệt");
-      router.push("/recycler/my-records");
-    } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Không thể gửi bản ghi",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCancel = () => {
-    if (confirm("Bạn có chắc chắn muốn hủy? Dữ liệu chưa lưu sẽ bị mất.")) {
-      router.back();
-    }
-  };
-
-  const getSelectedWasteOwnerName = () => {
-    const owner = wasteOwners.find((wo) => wo.id === formData.wasteOwnerId);
-    return owner?.name;
-  };
-
-  const getSelectedContractTypeName = () => {
-    const type = contractTypes.find((ct) => ct.id === formData.contractTypeId);
-    return type?.name;
-  };
-
-  const getSelectedWasteSourceName = () => {
-    const wasteType = wasteTypes.find((wt) => wt.id === formData.wasteSourceId);
-    return wasteType?.name || undefined;
-  };
-
-  const getSelectedHazCodeName = () => {
-    const hazType = hazTypes.find((ht) => ht.id === formData.hazWasteId);
-    if (hazType) {
-      const hazCode = hazType.haz_code || hazType.code || "";
-      const displayName = hazType.name || hazType.code || "";
-      return hazCode && hazCode !== displayName
-        ? `${displayName} (${hazCode})`
-        : displayName;
-    }
-    return undefined;
-  };
+    };
+    fetchBatchName();
+  }, [formData.batchId]);
 
   const completedSteps = Array.from(
     { length: currentStep - 1 },
@@ -869,9 +125,9 @@ export default function CreateCollectionRecordPage() {
               formData={formData}
               errors={errors}
               onChange={handleFieldChange}
-              wasteOwners={wasteOwners}
-              contractTypes={contractTypes}
-              wasteTypes={wasteTypes}
+              wasteOwners={dropdownData.wasteOwners}
+              contractTypes={dropdownData.contractTypes}
+              wasteTypes={dropdownData.wasteTypes}
             />
           )}
 
@@ -894,7 +150,7 @@ export default function CreateCollectionRecordPage() {
               onFullAddressChange={setFullAddress}
               evidenceFiles={evidenceFiles}
               onEvidenceFilesChange={setEvidenceFiles}
-              hazTypes={hazTypes}
+              hazTypes={dropdownData.hazTypes}
             />
           )}
 
@@ -922,6 +178,7 @@ export default function CreateCollectionRecordPage() {
               contractTypeName={getSelectedContractTypeName()}
               wasteSourceName={getSelectedWasteSourceName()}
               hazCodeName={getSelectedHazCodeName()}
+              batchName={batchName}
               collectionDate={collectionDate}
               fullAddress={fullAddress}
               latitude={latitude}

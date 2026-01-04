@@ -13,6 +13,7 @@ interface Step4ReviewSubmitProps {
   contractTypeName?: string;
   wasteSourceName?: string;
   hazCodeName?: string;
+  batchName?: string; // Batch name
   collectionDate?: Date;
   fullAddress?: string; // Full address string from location service
   latitude?: number;
@@ -93,6 +94,7 @@ export function Step4ReviewSubmit({
   contractTypeName,
   wasteSourceName,
   hazCodeName,
+  batchName,
   collectionDate,
   fullAddress,
   latitude,
@@ -125,6 +127,7 @@ export function Step4ReviewSubmit({
           title="Thông tin Chủ nguồn thải"
           onEdit={() => onEditStep(1)}
         >
+          {batchName && <ReviewField label="Lô hàng" value={batchName} />}
           <ReviewField label="Tên Chủ nguồn thải" value={wasteOwnerName} />
           <ReviewField label="Loại chất thải" value={wasteSourceName} />
           <ReviewField label="Phân loại hợp đồng" value={contractTypeName} />

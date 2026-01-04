@@ -32,7 +32,7 @@ const getWasteOwnerTypeLabel = (type: string): string => {
     case "business":
       return "DN"; // Doanh nghiệp
     case "organization":
-      return "TC"; // Tổ chức
+      return "HKD"; // Hộ kinh doanh
     default:
       return type;
   }
@@ -81,8 +81,7 @@ export function WasteOwnerTable({
               <TableHead>STT</TableHead>
               <TableHead>Tên Chủ nguồn thải</TableHead>
               <TableHead>Loại</TableHead>
-              <TableHead>Mã số thuế (MST)</TableHead>
-              <TableHead>Số CCCD</TableHead>
+              <TableHead>Mã số thuế (MST) / Số CCCD</TableHead>
               <TableHead>Người liên hệ</TableHead>
               <TableHead>Số điện thoại</TableHead>
               <TableHead>Thao tác</TableHead>
@@ -92,8 +91,7 @@ export function WasteOwnerTable({
             {wasteOwners.map((wasteOwner, index) => {
               // For individual type, businessCode is CCCD, for others it's MST
               const isIndividual = wasteOwner.wasteOwnerType === "individual";
-              const mst = isIndividual ? "-" : wasteOwner.businessCode;
-              const cccd = isIndividual ? wasteOwner.businessCode : "-";
+              const businessCode = wasteOwner.businessCode || "-";
               const isActive = wasteOwner.isActive ?? true;
 
               // Calculate global index for pagination
@@ -132,12 +130,7 @@ export function WasteOwnerTable({
                   <TableCell
                     className={!isActive ? "text-muted-foreground" : ""}
                   >
-                    {mst}
-                  </TableCell>
-                  <TableCell
-                    className={!isActive ? "text-muted-foreground" : ""}
-                  >
-                    {cccd}
+                    {businessCode}
                   </TableCell>
                   <TableCell
                     className={!isActive ? "text-muted-foreground" : ""}

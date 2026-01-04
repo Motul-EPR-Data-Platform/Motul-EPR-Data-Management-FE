@@ -3,6 +3,8 @@
 import { CollectionRecordDetail, RecordStatus } from "@/types/record";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
+import { IPaginationMeta } from "@/types/pagination";
 import { Eye, Pencil } from "lucide-react";
 import {
   Table,
@@ -19,6 +21,9 @@ interface RecordsTableProps {
   isLoading?: boolean;
   onView?: (record: CollectionRecordDetail) => void;
   onEdit?: (record: CollectionRecordDetail) => void;
+  pagination?: IPaginationMeta;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 const getStatusBadgeVariant = (
@@ -29,7 +34,8 @@ const getStatusBadgeVariant = (
   | "destructive"
   | "outline"
   | "success"
-  | "warning" => {
+  | "warning"
+  | "info" => {
   switch (status) {
     case "approved":
       return "success"; // Green
@@ -39,6 +45,8 @@ const getStatusBadgeVariant = (
       return "destructive"; // Red
     case "draft":
       return "outline"; // Grey
+    case "EDITED_BY_RECYCLER":
+      return "info"; // Blue
     default:
       return "outline";
   }
@@ -54,6 +62,8 @@ const getStatusLabel = (status: RecordStatus): string => {
       return "Bị từ chối";
     case "draft":
       return "Bản nháp";
+    case "EDITED_BY_RECYCLER":
+      return "Đã cập nhật";
     default:
       return status;
   }
@@ -86,6 +96,9 @@ export function RecordsTable({
   isLoading = false,
   onView,
   onEdit,
+  pagination,
+  onPageChange,
+  onPageSizeChange,
 }: RecordsTableProps) {
   if (isLoading) {
     return (
@@ -106,11 +119,12 @@ export function RecordsTable({
   }
 
   return (
-    <div className="rounded-lg border bg-white">
-      <Table>
+    <div className="space-y-4">
+      <div className="rounded-lg border bg-white">
+        <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>ID</TableHead>
+            <TableHead>Mã hồ sơ</TableHead>
             <TableHead>Ngày nộp</TableHead>
             <TableHead>Ngày thu gom</TableHead>
             <TableHead>Phân loại</TableHead>
@@ -168,7 +182,7 @@ export function RecordsTable({
                       <Eye className="h-4 w-4" />
                     </Button>
                   )}
-                  {record.status === "draft" && onEdit && (
+                  {(record.status === "draft" || record.status === "rejected") && onEdit && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -185,6 +199,14 @@ export function RecordsTable({
           ))}
         </TableBody>
       </Table>
+      </div>
+      {pagination && onPageChange && (
+        <Pagination
+          pagination={pagination}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
+      )}
     </div>
   );
 }
