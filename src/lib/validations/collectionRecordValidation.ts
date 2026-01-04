@@ -5,6 +5,7 @@ import { CreateDraftFormData } from "@/types/record";
 export interface ValidationContext {
   formData: Partial<CreateDraftFormData>;
   locationRefId: string;
+  collectionDate: Date;
   recycledPhoto: globalThis.File | null;
   stockpilePhoto: globalThis.File | null;
 }
@@ -19,7 +20,7 @@ export const validateStep = (
   step: number,
   context: ValidationContext,
 ): { isValid: boolean; errors: Record<string, string> } => {
-  const { formData, locationRefId, recycledPhoto, stockpilePhoto } = context;
+  const { formData, locationRefId, collectionDate, recycledPhoto, stockpilePhoto } = context;
   const newErrors: Record<string, string> = {};
 
   if (step === 1) {
@@ -48,13 +49,13 @@ export const validateStep = (
       newErrors.vehiclePlate = "Biển số xe là bắt buộc";
     }
     if (!formData.hazWasteId) {
-      newErrors.hazWasteId = "Vui lòng chọn Loại chất thải";
+      newErrors.hazWasteId = "Vui lòng chọn Mã HAZ";
     }
     if (!formData.collectedPricePerKg || formData.collectedPricePerKg <= 0) {
       newErrors.collectedPricePerKg = "Giá thu gom là bắt buộc";
     }
-    if (!formData.deliveryDate) {
-      newErrors.deliveryDate = "Ngày giao hàng là bắt buộc";
+    if (!collectionDate || !(collectionDate instanceof Date) || isNaN(collectionDate.getTime())) {
+      newErrors.collectionDate = "Ngày thu gom là bắt buộc";
     }
   }
 

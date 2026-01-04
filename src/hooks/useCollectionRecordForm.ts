@@ -263,6 +263,7 @@ export function useCollectionRecordForm(
     const context: ValidationContext = {
       formData,
       locationRefId,
+      collectionDate,
       recycledPhoto,
       stockpilePhoto,
     };
@@ -270,7 +271,7 @@ export function useCollectionRecordForm(
     const result = validateStep(currentStep, context);
     setErrors(result.errors);
     return result.isValid;
-  }, [currentStep, formData, locationRefId, recycledPhoto, stockpilePhoto]);
+  }, [currentStep, formData, locationRefId, collectionDate, recycledPhoto, stockpilePhoto]);
 
   // Navigation handlers
   const handleNext = useCallback(() => {

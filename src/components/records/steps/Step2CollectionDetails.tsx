@@ -96,6 +96,9 @@ export function Step2CollectionDetails({
             }}
             disabled={disabled}
           />
+          {errors.collectionDate && (
+            <p className="text-sm text-red-500">{errors.collectionDate}</p>
+          )}
           <p className="text-xs text-red-500">
             Cảnh báo: Ngày này phải là ngày giao hàng chính xác, nếu không sẽ bị
             Motul từ chối
