@@ -79,7 +79,9 @@ export function Step1WasteSourceInfo({
 
           {/* Classification (Contract Type) */}
           <div className="grid gap-2">
-            <Label htmlFor="contractTypeId">Phân loại hợp đồng</Label>
+            <Label htmlFor="contractTypeId">
+              Phân loại hợp đồng <span className="text-red-500">*</span>
+            </Label>
             <Select
               value={formData.contractTypeId || ""}
               onValueChange={(value) =>
