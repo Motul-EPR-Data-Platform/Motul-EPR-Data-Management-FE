@@ -6,7 +6,8 @@ export type RecordStatus =
   | "pending"
   | "submitted"
   | "approved"
-  | "rejected";
+  | "rejected"
+  | "EDITED_BY_RECYCLER";
 
 export interface CollectionRecord {
   readonly id: string;

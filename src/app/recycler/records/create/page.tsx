@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ProgressStepper } from "@/components/records/ProgressStepper";
 import { FormNavigationButtons } from "@/components/records/FormNavigationButtons";
@@ -10,6 +11,7 @@ import { Step4ReviewSubmit } from "@/components/records/steps/Step4ReviewSubmit"
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useCollectionRecordForm } from "@/hooks/useCollectionRecordForm";
+import { BatchService } from "@/lib/services/batch.service";
 
 const STEPS = [
   { number: 1, label: "Thông tin Chủ nguồn thải" },
@@ -60,6 +62,26 @@ export default function CreateCollectionRecordPage() {
     getSelectedWasteSourceName,
     getSelectedHazCodeName,
   } = useCollectionRecordForm({ mode: "create" });
+
+  const [batchName, setBatchName] = useState<string | undefined>();
+
+  // Fetch batch name when batchId changes
+  useEffect(() => {
+    const fetchBatchName = async () => {
+      if (formData.batchId) {
+        try {
+          const batchDetail = await BatchService.getBatchById(formData.batchId);
+          setBatchName(batchDetail.batch.batchName);
+        } catch (error) {
+          console.error("Error fetching batch name:", error);
+          setBatchName(undefined);
+        }
+      } else {
+        setBatchName(undefined);
+      }
+    };
+    fetchBatchName();
+  }, [formData.batchId]);
 
   const completedSteps = Array.from(
     { length: currentStep - 1 },
@@ -156,6 +178,7 @@ export default function CreateCollectionRecordPage() {
               contractTypeName={getSelectedContractTypeName()}
               wasteSourceName={getSelectedWasteSourceName()}
               hazCodeName={getSelectedHazCodeName()}
+              batchName={batchName}
               collectionDate={collectionDate}
               fullAddress={fullAddress}
               latitude={latitude}

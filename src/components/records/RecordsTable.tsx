@@ -34,7 +34,8 @@ const getStatusBadgeVariant = (
   | "destructive"
   | "outline"
   | "success"
-  | "warning" => {
+  | "warning"
+  | "info" => {
   switch (status) {
     case "approved":
       return "success"; // Green
@@ -44,6 +45,8 @@ const getStatusBadgeVariant = (
       return "destructive"; // Red
     case "draft":
       return "outline"; // Grey
+    case "EDITED_BY_RECYCLER":
+      return "info"; // Blue
     default:
       return "outline";
   }
@@ -59,6 +62,8 @@ const getStatusLabel = (status: RecordStatus): string => {
       return "Bị từ chối";
     case "draft":
       return "Bản nháp";
+    case "EDITED_BY_RECYCLER":
+      return "Đã cập nhật";
     default:
       return status;
   }
@@ -177,7 +182,7 @@ export function RecordsTable({
                       <Eye className="h-4 w-4" />
                     </Button>
                   )}
-                  {record.status === "draft" && onEdit && (
+                  {(record.status === "draft" || record.status === "rejected") && onEdit && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -195,7 +200,7 @@ export function RecordsTable({
         </TableBody>
       </Table>
       </div>
-      {pagination && (
+      {pagination && onPageChange && (
         <Pagination
           pagination={pagination}
           onPageChange={onPageChange}

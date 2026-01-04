@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ProgressStepper } from "@/components/records/ProgressStepper";
@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useCollectionRecordForm } from "@/hooks/useCollectionRecordForm";
 import { parseDate, urlToFile } from "@/lib/utils/collectionRecordHelpers";
 import { ICollectionRecordFilesWithPreview } from "@/types/file-record";
+import { BatchService } from "@/lib/services/batch.service";
 
 const STEPS = [
   { number: 1, label: "Thông tin Chủ nguồn thải" },
@@ -78,6 +79,26 @@ export default function EditCollectionRecordPage() {
     originalFileIdsRef,
     originalFileRefsRef,
   } = useCollectionRecordForm({ mode: "edit", recordId });
+
+  const [batchName, setBatchName] = useState<string | undefined>();
+
+  // Fetch batch name when batchId changes
+  useEffect(() => {
+    const fetchBatchName = async () => {
+      if (formData.batchId) {
+        try {
+          const batchDetail = await BatchService.getBatchById(formData.batchId);
+          setBatchName(batchDetail.batch.batchName);
+        } catch (error) {
+          console.error("Error fetching batch name:", error);
+          setBatchName(undefined);
+        }
+      } else {
+        setBatchName(undefined);
+      }
+    };
+    fetchBatchName();
+  }, [formData.batchId]);
 
   // Load record data (edit mode only)
   useEffect(() => {
@@ -266,9 +287,6 @@ export default function EditCollectionRecordPage() {
               );
             }
           }
-        } else if (recordRes.status === "rejected") {
-          toast.error("Không thể tải thông tin bản ghi");
-          router.push("/recycler/my-records");
         }
       } catch (error: any) {
         console.error("Error loading record:", error);
@@ -414,6 +432,7 @@ export default function EditCollectionRecordPage() {
               contractTypeName={getSelectedContractTypeName()}
               wasteSourceName={getSelectedWasteSourceName()}
               hazCodeName={getSelectedHazCodeName()}
+              batchName={batchName}
               collectionDate={collectionDate}
               fullAddress={fullAddress}
               latitude={latitude}

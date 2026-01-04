@@ -262,14 +262,14 @@ export function RecordPageContent({
   };
 
   const handleEditRecord = (record: CollectionRecordDetail) => {
-    if (record.status === "draft") {
+    if (record.status === "draft" || record.status === "rejected") {
       if (onEdit) {
         onEdit(record);
       } else {
         router.push(`/recycler/records/edit?id=${record.id}`);
       }
     } else {
-      toast.info("Chỉ có thể chỉnh sửa bản nháp");
+      toast.info("Chỉ có thể chỉnh sửa bản nháp hoặc bản ghi bị từ chối");
     }
   };
 

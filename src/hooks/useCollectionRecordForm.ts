@@ -4,12 +4,12 @@ import { useRouter } from "next/navigation";
 import { CreateDraftDTO, CreateDraftFormData } from "@/types/record";
 import { DocumentFile } from "@/components/records/DocumentUpload";
 import { CollectionRecordService } from "@/lib/services/collection-record.service";
+import { WasteOwnerService } from "@/lib/services/waste-owner.service";
 import { toast } from "sonner";
 import { validateStep, ValidationContext } from "@/lib/validations/collectionRecordValidation";
 import { loadDropdownData, DropdownData } from "@/lib/utils/collectionRecordDataLoader";
 import {
   formatDateDDMMYYYY,
-  getSelectedWasteOwnerName,
   getSelectedContractTypeName,
   getSelectedWasteSourceName,
   getSelectedHazCodeName,
@@ -146,6 +146,9 @@ export function useCollectionRecordForm(
   });
   const [isLoadingDropdowns, setIsLoadingDropdowns] = useState(true);
 
+  // Selected names (fetched separately)
+  const [selectedWasteOwnerName, setSelectedWasteOwnerName] = useState<string | undefined>();
+
   // File tracking refs (for create mode)
   const uploadedFilesRef = useRef<FileUploadTracking>({
     evidenceFiles: new Set(),
@@ -184,6 +187,24 @@ export function useCollectionRecordForm(
     };
     loadData();
   }, []);
+
+  // Fetch waste owner name when wasteOwnerId changes
+  useEffect(() => {
+    const fetchWasteOwnerName = async () => {
+      if (formData.wasteOwnerId) {
+        try {
+          const wasteOwner = await WasteOwnerService.getWasteOwnerById(formData.wasteOwnerId);
+          setSelectedWasteOwnerName(wasteOwner.name);
+        } catch (error) {
+          console.error("Error fetching waste owner name:", error);
+          setSelectedWasteOwnerName(undefined);
+        }
+      } else {
+        setSelectedWasteOwnerName(undefined);
+      }
+    };
+    fetchWasteOwnerName();
+  }, [formData.wasteOwnerId]);
 
   // Load record data (edit mode only)
   useEffect(() => {
@@ -495,13 +516,8 @@ export function useCollectionRecordForm(
 
   // Helper getters
   const getSelectedWasteOwnerNameMemo = useCallback(() => {
-    // Note: wasteOwners are now loaded on-demand, so we can't get the name from dropdownData
-    // The SearchableWasteOwnerSelect component handles displaying the selected name
-    // This function is kept for backward compatibility but may return undefined
-    return dropdownData.wasteOwners
-      ? getSelectedWasteOwnerName(formData, dropdownData.wasteOwners)
-      : undefined;
-  }, [formData, dropdownData.wasteOwners]);
+    return selectedWasteOwnerName;
+  }, [selectedWasteOwnerName]);
 
   const getSelectedContractTypeNameMemo = useCallback(() => {
     return getSelectedContractTypeName(formData, dropdownData.contractTypes);

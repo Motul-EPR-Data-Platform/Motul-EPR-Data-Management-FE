@@ -47,6 +47,46 @@ export function SearchableWasteOwnerSelect({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isInitialLoadRef = useRef(true);
 
+  const loadWasteOwners = useCallback(async (
+    page: number,
+    query: string = "",
+    reset: boolean = false,
+  ) => {
+    try {
+      const response = await WasteOwnerService.getAllWasteOwners(
+        {
+          isActive: true,
+          ...(query && { name: query }),
+        },
+        { page, limit: 20 },
+      );
+
+      if (reset) {
+        setWasteOwners(response.data);
+      } else {
+        setWasteOwners((prev) => [...prev, ...response.data]);
+      }
+
+      const pagination = response.pagination;
+      setHasMore(pagination.hasNext || false);
+      setCurrentPage(page);
+    } catch (error) {
+      console.error("Error loading waste owners:", error);
+      throw error;
+    }
+  }, []);
+
+  const loadInitialData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await loadWasteOwners(1, "", true);
+    } catch (error) {
+      console.error("Error loading initial data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [loadWasteOwners]);
+
   // Load selected waste owner by ID when value changes (for edit mode)
   useEffect(() => {
     if (value && !selectedWasteOwner) {
@@ -70,7 +110,7 @@ export function SearchableWasteOwnerSelect({
       loadInitialData();
       isInitialLoadRef.current = false;
     }
-  }, [isOpen]);
+  }, [isOpen, wasteOwners.length, searchQuery, loadInitialData]);
 
   // Debounced search - only trigger when searchQuery changes (not on initial open)
   useEffect(() => {
@@ -105,47 +145,7 @@ export function SearchableWasteOwnerSelect({
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [searchQuery]);
-
-  const loadInitialData = async () => {
-    setIsLoading(true);
-    try {
-      await loadWasteOwners(1, "", true);
-    } catch (error) {
-      console.error("Error loading initial data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadWasteOwners = async (
-    page: number,
-    query: string = "",
-    reset: boolean = false,
-  ) => {
-    try {
-      const response = await WasteOwnerService.getAllWasteOwners(
-        {
-          isActive: true,
-          ...(query && { name: query }),
-        },
-        { page, limit: 20 },
-      );
-
-      if (reset) {
-        setWasteOwners(response.data);
-      } else {
-        setWasteOwners((prev) => [...prev, ...response.data]);
-      }
-
-      const pagination = response.pagination;
-      setHasMore(pagination.hasNext || false);
-      setCurrentPage(page);
-    } catch (error) {
-      console.error("Error loading waste owners:", error);
-      throw error;
-    }
-  };
+  }, [searchQuery, isOpen, loadWasteOwners]);
 
   const loadMore = useCallback(async () => {
     if (isLoadingMore || !hasMore) return;
@@ -244,7 +244,7 @@ export function SearchableWasteOwnerSelect({
           </div>
         </PopoverAnchor>
         <PopoverContent
-          className="p-0 max-w-md min-w-[200px]"
+          className="p-0 w-[var(--radix-popover-trigger-width)]"
           align="start"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
