@@ -55,9 +55,9 @@ export function AppSidebar() {
   if (isLoading) {
     return (
       <Sidebar collapsible="icon" className="z-40 relative">
-        <SidebarHeader>
-          <div className="p-4 flex justify-center">
-            <div className="h-10 w-10 bg-gray-200 animate-pulse rounded-lg" />
+        <SidebarHeader className="items-center justify-center p-2">
+          <div className="flex w-full justify-center">
+            <div className="h-10 w-10 bg-gray-200 animate-pulse rounded-lg group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8" />
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -73,10 +73,10 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="z-40 relative">
-      <SidebarHeader>
-        <div className="p-4 flex justify-center">
-          <div className="h-10 w-10 rounded-lg bg-red-600 flex items-center justify-center">
-            <span className="text-white font-semibold text-lg">
+      <SidebarHeader className="items-center justify-center p-2">
+        <div className="flex w-full justify-center">
+          <div className="h-10 w-10 rounded-lg bg-red-600 flex items-center justify-center group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8">
+            <span className="text-white font-semibold text-lg group-data-[collapsible=icon]:text-sm">
               {config.initials}
             </span>
           </div>
@@ -102,7 +102,6 @@ export function AppSidebar() {
                       isActive={isActive}
                       disabled={isLocked}
                     >
-                      {/* @ts-expect-error - Next.js Link type compatibility with Radix Slot */}
                       <Link
                         href={item.url}
                         className={`flex items-center gap-2 ${
