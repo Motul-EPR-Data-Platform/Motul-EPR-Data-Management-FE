@@ -89,7 +89,7 @@ export function RecordOverviewCard({ record }: RecordOverviewCardProps) {
       <CardContent className="space-y-3">
         <div>
           <p className="text-sm text-muted-foreground mb-1">ID</p>
-          <p className="font-medium font-mono">{record.id}</p>
+          <p className="font-medium font-mono">{record.recordName}</p>
         </div>
         <div>
           <p className="text-sm text-muted-foreground mb-1">Ngày nộp</p>
