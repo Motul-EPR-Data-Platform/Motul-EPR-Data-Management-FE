@@ -1,7 +1,7 @@
 "use client";
 
 import { PageLayout } from "@/components/layout/PageLayout";
-import { DashboardSkeleton } from "@/components/skeleton/DashboardSkeleton";
+import { RecyclerDashboard } from "@/components/dashboard/RecyclerDashboard";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
@@ -27,7 +27,7 @@ export default function RecyclerDashboardPage() {
             </Link>
           </div>
         )}
-        <DashboardSkeleton />
+        <RecyclerDashboard />
       </div>
     </PageLayout>
   );

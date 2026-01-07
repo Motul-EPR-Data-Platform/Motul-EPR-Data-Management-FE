@@ -6,9 +6,10 @@ import { MonthlyCollectionChart } from "./MonthlyCollectionChart";
 import { WasteSourceDistributionChart } from "./WasteSourceDistributionChart";
 import { WasteTypeTrendsChart } from "./WasteTypeTrendsChart";
 import { DashboardService } from "@/lib/services/dashboard.service";
-import { TrendingUp, Package, Recycle, CheckCircle2 } from "lucide-react";
+import { TrendingUp, Package, Recycle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
-export function MotulDashboard() {
+export function RecyclerDashboard() {
   const [kpi, setKpi] = useState({
     totalCollectedVolumeKg: 0,
     totalStockpileVolumeKg: 0,
@@ -35,7 +36,7 @@ export function MotulDashboard() {
   return (
     <div className="space-y-6">
       {/* Summary Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <SummaryMetricCard
           title="Tổng khối lượng đã thu gom"
           value={
@@ -81,3 +82,4 @@ export function MotulDashboard() {
     </div>
   );
 }
+
