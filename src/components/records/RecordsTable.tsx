@@ -69,6 +69,23 @@ const getStatusLabel = (status: RecordStatus): string => {
   }
 };
 
+const getStatusLabelShort = (status: RecordStatus): string => {
+  switch (status) {
+    case "approved":
+      return "Đã duyệt";
+    case "pending":
+      return "Chờ duyệt";
+    case "rejected":
+      return "Từ chối";
+    case "draft":
+      return "Nháp";
+    case "EDITED_BY_RECYCLER":
+      return "Cập nhật";
+    default:
+      return status;
+  }
+};
+
 const formatDate = (dateString: string | null | undefined): string => {
   if (!dateString) return "-";
   try {
@@ -120,7 +137,7 @@ export function RecordsTable({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border bg-white">
+      <div className="rounded-lg border bg-white overflow-x-auto">
         <Table>
         <TableHeader>
           <TableRow>
@@ -152,8 +169,12 @@ export function RecordsTable({
                   : "-"}
               </TableCell>
               <TableCell>
-                <Badge variant={getStatusBadgeVariant(record.status)}>
-                  {getStatusLabel(record.status)}
+                <Badge
+                  variant={getStatusBadgeVariant(record.status)}
+                  className="text-[10px] sm:text-xs px-1.5 sm:px-2.5 py-0.5"
+                >
+                  <span className="hidden sm:inline">{getStatusLabel(record.status)}</span>
+                  <span className="sm:hidden">{getStatusLabelShort(record.status)}</span>
                 </Badge>
               </TableCell>
               <TableCell>

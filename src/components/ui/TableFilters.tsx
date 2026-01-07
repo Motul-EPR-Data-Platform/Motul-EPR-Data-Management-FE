@@ -43,29 +43,39 @@ export function TableFilters({
   return (
     <div className={`rounded-lg border bg-card p-6 space-y-4 ${className}`}>
       {(title || subtitle || headerContent) && (
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
             {title && <h2 className="text-lg font-semibold">{title}</h2>}
             {subtitle && (
               <p className="text-sm text-muted-foreground">{subtitle}</p>
             )}
           </div>
-          {headerContent && <div className="flex items-end gap-2">{headerContent}</div>}
+          {headerContent && (
+            <div className="flex flex-wrap items-end gap-2 w-full sm:w-auto">
+              {headerContent}
+            </div>
+          )}
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        {search && <div className="flex-1">{search}</div>}
+      <div className="flex flex-col gap-4">
+        {search && <div className="w-full">{search}</div>}
 
-        {filters && filters.length > 0 && (
-          <div className="flex flex-col sm:flex-row gap-4">
-            {filters.map((filter, index) => (
-              <div key={index}>{filter}</div>
-            ))}
-          </div>
-        )}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          {filters && filters.length > 0 && (
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 flex-1 flex-wrap">
+              {filters.map((filter, index) => (
+                <div key={index} className="flex-shrink-0">{filter}</div>
+              ))}
+            </div>
+          )}
 
-        {actions && <div className="flex items-center">{actions}</div>}
+          {actions && (
+            <div className="flex items-center flex-shrink-0">
+              {actions}
+            </div>
+          )}
+        </div>
       </div>
 
       {bottomContent && <div>{bottomContent}</div>}

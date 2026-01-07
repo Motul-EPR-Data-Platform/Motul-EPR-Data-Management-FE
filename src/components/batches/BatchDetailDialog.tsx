@@ -24,6 +24,7 @@ import { CollectionBatch, BatchStatus, BatchType } from "@/types/batch";
 import { Loader2, Edit, Search, Plus } from "lucide-react";
 import { BatchStatusUpdateDialog } from "./BatchStatusUpdateDialog";
 import { CreateBatchDialog } from "./CreateBatchDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface BatchDetailDialogProps {
   open: boolean;
@@ -36,6 +37,7 @@ export function BatchDetailDialog({
   onOpenChange,
   batchType,
 }: BatchDetailDialogProps) {
+  const { user } = useAuth();
   const [batches, setBatches] = useState<CollectionBatch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,12 +50,14 @@ export function BatchDetailDialog({
     if (open) {
       fetchBatches();
     }
-  }, [open]);
+  }, [open, user?.recyclerId]);
 
   const fetchBatches = async () => {
     setIsLoading(true);
     try {
-      const data = await BatchService.getAllBatches();
+      const data = await BatchService.getAllBatches(
+        user?.recyclerId || undefined,
+      );
       // Filter by batchType if provided
       const filtered = batchType
         ? data.filter((b) => b.batchType === batchType)
@@ -197,7 +201,6 @@ export function BatchDetailDialog({
                             variant="ghost"
                             size="sm"
                             onClick={() => handleEditClick(batch)}
-                            disabled={batch.status === BatchStatus.CLOSED}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>

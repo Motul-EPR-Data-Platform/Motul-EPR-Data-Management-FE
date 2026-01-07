@@ -230,7 +230,7 @@ export function Step2CollectionDetails({
         <div className="space-y-4">
           <Label>Vị trí GPS & Địa chỉ thu gom chi tiết</Label>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column - Map & GPS Coordinates */}
             <div className="space-y-4">
               {/* Map - Temporarily disabled */}
@@ -256,7 +256,7 @@ export function Step2CollectionDetails({
               {/* Map placeholder - temporarily disabled */}
               <div className="space-y-2">
                 <Label>Bản đồ</Label>
-                <div className="w-full h-64 bg-gray-100 border-2 border-gray-300 rounded-lg flex items-center justify-center">
+                <div className="w-full h-48 sm:h-64 bg-gray-100 border-2 border-gray-300 rounded-lg flex items-center justify-center">
                   <p className="text-sm text-muted-foreground">
                     Bản đồ tạm thời bị vô hiệu hóa
                   </p>
@@ -264,7 +264,7 @@ export function Step2CollectionDetails({
               </div>
 
               {/* GPS Coordinates */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label>Vĩ độ</Label>
                   <Input

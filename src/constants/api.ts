@@ -92,6 +92,7 @@ export const ENDPOINTS = {
     ROOT: "/batches",
     BY_ID: (id: string) => `/${id}`,
     CLOSE: (id: string) => `/${id}/close`,
+    REOPEN: (id: string) => `/${id}/reopen`,
     ACTIVE: "/active",
   },
 } as const;
