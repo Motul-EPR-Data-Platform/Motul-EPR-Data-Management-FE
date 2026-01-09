@@ -33,16 +33,17 @@ export function FormNavigationButtons({
   return (
     <div className="flex items-center justify-end pt-6 border-t">
       {/* Right side - Action buttons */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
         {onRedo && (
           <Button
             type="button"
             variant="outline"
             onClick={onRedo}
             disabled={isLoading}
+            className="flex-1 sm:flex-initial text-xs sm:text-sm"
           >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Làm lại
+            <RotateCcw className="w-4 h-4 sm:mr-2" />
+            <span>Làm lại</span>
           </Button>
         )}
 
@@ -52,9 +53,10 @@ export function FormNavigationButtons({
             variant="outline"
             onClick={onSaveDraft}
             disabled={isLoading}
+            className="flex-1 sm:flex-initial text-xs sm:text-sm"
           >
-            <Save className="w-4 h-4 mr-2" />
-            Lưu nháp
+            <Save className="w-4 h-4 sm:mr-2" />
+            <span>Lưu nháp</span>
           </Button>
         )}
 
@@ -64,9 +66,10 @@ export function FormNavigationButtons({
             variant="outline"
             onClick={onBack}
             disabled={isLoading}
+            className="flex-1 sm:flex-initial text-xs sm:text-sm"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Quay lại
+            <ArrowLeft className="w-4 h-4 sm:mr-2" />
+            <span>Quay lại</span>
           </Button>
         )}
 
@@ -76,10 +79,11 @@ export function FormNavigationButtons({
                 type="button"
                 onClick={onSubmit}
                 disabled={isLoading || !canGoNext}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-initial text-xs sm:text-sm"
               >
-                <Check className="w-4 h-4 mr-2" />
-                Gửi phê duyệt
+                <Check className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Gửi phê duyệt</span>
+                <span className="sm:hidden">Gửi</span>
               </Button>
             )
           : onNext && (
@@ -87,10 +91,11 @@ export function FormNavigationButtons({
                 type="button"
                 onClick={onNext}
                 disabled={isLoading || !canGoNext}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="bg-red-600 hover:bg-red-700 text-white flex-1 sm:flex-initial text-xs sm:text-sm"
               >
-                Tiếp theo
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <span className="hidden sm:inline">Tiếp theo</span>
+                <span className="sm:hidden">Tiếp</span>
+                <ArrowRight className="w-4 h-4 sm:ml-2" />
               </Button>
             )}
       </div>

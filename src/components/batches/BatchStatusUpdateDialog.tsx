@@ -48,15 +48,44 @@ export function BatchStatusUpdateDialog({
     }
   };
 
+  const handleReopenBatch = async () => {
+    setIsLoading(true);
+    try {
+      await BatchService.reOpenBatch(batch.id);
+      toast.success("Mở lại lô hàng thành công");
+      onSuccess?.();
+      onOpenChange(false);
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Không thể mở lại lô hàng";
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const canClose = batch.status === BatchStatus.ACTIVE;
+  const canReopen = batch.status === BatchStatus.CLOSED;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Xác nhận đóng lô hàng</DialogTitle>
+          <DialogTitle>
+            {canClose
+              ? "Xác nhận đóng lô hàng"
+              : canReopen
+                ? "Xác nhận mở lại lô hàng"
+                : "Thông tin lô hàng"}
+          </DialogTitle>
           <DialogDescription>
-            Bạn có chắc chắn muốn đóng lô hàng này không?
+            {canClose
+              ? "Bạn có chắc chắn muốn đóng lô hàng này không?"
+              : canReopen
+                ? "Bạn có chắc chắn muốn mở lại lô hàng này không?"
+                : "Thông tin về lô hàng"}
           </DialogDescription>
         </DialogHeader>
 
@@ -82,17 +111,30 @@ export function BatchStatusUpdateDialog({
                 <ul className="list-disc list-inside space-y-1">
                   <li>Lô hàng phải có ít nhất một bản ghi</li>
                   <li>
-                    Tất cả các bản ghi trong lô hàng phải đã được phê duyệt
+                    Lô hàng có thể được đóng ngay cả khi chưa phê duyệt tất cả
+                    các bản ghi
                   </li>
-                  <li>Không thể hoàn tác sau khi đóng lô hàng</li>
+                  <li>Lô hàng có thể được mở lại sau khi đóng</li>
                 </ul>
               </div>
             </div>
           )}
 
-          {!canClose && (
+          {canReopen && (
+            <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div className="text-sm text-blue-800">
+                <p className="font-medium mb-1">Lưu ý:</p>
+                <p>
+                  Lô hàng sẽ được mở lại và có thể tiếp tục thêm bản ghi mới.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!canClose && !canReopen && (
             <div className="p-3 bg-gray-100 rounded-lg text-sm text-gray-600">
-              Lô hàng này đã được đóng và không thể thay đổi trạng thái.
+              Không thể thay đổi trạng thái của lô hàng này.
             </div>
           )}
         </div>
@@ -114,6 +156,16 @@ export function BatchStatusUpdateDialog({
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               {isLoading ? "Đang xử lý..." : "Xác nhận đóng"}
+            </Button>
+          )}
+          {canReopen && (
+            <Button
+              type="button"
+              onClick={handleReopenBatch}
+              disabled={isLoading}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {isLoading ? "Đang xử lý..." : "Xác nhận mở lại"}
             </Button>
           )}
         </DialogFooter>

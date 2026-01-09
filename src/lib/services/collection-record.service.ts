@@ -224,6 +224,7 @@ export const CollectionRecordService = {
     const formData = new FormData();
     formData.append("eprId", dto.eprId);
     formData.append("acceptanceDate", dto.acceptanceDate);
+    formData.append("hazWasteDocNumber", dto.hazWasteDocNumber);
     if (dto.comment) {
       formData.append("comment", dto.comment);
     }

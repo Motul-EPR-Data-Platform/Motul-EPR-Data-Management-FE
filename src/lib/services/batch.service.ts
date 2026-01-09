@@ -60,10 +60,23 @@ export const BatchService = {
   },
 
   /**
+   * Reopen a batch
+   * POST /api/batches/:id/reopen
+   */
+  async reOpenBatch(batchId: string): Promise<CollectionBatch> {
+    const { data } = await api.post(
+      path.batches(ENDPOINTS.BATCHES.REOPEN(batchId)),
+    );
+    const result = data.data || data;
+    return toCamelCase(result) as CollectionBatch;
+  },
+
+  /**
    * Get all batches
    * GET /api/batches
+   * Note: Backend requires recyclerId, which is extracted from the authenticated user
    */
-  async getAllBatches(): Promise<CollectionBatch[]> {
+  async getAllBatches(recyclerId?: string): Promise<CollectionBatch[]> {
     const { data } = await api.get(path.batches("")); // Use empty string since path.batches already prepends ROOT
     const result = data.data || data;
     if (Array.isArray(result)) {
@@ -87,9 +100,11 @@ export const BatchService = {
   /**
    * Get active batches for dropdown
    * GET /api/batches/active?batchType=port|factory
+   * Note: Backend requires recyclerId, which is extracted from the authenticated user
    */
   async getActiveBatchesForDropdown(
     batchType?: BatchType,
+    recyclerId?: string,
   ): Promise<ActiveBatch[]> {
     const queryParams = new URLSearchParams();
     if (batchType) {

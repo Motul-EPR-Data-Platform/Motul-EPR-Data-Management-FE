@@ -22,16 +22,16 @@ function SummaryCard({
   color?: string;
 }) {
   return (
-    <div className="rounded-lg border bg-white p-4">
-      <p className="text-sm text-gray-600 mb-1">{label}</p>
-      <p className={`text-2xl font-bold ${color}`}>{value}</p>
+    <div className="rounded-lg border bg-white p-3 sm:p-4">
+      <p className="text-xs sm:text-sm text-gray-600 mb-1 line-clamp-2">{label}</p>
+      <p className={`text-xl sm:text-2xl font-bold ${color}`}>{value}</p>
     </div>
   );
 }
 
 export function RecordSummaryCards({ counts }: RecordSummaryCardsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
       <SummaryCard label="Số bản ghi tổng cộng" value={counts.total} />
       <SummaryCard
         label="Đang chờ duyệt"

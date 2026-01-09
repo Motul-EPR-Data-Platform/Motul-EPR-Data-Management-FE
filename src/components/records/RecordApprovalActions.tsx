@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUpload } from "@/components/ui/file-upload";
 import { FileType } from "@/types/file-record";
@@ -48,6 +49,7 @@ export function RecordApprovalActions({
   );
   const [approvalComment, setApprovalComment] = useState("");
   const [approvalDocument, setApprovalDocument] = useState<File | null>(null);
+  const [hazWasteDocNumber, setHazWasteDocNumber] = useState("");
   const [rejectionComment, setRejectionComment] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [eprEntities, setEprEntities] = useState<
@@ -93,6 +95,11 @@ export function RecordApprovalActions({
       return;
     }
 
+    if (!hazWasteDocNumber || !hazWasteDocNumber.trim()) {
+      toast.error("Vui lòng nhập số giấy tờ chất thải nguy hại");
+      return;
+    }
+
     if (!approvalDocument) {
       toast.error("Vui lòng tải lên tài liệu chấp thuận");
       return;
@@ -125,6 +132,7 @@ export function RecordApprovalActions({
         acceptanceDate: formattedDate,
         comment: approvalComment || null,
         file: approvalDocument,
+        hazWasteDocNumber: hazWasteDocNumber.trim(),
       });
 
       toast.success("Bản ghi đã được phê duyệt thành công");
@@ -133,6 +141,7 @@ export function RecordApprovalActions({
       setAcceptanceDate(new Date());
       setApprovalComment("");
       setApprovalDocument(null);
+      setHazWasteDocNumber("");
       onApprovalChange?.();
     } catch (error: any) {
       toast.error(
@@ -151,6 +160,7 @@ export function RecordApprovalActions({
     setAcceptanceDate(new Date());
     setApprovalComment("");
     setApprovalDocument(null);
+    setHazWasteDocNumber("");
   };
 
   const handleReject = async () => {
@@ -269,6 +279,27 @@ export function RecordApprovalActions({
               )}
             </div>
             <div className="grid gap-2">
+              <Label htmlFor="hazWasteDocNumber">
+                Số giấy tờ chất thải nguy hại{" "}
+                <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="hazWasteDocNumber"
+                type="text"
+                value={hazWasteDocNumber}
+                onChange={(e) => setHazWasteDocNumber(e.target.value)}
+                placeholder="Nhập số giấy tờ chất thải nguy hại..."
+                disabled={isLoading}
+                className={!hazWasteDocNumber.trim() ? "border-red-500" : ""}
+                required
+              />
+              {!hazWasteDocNumber.trim() && (
+                <p className="text-xs text-red-500">
+                  Vui lòng nhập số giấy tờ chất thải nguy hại
+                </p>
+              )}
+            </div>
+            <div className="grid gap-2">
               <Label htmlFor="approvalComment">Ghi chú (tùy chọn)</Label>
               <Textarea
                 id="approvalComment"
@@ -315,7 +346,11 @@ export function RecordApprovalActions({
             <Button
               onClick={handleApprove}
               disabled={
-                isLoading || !eprId || !acceptanceDate || !approvalDocument
+                isLoading ||
+                !eprId ||
+                !acceptanceDate ||
+                !approvalDocument ||
+                !hazWasteDocNumber.trim()
               }
               className="bg-green-600 hover:bg-green-700"
             >

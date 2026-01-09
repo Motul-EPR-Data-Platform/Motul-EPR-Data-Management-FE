@@ -22,6 +22,7 @@ import { CollectionRecordService } from "@/lib/services/collection-record.servic
 import { BatchService } from "@/lib/services/batch.service";
 import { CollectionBatch } from "@/types/batch";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Select,
   SelectContent,
@@ -58,6 +59,7 @@ export function RecordPageContent({
   onEdit,
 }: RecordPageContentProps) {
   const router = useRouter();
+  const { user } = useAuth();
 
   // URL params for filters - memoize config to prevent recreation
   const filterConfig = useMemo(
@@ -81,7 +83,9 @@ export function RecordPageContent({
     const fetchBatches = async () => {
       setIsLoadingBatches(true);
       try {
-        const data = await BatchService.getAllBatches();
+        const data = await BatchService.getAllBatches(
+          user?.recyclerId || undefined,
+        );
         setBatches(data);
       } catch (error) {
         console.error("Error fetching batches:", error);
@@ -91,7 +95,7 @@ export function RecordPageContent({
     };
 
     fetchBatches();
-  }, []);
+  }, [user?.recyclerId]);
 
   // Tagged search
   const {
@@ -345,7 +349,7 @@ export function RecordPageContent({
             onChange={handleStatusChange}
             placeholder="Tất cả trạng thái"
           />,
-          <div key="batch" className="flex gap-2">
+          <div key="batch" className="flex gap-2 w-full sm:w-auto">
             <Select
               value={filterParams.batchId as string}
               onValueChange={handleBatchChange}
@@ -368,7 +372,7 @@ export function RecordPageContent({
               variant="outline"
               size="sm"
               onClick={() => setIsBatchDetailDialogOpen(true)}
-              className="px-3"
+              className="px-3 flex-shrink-0"
               title="Xem chi tiết lô hàng"
             >
               <MoreHorizontal className="h-4 w-4" />
@@ -376,8 +380,8 @@ export function RecordPageContent({
           </div>,
         ]}
         headerContent={
-          <div className="flex gap-2 items-end">
-            <div className="grid gap-1">
+          <div className="flex flex-wrap gap-2 sm:gap-3 items-end w-full sm:w-auto">
+            <div className="grid gap-1 min-w-0 flex-1 sm:flex-initial">
               <Label htmlFor="startDate" className="text-xs text-muted-foreground">
                 Từ ngày
               </Label>
@@ -386,10 +390,10 @@ export function RecordPageContent({
                 type="date"
                 value={filterParams.startDate as string}
                 onChange={(e) => handleStartDateChange(e.target.value)}
-                className="w-[140px] h-9"
+                className="w-full sm:w-[140px] h-9"
               />
             </div>
-            <div className="grid gap-1">
+            <div className="grid gap-1 min-w-0 flex-1 sm:flex-initial">
               <Label htmlFor="endDate" className="text-xs text-muted-foreground">
                 Đến ngày
               </Label>
@@ -398,7 +402,7 @@ export function RecordPageContent({
                 type="date"
                 value={filterParams.endDate as string}
                 onChange={(e) => handleEndDateChange(e.target.value)}
-                className="w-[140px] h-9"
+                className="w-full sm:w-[140px] h-9"
               />
             </div>
           </div>
@@ -407,10 +411,11 @@ export function RecordPageContent({
           mode === "recycler" && canCreate ? (
             <Button
               onClick={() => router.push("/recycler/records/create")}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Tạo Bản ghi thu gom mới
+              <span className="hidden sm:inline">Tạo Bản ghi thu gom mới</span>
+              <span className="sm:hidden">Tạo mới</span>
             </Button>
           ) : undefined
         }

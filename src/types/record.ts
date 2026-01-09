@@ -98,6 +98,7 @@ export interface CollectionRecordDetail extends CollectionRecord {
   approvals?: Array<{
     id: string;
     comment?: string | null;
+    hazWasteDocNumber?: string | null;
     approver: {
       id: string;
       fullName: string;
@@ -179,6 +180,7 @@ export interface ApprovalDTO {
   acceptanceDate: string; // Date in "dd/mm/yyyy" format
   comment?: string | null;
   file?: File; // Acceptance document (PDF/Word) - required
+  hazWasteDocNumber: string; // Hazardous waste document number (required)
 }
 
 export interface RejectionDTO {

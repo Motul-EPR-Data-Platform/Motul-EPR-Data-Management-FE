@@ -92,7 +92,16 @@ export const ENDPOINTS = {
     ROOT: "/batches",
     BY_ID: (id: string) => `/${id}`,
     CLOSE: (id: string) => `/${id}/close`,
+    REOPEN: (id: string) => `/${id}/reopen`,
     ACTIVE: "/active",
+  },
+  DASHBOARD: {
+    ROOT: "/dashboard",
+    COLLECTION_STATS: "/collection-stats",
+    INITIAL: "/initial",
+    COLLECTION_BY_OWNER: "/collection-by-owner",
+    SOURCE_DISTRIBUTION: "/source-distribution",
+    WASTE_TYPE_TRENDS: "/waste-type-trends",
   },
 } as const;
 
@@ -109,4 +118,5 @@ export const path = {
   locations: (p: string) => p, // Location endpoints are already full paths
   files: (p: string) => `${ENDPOINTS.FILES.ROOT}${p}`, // Prepend ROOT to file paths
   batches: (p: string) => `${ENDPOINTS.BATCHES.ROOT}${p}`, // Prepend ROOT to batch paths
+  dashboard: (p: string) => `${ENDPOINTS.DASHBOARD.ROOT}${p}`, // Prepend ROOT to dashboard paths
 };

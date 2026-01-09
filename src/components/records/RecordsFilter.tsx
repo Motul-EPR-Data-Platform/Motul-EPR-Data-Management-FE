@@ -15,6 +15,7 @@ import { RecordStatus } from "@/types/record";
 import { BatchService } from "@/lib/services/batch.service";
 import { CollectionBatch, BatchType } from "@/types/batch";
 import { BatchDetailDialog } from "@/components/batches/BatchDetailDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface RecordsFilterProps {
   searchQuery: string;
@@ -33,6 +34,7 @@ export function RecordsFilter({
   batchFilter,
   onBatchFilterChange,
 }: RecordsFilterProps) {
+  const { user } = useAuth();
   const [batches, setBatches] = useState<CollectionBatch[]>([]);
   const [isLoadingBatches, setIsLoadingBatches] = useState(false);
   const [isBatchDetailDialogOpen, setIsBatchDetailDialogOpen] = useState(false);
@@ -42,7 +44,9 @@ export function RecordsFilter({
       setIsLoadingBatches(true);
       try {
         // Fetch all batches (including closed ones) for the record page filter
-        const data = await BatchService.getAllBatches();
+        const data = await BatchService.getAllBatches(
+          user?.recyclerId || undefined,
+        );
         setBatches(data);
       } catch (error) {
         console.error("Error fetching batches:", error);
@@ -52,7 +56,7 @@ export function RecordsFilter({
     };
 
     fetchBatches();
-  }, []);
+  }, [user?.recyclerId]);
 
   return (
     <>

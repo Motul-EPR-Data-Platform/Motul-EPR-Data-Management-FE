@@ -13,6 +13,7 @@ import { Search, Loader2, MoreHorizontal } from "lucide-react";
 import { BatchService } from "@/lib/services/batch.service";
 import { ActiveBatch, BatchType } from "@/types/batch";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface BatchDropdownProps {
   value?: string | null;
@@ -33,6 +34,7 @@ export function BatchDropdown({
   className,
   onShowDetails,
 }: BatchDropdownProps) {
+  const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [batches, setBatches] = useState<ActiveBatch[]>([]);
   const [filteredBatches, setFilteredBatches] = useState<ActiveBatch[]>([]);
@@ -46,7 +48,10 @@ export function BatchDropdown({
     const fetchBatches = async () => {
       setIsLoading(true);
       try {
-        const data = await BatchService.getActiveBatchesForDropdown(batchType);
+        const data = await BatchService.getActiveBatchesForDropdown(
+          batchType,
+          user?.recyclerId || undefined,
+        );
         setBatches(data);
         setFilteredBatches(data);
 
@@ -66,7 +71,7 @@ export function BatchDropdown({
     };
 
     fetchBatches();
-  }, [batchType, value]);
+  }, [batchType, value, user?.recyclerId]);
 
   // Filter batches based on search query
   useEffect(() => {
