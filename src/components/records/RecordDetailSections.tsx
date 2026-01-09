@@ -78,17 +78,9 @@ export function WasteSourceInfoSection({ record }: RecordDetailSectionsProps) {
           </div>
           <div>
             <p className="text-sm text-muted-foreground mb-1">
-              Phân loại (theo Hợp đồng)
+              Chủ nguồn thải
             </p>
-            <p className="font-medium">
-              {record.contractType?.code || record.contractType?.name || "-"}
-              {record.contractType?.name &&
-                record.contractType?.code !== record.contractType?.name && (
-                  <span className="text-muted-foreground ml-2">
-                    ({record.contractType.name})
-                  </span>
-                )}
-            </p>
+            <p className="font-medium">{wasteOwner?.name || "-"}</p>
           </div>
         </div>
       </CardContent>

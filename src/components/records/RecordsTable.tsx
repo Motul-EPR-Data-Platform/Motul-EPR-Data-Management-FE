@@ -144,7 +144,7 @@ export function RecordsTable({
             <TableHead>Mã hồ sơ</TableHead>
             <TableHead>Ngày nộp</TableHead>
             <TableHead>Ngày thu gom</TableHead>
-            <TableHead>Phân loại</TableHead>
+            <TableHead>Chủ nguồn thải</TableHead>
             <TableHead>Số lượng</TableHead>
             <TableHead>Trạng thái</TableHead>
             <TableHead>Hành động</TableHead>
@@ -161,7 +161,10 @@ export function RecordsTable({
               </TableCell>
               <TableCell>{formatDate(record.deliveryDate)}</TableCell>
               <TableCell>
-                {record.contractType?.name || record.contractType?.code || "-"}
+                {record.wasteOwner?.name ||
+                 (record.wasteOwners && record.wasteOwners.length > 0
+                   ? record.wasteOwners[0]?.name
+                   : "-")}
               </TableCell>
               <TableCell>
                 {record.collectedVolumeKg
