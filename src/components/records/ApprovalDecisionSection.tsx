@@ -200,6 +200,16 @@ export function ApprovalDecisionSection({
                 </p>
               </div>
             )}
+            {latestApproval.hazWasteDocNumber && (
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Số giấy tờ chất thải nguy hại
+                </p>
+                <p className="font-medium">
+                  {latestApproval.hazWasteDocNumber}
+                </p>
+              </div>
+            )}
           </div>
           {latestApproval.comment && (
             <div>

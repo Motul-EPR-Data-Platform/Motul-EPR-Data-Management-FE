@@ -81,6 +81,19 @@ export function RecordOverviewCard({ record }: RecordOverviewCardProps) {
       : null);
   const recyclerName = record.recycler?.vendorName;
 
+  // Get hazWasteDocNumber from approval
+  const approvalData = (record as any).approval || record.approvals || [];
+  const approvals = Array.isArray(approvalData) ? approvalData : [];
+  const latestApproval =
+    approvals.length > 0 ? approvals[approvals.length - 1] : null;
+  const hazWasteDocNumber = latestApproval?.hazWasteDocNumber;
+
+  // Get waste owner email safely
+  const wasteOwnerEmail =
+    wasteOwner && "email" in wasteOwner && typeof wasteOwner.email === "string"
+      ? wasteOwner.email
+      : null;
+
   return (
     <Card className="border-red-500">
       <CardHeader>
@@ -101,9 +114,9 @@ export function RecordOverviewCard({ record }: RecordOverviewCardProps) {
           <p className="text-sm text-muted-foreground mb-1">Đơn vị tái chế</p>
           <p className="font-medium">
             {recyclerName || "N/A"}
-            {wasteOwner && "email" in wasteOwner && wasteOwner.email && (
+            {wasteOwnerEmail && (
               <span className="text-muted-foreground text-sm ml-2">
-                ({wasteOwner.email})
+                ({wasteOwnerEmail})
               </span>
             )}
           </p>
@@ -129,6 +142,14 @@ export function RecordOverviewCard({ record }: RecordOverviewCardProps) {
                 </span>
               )}
             </p>
+          </div>
+        )}
+        {hazWasteDocNumber && (
+          <div>
+            <p className="text-sm text-muted-foreground mb-1">
+              Số giấy tờ chất thải nguy hại
+            </p>
+            <p className="font-medium">{hazWasteDocNumber}</p>
           </div>
         )}
       </CardContent>
