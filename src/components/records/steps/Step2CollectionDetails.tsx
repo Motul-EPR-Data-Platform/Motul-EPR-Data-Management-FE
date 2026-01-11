@@ -18,7 +18,7 @@ import {
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { LocationService } from "@/lib/services/location.service";
 import { FileType } from "@/types/file-record";
-//import { VietMap } from "@/components/ui/vietmap";
+import { VietMap } from "@/components/ui/vietmap";
 
 interface Step2CollectionDetailsProps {
   formData: Partial<CreateDraftFormData>;
@@ -233,8 +233,8 @@ export function Step2CollectionDetails({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column - Map & GPS Coordinates */}
             <div className="space-y-4">
-              {/* Map - Temporarily disabled */}
-              {/* <div className="space-y-2">
+              {/* Map */}
+              <div className="space-y-2">
                 <Label>Bản đồ</Label>
                 {latitude !== undefined && longitude !== undefined ? (
                   <VietMap
@@ -245,22 +245,12 @@ export function Step2CollectionDetails({
                     className="rounded-lg border-2 border-gray-300"
                   />
                 ) : (
-                  <div className="w-full h-64 bg-gray-100 border-2 border-gray-300 rounded-lg flex items-center justify-center">
+                  <div className="w-full h-48 sm:h-64 bg-gray-100 border-2 border-gray-300 rounded-lg flex items-center justify-center">
                     <p className="text-sm text-muted-foreground">
                       Chọn địa chỉ để hiển thị bản đồ
                     </p>
                   </div>
                 )}
-              </div> */}
-
-              {/* Map placeholder - temporarily disabled */}
-              <div className="space-y-2">
-                <Label>Bản đồ</Label>
-                <div className="w-full h-48 sm:h-64 bg-gray-100 border-2 border-gray-300 rounded-lg flex items-center justify-center">
-                  <p className="text-sm text-muted-foreground">
-                    Bản đồ tạm thời bị vô hiệu hóa
-                  </p>
-                </div>
               </div>
 
               {/* GPS Coordinates */}
