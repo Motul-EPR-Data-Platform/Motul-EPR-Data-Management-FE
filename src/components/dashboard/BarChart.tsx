@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { CHART_COLORS } from "@/constants/colors";
 
 export interface BarChartDataPoint {
   [key: string]: string | number;
@@ -36,7 +37,7 @@ export function BarChart({
   data,
   dataKey,
   xAxisKey,
-  color = "#e2231a",
+  color = CHART_COLORS.green,
   className,
   height = 300,
   unit,

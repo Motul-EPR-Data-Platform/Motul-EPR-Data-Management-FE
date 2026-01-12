@@ -130,18 +130,18 @@ export function BatchAnalysis() {
             {/* Detailed Comparison Table */}
             <div className="rounded-lg border">
               <table className="w-full">
-                <thead className="bg-muted">
+                <thead className="bg-primary/5">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-primary">
                       Chỉ số
                     </th>
-                    <th className="px-4 py-3 text-right text-sm font-semibold">
+                    <th className="px-4 py-3 text-right text-sm font-semibold text-primary">
                       Port
                     </th>
-                    <th className="px-4 py-3 text-right text-sm font-semibold">
+                    <th className="px-4 py-3 text-right text-sm font-semibold text-primary">
                       Factory
                     </th>
-                    <th className="px-4 py-3 text-right text-sm font-semibold">
+                    <th className="px-4 py-3 text-right text-sm font-semibold text-primary">
                       Tổng
                     </th>
                   </tr>

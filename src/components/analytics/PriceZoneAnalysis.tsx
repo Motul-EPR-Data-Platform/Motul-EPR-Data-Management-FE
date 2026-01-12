@@ -210,27 +210,27 @@ export function PriceZoneAnalysis() {
               <div className="rounded-lg border overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-muted">
+                    <thead className="bg-primary/5">
                       <tr>
-                        <th className="px-4 py-3 text-left text-sm font-semibold">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-primary">
                           Hạng
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-primary">
                           Khoảng giá
                         </th>
-                        <th className="px-4 py-3 text-right text-sm font-semibold">
+                        <th className="px-4 py-3 text-right text-sm font-semibold text-primary">
                           Khối lượng thu gom (kg)
                         </th>
-                        <th className="px-4 py-3 text-right text-sm font-semibold">
+                        <th className="px-4 py-3 text-right text-sm font-semibold text-primary">
                           Khối lượng tái chế (kg)
                         </th>
-                        <th className="px-4 py-3 text-right text-sm font-semibold">
+                        <th className="px-4 py-3 text-right text-sm font-semibold text-primary">
                           Tỷ lệ (%)
                         </th>
-                        <th className="px-4 py-3 text-right text-sm font-semibold">
+                        <th className="px-4 py-3 text-right text-sm font-semibold text-primary">
                           Số bản ghi
                         </th>
-                        <th className="px-4 py-3 text-right text-sm font-semibold">
+                        <th className="px-4 py-3 text-right text-sm font-semibold text-primary">
                           Giá TB (VND/kg)
                         </th>
                       </tr>

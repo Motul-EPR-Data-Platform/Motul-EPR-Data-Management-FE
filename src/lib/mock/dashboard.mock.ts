@@ -4,6 +4,8 @@
  * To remove: Delete this entire file and update imports in dashboard components
  */
 
+import { CHART_COLORS, BAR_CHART_COLORS, LINE_CHART_COLORS } from "@/constants/colors";
+
 // Summary metrics
 export interface DashboardMetrics {
   totalCollectedVolumeKg: number;
@@ -221,31 +223,27 @@ export interface PieChartDataPoint {
   color?: string;
 }
 
+import { BAR_CHART_COLORS } from "@/constants/colors";
+
 export const mockWasteSourceClassification: PieChartDataPoint[] = [
-  { name: "Nguồn 1", value: 35, color: "#e2231a" },
-  { name: "Nguồn 2", value: 25, color: "#22c55e" },
-  { name: "Nguồn 3", value: 20, color: "#f97316" },
-  { name: "Nguồn 4", value: 15, color: "#6b7280" },
-  { name: "Nguồn 5", value: 5, color: "#000000" },
+  { name: "Nguồn 1", value: 35, color: BAR_CHART_COLORS[0] },
+  { name: "Nguồn 2", value: 25, color: BAR_CHART_COLORS[1] },
+  { name: "Nguồn 3", value: 20, color: BAR_CHART_COLORS[2] },
+  { name: "Nguồn 4", value: 15, color: BAR_CHART_COLORS[3] },
+  { name: "Nguồn 5", value: 5, color: BAR_CHART_COLORS[4] },
 ];
 
-// Chart colors
+// Chart colors - using new theme colors
 export const chartColors = {
-  primary: "#e2231a", // Motul red
-  green: "#22c55e",
-  orange: "#f97316",
-  gray: "#6b7280",
-  black: "#000000",
-  blue: "#3b82f6",
-  purple: "#a855f7",
-  yellow: "#eab308",
+  primary: CHART_COLORS.green, // Green theme primary
+  green: CHART_COLORS.green,
+  orange: CHART_COLORS.orange,
+  gray: CHART_COLORS.gray,
+  black: CHART_COLORS.black,
+  blue: CHART_COLORS.blue,
+  purple: CHART_COLORS.purple,
+  yellow: CHART_COLORS.yellow,
 };
 
 // Line chart series colors (for multiple lines)
-export const lineChartColors = [
-  chartColors.green,
-  chartColors.orange,
-  chartColors.primary,
-  chartColors.black,
-  "#8b0000", // Dark red/maroon
-];
+export const lineChartColors = LINE_CHART_COLORS;
