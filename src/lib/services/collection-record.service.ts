@@ -347,4 +347,14 @@ export const CollectionRecordService = {
       file,
     );
   },
+
+  /**
+   * Delete draft record (recycler only)
+   * DELETE /api/collection-records/:id/draft
+   */
+  async deleteDraft(recordId: string): Promise<void> {
+    await api.delete(
+      path.collectionRecords(ENDPOINTS.COLLECTION_RECORDS.DELETE_DRAFT(recordId)),
+    );
+  },
 };

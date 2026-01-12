@@ -37,6 +37,7 @@ export interface UseCollectionRecordFormOptions {
   mode: FormMode;
   recordId?: string | null; // For edit mode
   onRecordLoad?: (record: any) => void; // Callback when record is loaded (edit mode)
+  confirm?: (message: string) => Promise<boolean>; // Optional confirm function for dialogs
 }
 
 export interface UseCollectionRecordFormReturn {
@@ -114,8 +115,17 @@ export interface UseCollectionRecordFormReturn {
 export function useCollectionRecordForm(
   options: UseCollectionRecordFormOptions,
 ): UseCollectionRecordFormReturn {
-  const { mode, recordId, onRecordLoad } = options;
+  const { mode, recordId, onRecordLoad, confirm } = options;
   const router = useRouter();
+
+  // Helper function to show confirmation
+  const showConfirm = async (message: string): Promise<boolean> => {
+    if (confirm) {
+      return await confirm(message);
+    }
+    // Fallback to window.confirm if no confirm function provided
+    return window.confirm(message);
+  };
 
   // Form state
   const [currentStep, setCurrentStep] = useState(1);
@@ -289,8 +299,9 @@ export function useCollectionRecordForm(
     }
   }, [currentStep]);
 
-  const handleRedo = useCallback(() => {
-    if (confirm("Bạn có chắc chắn muốn làm lại toàn bộ thông tin?")) {
+  const handleRedo = useCallback(async () => {
+    const confirmed = await showConfirm("Bạn có chắc chắn muốn làm lại toàn bộ thông tin?");
+    if (confirmed) {
       if (mode === "create") {
         setFormData({});
         setErrors({});
@@ -466,7 +477,8 @@ export function useCollectionRecordForm(
       mode === "create"
         ? "Bạn có chắc chắn muốn hủy? Dữ liệu chưa lưu sẽ bị mất."
         : "Bạn có chắc chắn muốn hủy? Tất cả thay đổi chưa lưu sẽ bị mất.";
-    if (confirm(message)) {
+    const confirmed = await showConfirm(message);
+    if (confirmed) {
       if (mode === "edit") {
         router.push("/recycler/my-records");
       } else {

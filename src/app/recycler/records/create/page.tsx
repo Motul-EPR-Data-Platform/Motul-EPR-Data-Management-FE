@@ -11,6 +11,8 @@ import { Step4ReviewSubmit } from "@/components/records/steps/Step4ReviewSubmit"
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useCollectionRecordForm } from "@/hooks/useCollectionRecordForm";
+import { useConfirm } from "@/hooks/useConfirm";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { BatchService } from "@/lib/services/batch.service";
 
 const STEPS = [
@@ -21,6 +23,8 @@ const STEPS = [
 ];
 
 export default function CreateCollectionRecordPage() {
+  const confirmHook = useConfirm();
+  
   const {
     currentStep,
     setCurrentStep,
@@ -61,7 +65,15 @@ export default function CreateCollectionRecordPage() {
     getSelectedContractTypeName,
     getSelectedWasteSourceName,
     getSelectedHazCodeName,
-  } = useCollectionRecordForm({ mode: "create" });
+  } = useCollectionRecordForm({
+    mode: "create",
+    confirm: async (message: string) => {
+      return await confirmHook.confirm({
+        description: message,
+        variant: "default",
+      });
+    },
+  });
 
   const [batchName, setBatchName] = useState<string | undefined>();
 
@@ -207,6 +219,20 @@ export default function CreateCollectionRecordPage() {
           />
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        open={confirmHook.isOpen}
+        onOpenChange={(open) => {
+          if (!open) confirmHook.onCancel();
+        }}
+        title={confirmHook.options?.title}
+        description={confirmHook.options?.description || ""}
+        confirmText={confirmHook.options?.confirmText}
+        cancelText={confirmHook.options?.cancelText}
+        variant={confirmHook.options?.variant}
+        onConfirm={confirmHook.onConfirm}
+      />
     </PageLayout>
   );
 }
