@@ -87,6 +87,7 @@ async function saveOrUpdateDraft(options: SaveOrUpdateDraftOptions): Promise<str
     // Create new draft
     const draftData = buildDraftDTO(formData, collectionDate, recycledDate, locationRefId);
     const result = await CollectionRecordService.createDraft(draftData);
+    console.log("Draft created with ID:", result);
     currentDraftId = result.id;
     setDraftId(currentDraftId);
     if (showToasts) {

@@ -171,7 +171,7 @@ export default function MotulRecordDetailPage() {
         { label: "Đăng ký chờ duyệt", href: "/motul/pending-registration" },
         { label: "Chi tiết bản ghi" },
       ]}
-      title={`Xem xét Bản ghi: ${record.recordName || record.id}`}
+      title={`Xem xét Bản ghi: ${record.recordName}`}
       subtitle={`Được nộp bởi ${record.recycler?.vendorName || "N/A"}`}
     >
       <div className="space-y-6">

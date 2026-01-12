@@ -472,7 +472,7 @@ export function useCollectionRecordForm(
   ]);
 
   // Cancel handler
-  const handleCancel = useCallback(() => {
+  const handleCancel = useCallback(async () => {
     const message =
       mode === "create"
         ? "Bạn có chắc chắn muốn hủy? Dữ liệu chưa lưu sẽ bị mất."
