@@ -138,17 +138,6 @@ export default function PendingRegistrationPage() {
           onView={handleViewRecord}
         />
 
-        {/* Empty State */}
-        {!isLoading && filteredRecords.length === 0 && (
-          <div className="rounded-lg border bg-white p-12 text-center">
-            <p className="text-muted-foreground">
-              {records.length === 0
-                ? "Không có bản ghi nào đang chờ duyệt"
-                : "Không tìm thấy bản ghi nào phù hợp với bộ lọc"}
-            </p>
-          </div>
-        )}
-
         {/* Pagination */}
         {!isLoading && totalPages > 1 && (
           <div className="flex items-center justify-between">

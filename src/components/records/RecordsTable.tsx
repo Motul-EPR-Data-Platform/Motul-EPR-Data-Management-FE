@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { IPaginationMeta } from "@/types/pagination";
-import { Eye, Pencil } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -21,6 +21,7 @@ interface RecordsTableProps {
   isLoading?: boolean;
   onView?: (record: CollectionRecordDetail) => void;
   onEdit?: (record: CollectionRecordDetail) => void;
+  onDelete?: (record: CollectionRecordDetail) => void;
   pagination?: IPaginationMeta;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
@@ -113,6 +114,7 @@ export function RecordsTable({
   isLoading = false,
   onView,
   onEdit,
+  onDelete,
   pagination,
   onPageChange,
   onPageSizeChange,
@@ -215,6 +217,17 @@ export function RecordsTable({
                       title="Chỉnh sửa"
                     >
                       <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {record.status === "draft" && onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDelete(record)}
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      title="Xóa bản nháp"
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
                 </div>

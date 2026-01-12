@@ -26,6 +26,8 @@ import { usePermission } from "@/hooks/usePermission";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAvailableRolesForInvitation } from "@/lib/rbac/permissions";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { InvitationService } from "@/lib/services/invitation.service";
 import { AdminService } from "@/lib/services/admin.service";
 import { mapFrontendRoleToBackend } from "@/lib/rbac/roleMapper";
@@ -36,6 +38,7 @@ import {
 
 export default function UsersPage() {
   const { userRole } = useAuth();
+  const confirmHook = useConfirm();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
@@ -174,7 +177,12 @@ export default function UsersPage() {
   };
 
   const handleCancelInvite = async (invite: PendingInvite) => {
-    if (confirm(`Bạn có chắc chắn muốn hủy lời mời cho ${invite.email}?`)) {
+    const confirmed = await confirmHook.confirm({
+      title: "Hủy lời mời",
+      description: `Bạn có chắc chắn muốn hủy lời mời cho ${invite.email}?`,
+      variant: "default",
+    });
+    if (confirmed) {
       // TODO: Implement cancel invitation API endpoint
       toast.info("Chức năng hủy lời mời sẽ được triển khai sớm");
       // Reload data after cancel
@@ -186,8 +194,13 @@ export default function UsersPage() {
     // TODO: Implement edit functionality
   };
 
-  const handleDelete = (user: User) => {
-    if (confirm(`Bạn có chắc chắn muốn xóa người dùng ${user.name}?`)) {
+  const handleDelete = async (user: User) => {
+    const confirmed = await confirmHook.confirm({
+      title: "Xóa người dùng",
+      description: `Bạn có chắc chắn muốn xóa người dùng ${user.name}?`,
+      variant: "destructive",
+    });
+    if (confirmed) {
       setUsers(users.filter((u) => u.id !== user.id));
     }
   };
@@ -352,6 +365,20 @@ export default function UsersPage() {
           availableRoles={availableRoles}
         />
       )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        open={confirmHook.isOpen}
+        onOpenChange={(open) => {
+          if (!open) confirmHook.onCancel();
+        }}
+        title={confirmHook.options?.title}
+        description={confirmHook.options?.description || ""}
+        confirmText={confirmHook.options?.confirmText}
+        cancelText={confirmHook.options?.cancelText}
+        variant={confirmHook.options?.variant}
+        onConfirm={confirmHook.onConfirm}
+      />
     </PageLayout>
   );
 }

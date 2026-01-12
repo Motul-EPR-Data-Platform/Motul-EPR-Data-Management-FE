@@ -27,25 +27,31 @@ import {
 import { Button } from "@/components/ui/button";
 import { DashboardService } from "@/lib/services/dashboard.service";
 import { DefinitionService } from "@/lib/services/definition.service";
+import { WasteTypeTrendData } from "@/types/dashboard";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface WasteTypeTrendsChartProps {
   className?: string;
+  initialData?: WasteTypeTrendData;
+  selectedYear?: number;
+  onYearChange?: (year: number) => void;
 }
 
-const lineChartColors = [
-  "#22c55e", // Green
-  "#3b82f6", // Blue
-  "#f97316", // Orange
-  "#e2231a", // Red
-];
+import { LINE_CHART_COLORS } from "@/constants/colors";
+
+const lineChartColors = LINE_CHART_COLORS;
 
 export function WasteTypeTrendsChart({
   className,
+  initialData,
+  selectedYear: propSelectedYear,
+  onYearChange: propOnYearChange,
 }: WasteTypeTrendsChartProps) {
   const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
+  const [selectedYear, setSelectedYear] = useState<number>(
+    propSelectedYear || currentYear
+  );
   const [selectedWasteSourceIds, setSelectedWasteSourceIds] = useState<
     string[]
   >([]);
@@ -61,10 +67,25 @@ export function WasteTypeTrendsChart({
       wasteSourceName: string;
       monthlyPrices: number[];
     };
-  }>({});
-  const [isLoading, setIsLoading] = useState(true);
+  }>(initialData?.trends || {});
+  const [isLoading, setIsLoading] = useState(!initialData);
   const [isLoadingSources, setIsLoadingSources] = useState(true);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+  // Update selectedYear when prop changes
+  useEffect(() => {
+    if (propSelectedYear !== undefined) {
+      setSelectedYear(propSelectedYear);
+    }
+  }, [propSelectedYear]);
+
+  // Update trendsData when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setTrendsData(initialData.trends);
+      setIsLoading(false);
+    }
+  }, [initialData]);
 
   // Fetch all waste sources (definitions) and show all in dropdown
   useEffect(() => {
@@ -156,15 +177,24 @@ export function WasteTypeTrendsChart({
     );
   };
 
-  // Fetch trends data
+  // Fetch trends data (only if not provided via props or when filters change)
   useEffect(() => {
-    const fetchData = async () => {
-      if (selectedWasteSourceIds.length === 0) {
-        setTrendsData({});
-        setIsLoading(false);
-        return;
-      }
+    // If we have initial data and no waste source filters, use it
+    if (initialData && selectedWasteSourceIds.length === 0) {
+      setTrendsData(initialData.trends);
+      setIsLoading(false);
+      return;
+    }
 
+    // If no waste sources selected, clear data
+    if (selectedWasteSourceIds.length === 0) {
+      setTrendsData({});
+      setIsLoading(false);
+      return;
+    }
+
+    // Otherwise, fetch with filters
+    const fetchData = async () => {
       setIsLoading(true);
       try {
         const data = await DashboardService.getWasteTypeTrends({
@@ -189,7 +219,7 @@ export function WasteTypeTrendsChart({
     };
 
     fetchData();
-  }, [selectedYear, selectedWasteSourceIds]);
+  }, [selectedYear, selectedWasteSourceIds, initialData]);
 
   // Generate years dropdown
   const availableYears = useMemo(() => {
@@ -379,7 +409,11 @@ export function WasteTypeTrendsChart({
             <Label htmlFor="year-filter">NĂM</Label>
             <Select
               value={selectedYear.toString()}
-              onValueChange={(value) => setSelectedYear(Number(value))}
+              onValueChange={(value) => {
+                const year = Number(value);
+                setSelectedYear(year);
+                propOnYearChange?.(year);
+              }}
             >
               <SelectTrigger id="year-filter">
                 <SelectValue placeholder="Chọn năm" />

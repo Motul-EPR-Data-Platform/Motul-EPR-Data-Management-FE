@@ -8,3 +8,4 @@ export { WasteOwnerService } from "./waste-owner.service";
 export { CollectionRecordService } from "./collection-record.service";
 export { FileRecordService } from "./file-record.service";
 export { LocationService } from "./location.service";
+export { AnalyticsService } from "./analytics.service";

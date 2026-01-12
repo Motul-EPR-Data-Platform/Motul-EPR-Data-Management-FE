@@ -21,6 +21,8 @@ import { useTaggedSearch } from "@/hooks/useTaggedSearch";
 import { useURLParams } from "@/hooks/useURLParams";
 import { usePaginationWithURL } from "@/hooks/usePaginationWithURL";
 import { useTableData } from "@/hooks/useTableData";
+import { useConfirm } from "@/hooks/useConfirm";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { WasteOwnerService } from "@/lib/services/waste-owner.service";
 import { toast } from "sonner";
 
@@ -63,6 +65,7 @@ export function WasteOwnerPageContent({
     []
   );
   const { params: filterParams, updateParams: updateFilterParams } = useURLParams(filterConfig);
+  const confirmHook = useConfirm();
 
   // Tagged search
   const {
@@ -191,7 +194,12 @@ export function WasteOwnerPageContent({
   };
 
   const handleDelete = async (wasteOwner: WasteOwnerWithLocation) => {
-    if (confirm(`Bạn có chắc chắn muốn xóa chủ nguồn thải ${wasteOwner.name}?`)) {
+    const confirmed = await confirmHook.confirm({
+      title: "Xóa chủ nguồn thải",
+      description: `Bạn có chắc chắn muốn xóa chủ nguồn thải ${wasteOwner.name}?`,
+      variant: "destructive",
+    });
+    if (confirmed) {
       try {
         await toast.promise(WasteOwnerService.deleteWasteOwner(wasteOwner.id), {
           loading: "Đang xóa chủ nguồn thải...",
@@ -380,6 +388,20 @@ export function WasteOwnerPageContent({
           onUpdateWasteOwner={handleUpdateWasteOwner}
         />
       )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        open={confirmHook.isOpen}
+        onOpenChange={(open) => {
+          if (!open) confirmHook.onCancel();
+        }}
+        title={confirmHook.options?.title}
+        description={confirmHook.options?.description || ""}
+        confirmText={confirmHook.options?.confirmText}
+        cancelText={confirmHook.options?.cancelText}
+        variant={confirmHook.options?.variant}
+        onConfirm={confirmHook.onConfirm}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { BarChart, BarChartDataPoint } from "./BarChart";
+import { CHART_COLORS } from "@/constants/colors";
 import {
   Select,
   SelectContent,
@@ -13,25 +14,51 @@ import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardService } from "@/lib/services/dashboard.service";
 import { WasteOwnerService } from "@/lib/services/waste-owner.service";
+import { MonthlyCollectionData } from "@/types/dashboard";
 import { Loader2 } from "lucide-react";
 
 interface MonthlyCollectionChartProps {
   className?: string;
+  initialData?: MonthlyCollectionData;
+  selectedYear?: number;
+  onYearChange?: (year: number) => void;
 }
 
 export function MonthlyCollectionChart({
   className,
+  initialData,
+  selectedYear: propSelectedYear,
+  onYearChange: propOnYearChange,
 }: MonthlyCollectionChartProps) {
   const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
+  const [selectedYear, setSelectedYear] = useState<number>(
+    propSelectedYear || currentYear
+  );
   const [selectedWasteOwnerId, setSelectedWasteOwnerId] =
     useState<string | null>(null);
   const [wasteOwners, setWasteOwners] = useState<
     Array<{ id: string; name: string }>
   >([]);
-  const [monthlyData, setMonthlyData] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [monthlyData, setMonthlyData] = useState<number[]>(
+    initialData?.monthlyData || []
+  );
+  const [isLoading, setIsLoading] = useState(!initialData);
   const [isLoadingWasteOwners, setIsLoadingWasteOwners] = useState(true);
+
+  // Update selectedYear when prop changes
+  useEffect(() => {
+    if (propSelectedYear !== undefined) {
+      setSelectedYear(propSelectedYear);
+    }
+  }, [propSelectedYear]);
+
+  // Update monthlyData when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setMonthlyData(initialData.monthlyData);
+      setIsLoading(false);
+    }
+  }, [initialData]);
 
   // Fetch waste owners on mount
   useEffect(() => {
@@ -59,8 +86,16 @@ export function MonthlyCollectionChart({
     fetchWasteOwners();
   }, []);
 
-  // Fetch monthly collection data
+  // Fetch monthly collection data (only if not provided via props or when filters change)
   useEffect(() => {
+    // If we have initial data and no waste owner filter, use it
+    if (initialData && !selectedWasteOwnerId) {
+      setMonthlyData(initialData.monthlyData);
+      setIsLoading(false);
+      return;
+    }
+
+    // Otherwise, fetch with filters
     const fetchData = async () => {
       setIsLoading(true);
       try {
@@ -78,7 +113,7 @@ export function MonthlyCollectionChart({
     };
 
     fetchData();
-  }, [selectedYear, selectedWasteOwnerId]);
+  }, [selectedYear, selectedWasteOwnerId, initialData]);
 
   // Generate years dropdown (current year and previous 4 years)
   const availableYears = useMemo(() => {
@@ -126,7 +161,11 @@ export function MonthlyCollectionChart({
             <Label htmlFor="year-filter">Năm</Label>
             <Select
               value={selectedYear.toString()}
-              onValueChange={(value) => setSelectedYear(Number(value))}
+              onValueChange={(value) => {
+                const year = Number(value);
+                setSelectedYear(year);
+                propOnYearChange?.(year);
+              }}
             >
               <SelectTrigger id="year-filter">
                 <SelectValue placeholder="Chọn năm" />
@@ -181,7 +220,7 @@ export function MonthlyCollectionChart({
               data={chartData}
               dataKey="value"
               xAxisKey="month"
-              color="#e2231a"
+              color={CHART_COLORS.green}
               height={350}
               unit=" kg"
               hideCard={true}

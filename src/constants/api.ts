@@ -67,6 +67,7 @@ export const ENDPOINTS = {
     DRAFT: "/draft",
     BY_ID: (id: string) => `/${id}`,
     DRAFT_BY_ID: (id: string) => `/${id}/draft`,
+    DELETE_DRAFT: (id: string) => `/${id}/draft`,
     SUBMIT: (id: string) => `/${id}/submit`,
     APPROVE: (id: string) => `/${id}/approve`,
     REJECT: (id: string) => `/${id}/reject`,
@@ -103,6 +104,12 @@ export const ENDPOINTS = {
     SOURCE_DISTRIBUTION: "/source-distribution",
     WASTE_TYPE_TRENDS: "/waste-type-trends",
   },
+  ANALYTICS: {
+    ROOT: "/analytics",
+    BATCH_ANALYSIS: "/batch-analysis",
+    PRICE_FS_ANALYSIS: "/price-fs-analysis",
+    PRICE_ZONES: "/price-zones",
+  },
 } as const;
 
 // Helpers to compose full paths
@@ -119,4 +126,5 @@ export const path = {
   files: (p: string) => `${ENDPOINTS.FILES.ROOT}${p}`, // Prepend ROOT to file paths
   batches: (p: string) => `${ENDPOINTS.BATCHES.ROOT}${p}`, // Prepend ROOT to batch paths
   dashboard: (p: string) => `${ENDPOINTS.DASHBOARD.ROOT}${p}`, // Prepend ROOT to dashboard paths
+  analytics: (p: string) => `${ENDPOINTS.ANALYTICS.ROOT}${p}`, // Prepend ROOT to analytics paths
 };
