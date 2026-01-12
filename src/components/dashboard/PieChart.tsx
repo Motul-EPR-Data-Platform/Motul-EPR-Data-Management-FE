@@ -10,6 +10,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { BAR_CHART_COLORS } from "@/constants/colors";
 
 export interface PieChartDataPoint {
   name: string;
@@ -32,16 +33,7 @@ export function PieChart({
   className,
   height = 300,
 }: PieChartProps) {
-  const defaultColors = [
-    "#e2231a", // Motul red
-    "#22c55e", // Green
-    "#f97316", // Orange
-    "#6b7280", // Gray
-    "#000000", // Black
-    "#3b82f6", // Blue
-    "#a855f7", // Purple
-    "#eab308", // Yellow
-  ];
+  const defaultColors = BAR_CHART_COLORS;
 
   const colors = data.map(
     (item, index) => item.color || defaultColors[index % defaultColors.length],

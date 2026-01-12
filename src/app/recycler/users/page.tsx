@@ -29,9 +29,12 @@ import {
   transformInvitations,
 } from "@/lib/utils/userTransformers";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function RecyclerUsersPage() {
   const { userRole, user } = useAuth();
+  const confirmHook = useConfirm();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
@@ -167,7 +170,12 @@ export default function RecyclerUsersPage() {
   };
 
   const handleCancelInvite = async (invite: PendingInvite) => {
-    if (confirm(`Bạn có chắc chắn muốn hủy lời mời cho ${invite.email}?`)) {
+    const confirmed = await confirmHook.confirm({
+      title: "Hủy lời mời",
+      description: `Bạn có chắc chắn muốn hủy lời mời cho ${invite.email}?`,
+      variant: "default",
+    });
+    if (confirmed) {
       // TODO: Implement cancel invitation API endpoint
       toast.info("Chức năng hủy lời mời sẽ được triển khai sớm");
       loadData();
@@ -178,8 +186,13 @@ export default function RecyclerUsersPage() {
     // TODO: Implement edit functionality
   };
 
-  const handleDelete = (user: User) => {
-    if (confirm(`Bạn có chắc chắn muốn xóa người dùng ${user.name}?`)) {
+  const handleDelete = async (user: User) => {
+    const confirmed = await confirmHook.confirm({
+      title: "Xóa người dùng",
+      description: `Bạn có chắc chắn muốn xóa người dùng ${user.name}?`,
+      variant: "destructive",
+    });
+    if (confirmed) {
       setUsers(users.filter((u) => u.id !== user.id));
     }
   };
@@ -340,6 +353,20 @@ export default function RecyclerUsersPage() {
           availableRoles={availableRoles}
         />
       )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        open={confirmHook.isOpen}
+        onOpenChange={(open) => {
+          if (!open) confirmHook.onCancel();
+        }}
+        title={confirmHook.options?.title}
+        description={confirmHook.options?.description || ""}
+        confirmText={confirmHook.options?.confirmText}
+        cancelText={confirmHook.options?.cancelText}
+        variant={confirmHook.options?.variant}
+        onConfirm={confirmHook.onConfirm}
+      />
     </PageLayout>
   );
 }

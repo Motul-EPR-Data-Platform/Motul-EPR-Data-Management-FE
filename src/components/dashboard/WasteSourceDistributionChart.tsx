@@ -13,25 +13,21 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardService } from "@/lib/services/dashboard.service";
+import { WasteSourceDistribution } from "@/types/dashboard";
 import { Loader2 } from "lucide-react";
 
 interface WasteSourceDistributionChartProps {
   className?: string;
+  initialData?: WasteSourceDistribution;
 }
 
-const chartColors = [
-  "#e2231a", // Motul red
-  "#22c55e", // Green
-  "#f97316", // Orange
-  "#3b82f6", // Blue
-  "#a855f7", // Purple
-  "#eab308", // Yellow
-  "#6b7280", // Gray
-  "#000000", // Black
-];
+import { WASTE_SOURCE_CHART_COLORS } from "@/constants/colors";
+
+const chartColors = WASTE_SOURCE_CHART_COLORS;
 
 export function WasteSourceDistributionChart({
   className,
+  initialData,
 }: WasteSourceDistributionChartProps) {
   const [distribution, setDistribution] = useState<
     Array<{
@@ -40,11 +36,27 @@ export function WasteSourceDistributionChart({
       volumeKg: number;
       percentage: number;
     }>
-  >([]);
-  const [totalVolumeKg, setTotalVolumeKg] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(true);
+  >(initialData?.distribution || []);
+  const [totalVolumeKg, setTotalVolumeKg] = useState<number>(
+    initialData?.totalVolumeKg || 0
+  );
+  const [isLoading, setIsLoading] = useState(!initialData);
 
+  // Update when initialData changes
   useEffect(() => {
+    if (initialData) {
+      setDistribution(initialData.distribution);
+      setTotalVolumeKg(initialData.totalVolumeKg);
+      setIsLoading(false);
+    }
+  }, [initialData]);
+
+  // Fetch data if not provided via props
+  useEffect(() => {
+    if (initialData) {
+      return; // Don't fetch if we have initial data
+    }
+
     const fetchData = async () => {
       setIsLoading(true);
       try {
@@ -63,7 +75,7 @@ export function WasteSourceDistributionChart({
     };
 
     fetchData();
-  }, []);
+  }, [initialData]);
 
   const chartData = distribution.map((item, index) => ({
     name: item.wasteSourceName,
@@ -92,7 +104,7 @@ export function WasteSourceDistributionChart({
             <RechartsBarChart
               data={chartData}
               layout="vertical"
-              margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
+              margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis
@@ -110,7 +122,15 @@ export function WasteSourceDistributionChart({
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                width={90}
+                width={350}
+                tickFormatter={(value: string) => {
+                  // Allow more text to display - increased max length for longer labels
+                  const maxLength = 100;
+                  if (value && value.length > maxLength) {
+                    return value.substring(0, maxLength) + "...";
+                  }
+                  return value || "";
+                }}
               />
               <Tooltip
                 contentStyle={{
@@ -119,10 +139,20 @@ export function WasteSourceDistributionChart({
                   borderRadius: "0.5rem",
                   padding: "0.5rem",
                 }}
-                formatter={(value: number, payload: any) => [
-                  `${value.toLocaleString("vi-VN")} kg (${payload.percentage}%)`,
-                  "Khối lượng",
-                ]}
+                formatter={(value: number, payload: any) => {
+                  const fullName = payload?.payload?.name || "";
+                  const percentage = payload?.percentage || 0;
+                  return [
+                    <div key="tooltip">
+                      <div className="font-semibold mb-1">{fullName}</div>
+                      <div>
+                        {value.toLocaleString("vi-VN")} kg ({percentage.toFixed(2)}%)
+                      </div>
+                    </div>,
+                    "Khối lượng",
+                  ];
+                }}
+                labelFormatter={() => ""}
               />
               <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                 {chartData.map((entry, index) => (

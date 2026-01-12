@@ -6,31 +6,36 @@ import { MonthlyCollectionChart } from "./MonthlyCollectionChart";
 import { WasteSourceDistributionChart } from "./WasteSourceDistributionChart";
 import { WasteTypeTrendsChart } from "./WasteTypeTrendsChart";
 import { DashboardService } from "@/lib/services/dashboard.service";
+import { InitialDashboardData } from "@/types/dashboard";
 import { TrendingUp, Package, Recycle, CheckCircle2 } from "lucide-react";
 
 export function MotulDashboard() {
-  const [kpi, setKpi] = useState({
-    totalCollectedVolumeKg: 0,
-    totalStockpileVolumeKg: 0,
-    totalRecycledVolumeKg: 0,
-  });
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
+  const [dashboardData, setDashboardData] = useState<InitialDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchKPI = async () => {
+    const fetchInitialData = async () => {
       setIsLoading(true);
       try {
-        const data = await DashboardService.getCollectionDashboardStats();
-        setKpi(data);
+        const data = await DashboardService.getInitialDashboardData(selectedYear);
+        setDashboardData(data);
       } catch (error) {
-        console.error("Error fetching dashboard stats:", error);
+        console.error("Error fetching initial dashboard data:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchKPI();
-  }, []);
+    fetchInitialData();
+  }, [selectedYear]);
+
+  const kpi = dashboardData?.kpi || {
+    totalCollectedVolumeKg: 0,
+    totalStockpileVolumeKg: 0,
+    totalRecycledVolumeKg: 0,
+  };
 
   return (
     <div className="space-y-6">
@@ -65,18 +70,26 @@ export function MotulDashboard() {
         />
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Charts - Each on its own line */}
+      <div className="space-y-6">
         {/* Monthly Collection Chart */}
-        <MonthlyCollectionChart />
+        <MonthlyCollectionChart
+          initialData={dashboardData?.monthlyCollectionByOwner}
+          selectedYear={selectedYear}
+          onYearChange={setSelectedYear}
+        />
 
         {/* Waste Source Distribution Chart */}
-        <WasteSourceDistributionChart />
-      </div>
+        <WasteSourceDistributionChart
+          initialData={dashboardData?.wasteSourceDistribution}
+        />
 
-      {/* Waste Type Trends Chart - Full Width */}
-      <div className="grid grid-cols-1 gap-6">
-        <WasteTypeTrendsChart />
+        {/* Waste Type Trends Chart */}
+        <WasteTypeTrendsChart
+          initialData={dashboardData?.wasteTypeTrends}
+          selectedYear={selectedYear}
+          onYearChange={setSelectedYear}
+        />
       </div>
     </div>
   );

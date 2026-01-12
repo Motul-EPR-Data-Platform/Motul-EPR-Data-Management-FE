@@ -15,6 +15,8 @@ import { CollectionRecordService } from "@/lib/services/collection-record.servic
 import { DocumentFile } from "@/components/records/DocumentUpload";
 import { toast } from "sonner";
 import { useCollectionRecordForm } from "@/hooks/useCollectionRecordForm";
+import { useConfirm } from "@/hooks/useConfirm";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { parseDate, urlToFile } from "@/lib/utils/collectionRecordHelpers";
 import { ICollectionRecordFilesWithPreview } from "@/types/file-record";
 import { BatchService } from "@/lib/services/batch.service";
@@ -30,6 +32,7 @@ export default function EditCollectionRecordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const recordId = searchParams.get("id");
+  const confirmHook = useConfirm();
 
   const {
     currentStep,
@@ -79,7 +82,16 @@ export default function EditCollectionRecordPage() {
     originalFileIdsRef,
     originalFileRefsRef,
     setOriginalFormData,
-  } = useCollectionRecordForm({ mode: "edit", recordId });
+  } = useCollectionRecordForm({
+    mode: "edit",
+    recordId,
+    confirm: async (message: string) => {
+      return await confirmHook.confirm({
+        description: message,
+        variant: "default",
+      });
+    },
+  });
 
   const [batchName, setBatchName] = useState<string | undefined>();
 
@@ -471,6 +483,20 @@ export default function EditCollectionRecordPage() {
           />
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        open={confirmHook.isOpen}
+        onOpenChange={(open) => {
+          if (!open) confirmHook.onCancel();
+        }}
+        title={confirmHook.options?.title}
+        description={confirmHook.options?.description || ""}
+        confirmText={confirmHook.options?.confirmText}
+        cancelText={confirmHook.options?.cancelText}
+        variant={confirmHook.options?.variant}
+        onConfirm={confirmHook.onConfirm}
+      />
     </PageLayout>
   );
 }

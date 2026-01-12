@@ -14,6 +14,7 @@ import { Plus, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BatchDetailDialog } from "@/components/batches/BatchDetailDialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useTaggedSearch } from "@/hooks/useTaggedSearch";
 import { useURLParams } from "@/hooks/useURLParams";
 import { usePaginationWithURL } from "@/hooks/usePaginationWithURL";
@@ -77,6 +78,10 @@ export function RecordPageContent({
   const [batches, setBatches] = useState<CollectionBatch[]>([]);
   const [isLoadingBatches, setIsLoadingBatches] = useState(false);
   const [isBatchDetailDialogOpen, setIsBatchDetailDialogOpen] = useState(false);
+
+  // Delete confirmation dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState<CollectionRecordDetail | null>(null);
 
   // Fetch batches
   useEffect(() => {
@@ -277,6 +282,41 @@ export function RecordPageContent({
     }
   };
 
+  const handleDeleteRecord = (record: CollectionRecordDetail) => {
+    if (record.status !== "draft") {
+      toast.error("Chỉ có thể xóa bản nháp");
+      return;
+    }
+
+    setRecordToDelete(record);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteRecord = async () => {
+    if (!recordToDelete) return;
+
+    try {
+      await toast.promise(
+        CollectionRecordService.deleteDraft(recordToDelete.id),
+        {
+          loading: "Đang xóa bản nháp...",
+          success: "Đã xóa bản nháp thành công",
+          error: (err: any) =>
+            err?.response?.data?.message ||
+            err?.message ||
+            "Không thể xóa bản nháp. Vui lòng thử lại.",
+        }
+      );
+
+      // Refresh data after deletion
+      reload();
+      setRecordToDelete(null);
+    } catch (error) {
+      // Error is already handled by toast.promise
+      console.error("Error deleting draft:", error);
+    }
+  };
+
   // Filter client-side by search query and batch if needed
   const filteredRecords = useMemo(() => {
     let filtered = [...records];
@@ -427,12 +467,29 @@ export function RecordPageContent({
         onOpenChange={setIsBatchDetailDialogOpen}
       />
 
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Xóa bản nháp"
+        description={
+          recordToDelete
+            ? `Bạn có chắc chắn muốn xóa bản nháp "${recordToDelete.recordName || recordToDelete.id}"? Hành động này không thể hoàn tác.`
+            : ""
+        }
+        confirmText="Xóa"
+        cancelText="Hủy"
+        variant="destructive"
+        onConfirm={confirmDeleteRecord}
+      />
+
       {/* Table */}
       <RecordsTable
         records={filteredRecords}
         isLoading={isLoading}
         onView={handleViewRecord}
         onEdit={mode === "recycler" && canEdit ? handleEditRecord : undefined}
+        onDelete={mode === "recycler" ? handleDeleteRecord : undefined}
         pagination={pagination}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
