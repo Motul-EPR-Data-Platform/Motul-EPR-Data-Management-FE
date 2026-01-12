@@ -18,7 +18,7 @@ import {
 import { LocationAutocomplete } from "@/components/ui/location-autocomplete";
 import { LocationService } from "@/lib/services/location.service";
 import { FileType } from "@/types/file-record";
-import { VietMap } from "@/components/ui/vietmap";
+import { GoogleMap } from "@/components/ui/google-map";
 
 interface Step2CollectionDetailsProps {
   formData: Partial<CreateDraftFormData>;
@@ -237,12 +237,12 @@ export function Step2CollectionDetails({
               <div className="space-y-2">
                 <Label>Bản đồ</Label>
                 {latitude !== undefined && longitude !== undefined ? (
-                  <VietMap
+                  <GoogleMap
                     latitude={latitude}
                     longitude={longitude}
                     zoom={15}
                     height="256px"
-                    className="rounded-lg border-2 border-gray-300"
+                    className="rounded-lg"
                   />
                 ) : (
                   <div className="w-full h-48 sm:h-64 bg-gray-100 border-2 border-gray-300 rounded-lg flex items-center justify-center">
