@@ -18,6 +18,7 @@ export const step3ValidationSchema = z
   .object({
     stockpiled: z.boolean(),
     stockpileVolumeKg: z.number().positive().nullable().optional(),
+    stockInDate: z.string().nullable().optional(),
     recycledVolumeKg: z.number().positive("Khối lượng tái chế phải lớn hơn 0"),
     recycledPhoto: imageFileValidation,
     stockpilePhoto: imageFileValidation.nullable().optional(),
@@ -37,6 +38,19 @@ export const step3ValidationSchema = z
     {
       message: "Khối lượng lưu kho là bắt buộc khi chọn lưu kho",
       path: ["stockpileVolumeKg"],
+    },
+  )
+  .refine(
+    (data) => {
+      // If stockpiled is true, stockInDate is required
+      if (data.stockpiled === true) {
+        return Boolean(data.stockInDate && data.stockInDate.trim() !== "");
+      }
+      return true;
+    },
+    {
+      message: "Ngày lưu kho là bắt buộc khi chọn lưu kho",
+      path: ["stockInDate"],
     },
   )
   .refine(

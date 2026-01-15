@@ -17,6 +17,11 @@ export const buildDraftDTO = (
   recycledDate: Date | undefined,
   locationRefId: string,
 ): CreateDraftDTO => {
+  const stockInDate =
+    formData.stockInDate && formData.stockInDate.trim() !== ""
+      ? formatDateDDMMYYYY(new Date(formData.stockInDate))
+      : null;
+
   return {
     batchId: formData.batchId || null,
     submissionMonth: formatDateDDMMYYYY(
@@ -27,6 +32,7 @@ export const buildDraftDTO = (
     vehiclePlate: formData.vehiclePlate || null,
     stockpiled: formData.stockpiled ?? false,
     stockpileVolumeKg: formData.stockpileVolumeKg || null,
+    stockInDate,
     recycledDate: recycledDate ? formatDateDDMMYYYY(recycledDate) : null,
     recycledVolumeKg: formData.recycledVolumeKg || null,
     wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
@@ -104,6 +110,15 @@ export const buildPartialDraftDTO = (
   const originalStockpileVolume = normalizeValue(original.formData.stockpileVolumeKg);
   if (currentStockpileVolume !== originalStockpileVolume) {
     partialDTO.stockpileVolumeKg = formData.stockpileVolumeKg || null;
+  }
+
+  const currentStockInDate = normalizeValue(formData.stockInDate);
+  const originalStockInDate = normalizeValue(original.formData.stockInDate);
+  if (currentStockInDate !== originalStockInDate) {
+    partialDTO.stockInDate =
+      formData.stockInDate && formData.stockInDate.trim() !== ""
+        ? formatDateDDMMYYYY(new Date(formData.stockInDate))
+        : null;
   }
 
   // Compare recycled date

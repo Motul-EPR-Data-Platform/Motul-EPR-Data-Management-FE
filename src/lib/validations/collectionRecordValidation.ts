@@ -65,6 +65,7 @@ export const validateStep = (
       const step3Data = {
         stockpiled: formData.stockpiled ?? false,
         stockpileVolumeKg: formData.stockpileVolumeKg ?? null,
+        stockInDate: formData.stockInDate ?? null,
         recycledVolumeKg: formData.recycledVolumeKg ?? 0,
         recycledPhoto: recycledPhoto,
         stockpilePhoto: stockpilePhoto ?? null,
