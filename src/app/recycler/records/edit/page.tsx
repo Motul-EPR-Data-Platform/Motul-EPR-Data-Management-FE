@@ -155,6 +155,7 @@ export default function EditCollectionRecordPage() {
             vehiclePlate: record.vehiclePlate || null,
             stockpiled: record.stockpiled || null,
             stockpileVolumeKg: record.stockpileVolumeKg || null,
+            stockInDate: (record as any).stockInDate || null,
             recycledVolumeKg: record.recycledVolumeKg || null,
             collectedPricePerKg: record.collectedPricePerKg || null,
           };

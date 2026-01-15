@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { CollectionRecordDetail, RecordStatus, GetRecordsFilters } from "@/types/record";
 import { IPaginationParams } from "@/types/pagination";
@@ -10,7 +10,7 @@ import { TableFilters } from "@/components/ui/TableFilters";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { TaggedSearchBar, SearchTag } from "@/components/ui/tagged-search-bar";
 import { Button } from "@/components/ui/button";
-import { Plus, MoreHorizontal } from "lucide-react";
+import { Download, Plus, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BatchDetailDialog } from "@/components/batches/BatchDetailDialog";
@@ -21,6 +21,7 @@ import { usePaginationWithURL } from "@/hooks/usePaginationWithURL";
 import { useTableData } from "@/hooks/useTableData";
 import { CollectionRecordService } from "@/lib/services/collection-record.service";
 import { BatchService } from "@/lib/services/batch.service";
+import { ExportService, type ExportType } from "@/lib/services/export.service";
 import { CollectionBatch } from "@/types/batch";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -61,6 +62,7 @@ export function RecordPageContent({
 }: RecordPageContentProps) {
   const router = useRouter();
   const { user } = useAuth();
+  const [isExporting, setIsExporting] = useState(false);
 
   // URL params for filters - memoize config to prevent recreation
   const filterConfig = useMemo(
@@ -167,7 +169,10 @@ export function RecordPageContent({
   );
 
   // Table data fetching
-  const { data: records, isLoading, error, reload } = useTableData({
+  const { data: records, isLoading, error, reload } = useTableData<
+    CollectionRecordDetail,
+    Omit<GetRecordsFilters, "page" | "limit">
+  >({
     fetchData,
     filters,
     pagination,
@@ -255,6 +260,91 @@ export function RecordPageContent({
     updateFilterParams({ endDate: value });
     if (pagination.page !== 1) {
       resetToPageOne();
+    }
+  };
+
+  const mapStatusToExportType = (status: string): ExportType | null => {
+    if (status === "all") return "ALL_RECORDS";
+    if (status === "draft") return "DRAFT";
+    if (status === "pending") return "SUBMITTED";
+    if (status === "approved") return "APPROVED";
+    // Backend export doesn't currently support REJECTED-only export
+    if (status === "rejected") return null;
+    return "ALL_RECORDS";
+  };
+
+  const handleExport = async () => {
+    if (isExporting) return;
+
+    const status = (filterParams.status as string) || "all";
+    const batchId = (filterParams.batchId as string) || "all";
+    const startDate = (filterParams.startDate as string) || "";
+    const endDate = (filterParams.endDate as string) || "";
+
+    const exportType = mapStatusToExportType(status);
+    if (!exportType) {
+      toast.error("Chưa hỗ trợ xuất Excel cho trạng thái 'Bị từ chối'.");
+      return;
+    }
+
+    const hasBatch = batchId !== "all";
+    const hasDateRange = Boolean(startDate && endDate);
+    if (hasBatch && hasDateRange) {
+      toast.error("Xuất Excel chưa hỗ trợ đồng thời Lô hàng + Khoảng ngày. Vui lòng bỏ một bộ lọc.");
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const recyclerId = user?.recyclerId || undefined;
+
+      await toast.promise(
+        (async () => {
+          if (hasDateRange) {
+            // yyyy-mm-dd strings from <input type="date"> (backend accepts Date parsing)
+            return await ExportService.exportRecords({
+              kind: "dateRange",
+              startDate,
+              endDate,
+              exportType,
+              recyclerId,
+            });
+          }
+
+          if (hasBatch) {
+            return await ExportService.exportRecords({
+              kind: "byBatch",
+              batchId,
+              exportType,
+              recyclerId,
+            });
+          }
+
+          if (status === "draft") {
+            return await ExportService.exportRecords({ kind: "draft", recyclerId });
+          }
+          if (status === "pending") {
+            return await ExportService.exportRecords({ kind: "submitted", recyclerId });
+          }
+          if (status === "approved") {
+            return await ExportService.exportRecords({ kind: "approved", recyclerId });
+          }
+
+          return await ExportService.exportRecords({ kind: "all", exportType, recyclerId });
+        })(),
+        {
+          loading: "Đang xuất Excel...",
+          success: (result: { filename: string; recordCount?: number }) =>
+            `Đã tải xuống ${result.recordCount ? `${result.recordCount} bản ghi` : "file"} (${result.filename})`,
+          error: (err: any) =>
+            err?.response?.data?.error ||
+            err?.response?.data?.message ||
+            err?.message ||
+            "Không thể xuất Excel. Vui lòng thử lại.",
+        },
+      );
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -400,7 +490,7 @@ export function RecordPageContent({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tất cả lô hàng</SelectItem>
-                {batches.map((batch) => (
+                {batches.map((batch: CollectionBatch) => (
                   <SelectItem key={batch.id} value={batch.id}>
                     {batch.batchName}
                   </SelectItem>
@@ -429,7 +519,9 @@ export function RecordPageContent({
                 id="startDate"
                 type="date"
                 value={filterParams.startDate as string}
-                onChange={(e) => handleStartDateChange(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  handleStartDateChange(e.target.value)
+                }
                 className="w-full sm:w-[140px] h-9"
               />
             </div>
@@ -441,23 +533,35 @@ export function RecordPageContent({
                 id="endDate"
                 type="date"
                 value={filterParams.endDate as string}
-                onChange={(e) => handleEndDateChange(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  handleEndDateChange(e.target.value)
+                }
                 className="w-full sm:w-[140px] h-9"
               />
             </div>
           </div>
         }
         actions={
-          mode === "recycler" && canCreate ? (
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button
-              onClick={() => router.push("/recycler/records/create")}
-              className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
+              type="button"
+              variant="outline"
+              onClick={handleExport}
+              disabled={isExporting}
+              className="w-full sm:w-auto"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Tạo Bản ghi thu gom mới</span>
-              <span className="sm:hidden">Tạo mới</span>
+              <Download className="h-4 w-4 mr-2" />
+              {isExporting ? "Đang xuất..." : "Xuất Excel"}
             </Button>
-          ) : undefined
+
+            {mode === "recycler" && canCreate ? (
+              <Button onClick={() => router.push("/recycler/records/create")} className="w-full sm:w-auto">
+                <Plus className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Tạo Bản ghi thu gom mới</span>
+                <span className="sm:hidden">Tạo mới</span>
+              </Button>
+            ) : null}
+          </div>
         }
       />
 

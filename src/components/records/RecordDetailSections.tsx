@@ -169,6 +169,12 @@ export function StorageRecyclingSection({ record }: RecordDetailSectionsProps) {
           </div>
           {record.stockpiled && (
             <div>
+              <p className="text-sm text-muted-foreground mb-1">Ngày lưu kho</p>
+              <p className="font-medium">{formatDate((record as any).stockInDate)}</p>
+            </div>
+          )}
+          {record.stockpiled && (
+            <div>
               <p className="text-sm text-muted-foreground mb-1">
                 Khối lượng nhập kho (kg)
               </p>
@@ -185,16 +191,6 @@ export function StorageRecyclingSection({ record }: RecordDetailSectionsProps) {
             </p>
             <p className="font-medium">{formatDate(record.recycledDate)}</p>
           </div>
-          {record.stockpiled && record.deliveryDate && (
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">
-                Ngày nhập kho
-              </p>
-              <p className="font-medium">
-                {formatDateTime(record.deliveryDate)}
-              </p>
-            </div>
-          )}
           <div>
             <p className="text-sm text-muted-foreground mb-1">
               Khối lượng đã tái chế (kg)
