@@ -28,7 +28,8 @@ export function getAllowedMimeTypes(category: FileType): string[] {
     category === FileType.ACCEPTANCE_DOC ||
     category === FileType.APPROVAL_DOC ||
     category === FileType.OUTPUT_QUALITY_METRICS ||
-    category === FileType.QUALITY_METRICS
+    category === FileType.QUALITY_METRICS ||
+    category === FileType.WASTE_OWNER_CONTRACT
   ) {
     return ALLOWED_DOCUMENT_TYPES;
   }
@@ -55,7 +56,8 @@ export function getAllowedExtensions(category: FileType): string[] {
     category === FileType.ACCEPTANCE_DOC ||
     category === FileType.APPROVAL_DOC ||
     category === FileType.OUTPUT_QUALITY_METRICS ||
-    category === FileType.QUALITY_METRICS
+    category === FileType.QUALITY_METRICS ||
+    category === FileType.WASTE_OWNER_CONTRACT
   ) {
     return ALLOWED_DOCUMENT_EXTENSIONS;
   }
@@ -99,7 +101,8 @@ export function validateFileType(
         category === FileType.ACCEPTANCE_DOC ||
         category === FileType.APPROVAL_DOC ||
         category === FileType.OUTPUT_QUALITY_METRICS ||
-        category === FileType.QUALITY_METRICS
+        category === FileType.QUALITY_METRICS ||
+        category === FileType.WASTE_OWNER_CONTRACT
           ? "PDF hoặc Word"
           : "JPEG, PNG hoặc WebP";
 
@@ -121,7 +124,8 @@ export function getFileTypeDescription(category: FileType): string {
     category === FileType.ACCEPTANCE_DOC ||
     category === FileType.APPROVAL_DOC ||
     category === FileType.OUTPUT_QUALITY_METRICS ||
-    category === FileType.QUALITY_METRICS
+    category === FileType.QUALITY_METRICS ||
+    category === FileType.WASTE_OWNER_CONTRACT
   ) {
     return "PDF, DOC, DOCX";
   }

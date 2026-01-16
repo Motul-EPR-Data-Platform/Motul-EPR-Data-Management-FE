@@ -46,7 +46,8 @@ export function FileUpload({
         category === FileType.ACCEPTANCE_DOC ||
         category === FileType.APPROVAL_DOC ||
         category === FileType.OUTPUT_QUALITY_METRICS ||
-        category === FileType.QUALITY_METRICS
+        category === FileType.QUALITY_METRICS ||
+        category === FileType.WASTE_OWNER_CONTRACT
           ? "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
           : "image/jpeg,image/jpg,image/png,image/webp";
       return accept || allowedTypes;

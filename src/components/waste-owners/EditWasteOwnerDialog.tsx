@@ -14,6 +14,8 @@ import {
 } from "@/types/waste-owner";
 import { WasteOwnerForm } from "./WasteOwnerForm";
 import { validateUpdateWasteOwner } from "@/lib/validations/waste-owner";
+import { WasteOwnerService } from "@/lib/services/waste-owner.service";
+import { toast } from "sonner";
 
 interface EditWasteOwnerDialogProps {
   open: boolean;
@@ -31,10 +33,13 @@ export function EditWasteOwnerDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = async (dto: UpdateWasteOwnerDTO | any) => {
+  const handleSubmit = async (payload: {
+    data: UpdateWasteOwnerDTO;
+    contractFiles: File[];
+  }) => {
     if (!wasteOwner) return;
 
-    const updateData = dto as UpdateWasteOwnerDTO;
+    const updateData = payload.data;
 
     // Use Zod validation
     const validation = validateUpdateWasteOwner(updateData);
@@ -47,10 +52,29 @@ export function EditWasteOwnerDialog({
     setIsLoading(true);
     try {
       await onUpdateWasteOwner(wasteOwner.id, updateData);
+
+      if (payload.contractFiles.length > 0) {
+        try {
+          await WasteOwnerService.uploadWasteOwnerContractFiles(
+            payload.contractFiles,
+            wasteOwner.id,
+          );
+        } catch (uploadError) {
+          toast.error(
+            (uploadError as any)?.response?.data?.message ||
+              (uploadError as any)?.message ||
+              "Không thể tải lên hợp đồng chủ nguồn thải",
+          );
+        }
+      }
       setErrors({});
       onOpenChange(false);
     } catch (error) {
-      // Error handled by parent component
+      toast.error(
+        (error as any)?.response?.data?.message ||
+          (error as any)?.message ||
+          "Không thể cập nhật chủ nguồn thải",
+      );
     } finally {
       setIsLoading(false);
     }

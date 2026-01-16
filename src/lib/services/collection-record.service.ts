@@ -275,14 +275,20 @@ export const CollectionRecordService = {
 
   /**
    * Upload multiple files to a collection record
-   * POST /api/files/:recordId/upload-multiple
+   * POST /api/files/:recordId/upload
    */
   async uploadMultipleFiles(
     recordId: string,
     files: File[],
     category: FileType,
+    subType?: string,
   ): Promise<IFileUploadResponse[]> {
-    return FileRecordService.uploadMultipleFiles(recordId, files, category);
+    return FileRecordService.uploadMultipleFiles(
+      recordId,
+      files,
+      category,
+      subType,
+    );
   },
 
   /**
@@ -331,21 +337,16 @@ export const CollectionRecordService = {
   },
 
   /**
-   * Replace file at specific position
-   * PUT /api/collection-records/:recordId/upload/:position
+   * Replace file by ID
+   * PUT /api/collection-records/:recordId/upload/:fileId
    */
-  async replaceFileByPosition(
+  async replaceFileById(
     recordId: string,
     category: FileType,
-    position: number,
+    fileId: string,
     file: File,
   ): Promise<IFileUploadResponse> {
-    return FileRecordService.replaceFileByPosition(
-      recordId,
-      category,
-      position,
-      file,
-    );
+    return FileRecordService.replaceFileById(recordId, category, fileId, file);
   },
 
   /**

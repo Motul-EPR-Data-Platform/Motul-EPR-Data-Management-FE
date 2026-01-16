@@ -31,6 +31,8 @@ interface DocumentUploadProps {
   documentTypes: Array<{ value: string; label: string }>;
   disabled?: boolean;
   maxSizeMB?: number;
+  maxFilesTotal?: number;
+  maxFilesPerType?: number;
   acceptedFormats?: string[];
   // Optional: If provided, will use category-based validation
   category?: FileType;
@@ -44,6 +46,8 @@ export function DocumentUpload({
   documentTypes,
   disabled = false,
   maxSizeMB = 10,
+  maxFilesTotal,
+  maxFilesPerType,
   acceptedFormats,
   category,
   documentTypeToCategory,
@@ -77,6 +81,21 @@ export function DocumentUpload({
     if (!selectedType) {
       alert("Vui lòng chọn loại tài liệu");
       return;
+    }
+
+    if (maxFilesTotal !== undefined && documents.length >= maxFilesTotal) {
+      alert(`Chỉ được tải tối đa ${maxFilesTotal} file`);
+      return;
+    }
+
+    if (maxFilesPerType !== undefined) {
+      const typeCount = documents.filter(
+        (doc) => doc.type === selectedType,
+      ).length;
+      if (typeCount >= maxFilesPerType) {
+        alert(`Mỗi loại chỉ được tải tối đa ${maxFilesPerType} file`);
+        return;
+      }
     }
 
     // Determine category for validation

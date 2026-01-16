@@ -7,6 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { WasteOwnerFormFields } from "./WasteOwnerFormFields";
 import { WasteOwnerLocationFields } from "./WasteOwnerLocationFields";
+import { DocumentUpload, DocumentFile } from "@/components/records/DocumentUpload";
+import { FileType } from "@/types/file-record";
 import {
   CreateWasteOwnerDTO,
   UpdateWasteOwnerDTO,
@@ -32,7 +34,10 @@ interface WasteOwnerFormProps {
   errors?: Record<string, string>;
 
   // Handlers
-  onSubmit?: (data: CreateWasteOwnerDTO | UpdateWasteOwnerDTO) => Promise<void>;
+  onSubmit?: (payload: {
+    data: CreateWasteOwnerDTO | UpdateWasteOwnerDTO;
+    contractFiles: File[];
+  }) => Promise<void>;
   onCancel?: () => void;
 
   // Submit button text
@@ -95,6 +100,9 @@ export function WasteOwnerForm({
       : undefined;
   const [locationRefId, setLocationRefId] = React.useState<string>("");
   const [fullAddress, setFullAddress] = React.useState<string>("");
+  const [contractDocuments, setContractDocuments] = React.useState<
+    DocumentFile[]
+  >([]);
 
   // Initialize form data from initialData
   useEffect(() => {
@@ -110,6 +118,7 @@ export function WasteOwnerForm({
       });
       setLocationRefId(initialData.location?.refId || "");
       setFullAddress(initialData.location?.address || "");
+      setContractDocuments([]);
     } else if (isCreateMode) {
       // Reset to defaults for create mode
       reset({
@@ -122,6 +131,7 @@ export function WasteOwnerForm({
       });
       setLocationRefId("");
       setFullAddress("");
+      setContractDocuments([]);
     }
   }, [initialData, isCreateMode, isEditMode, reset]);
 
@@ -132,6 +142,10 @@ export function WasteOwnerForm({
     data: CreateWasteOwnerValidationData | UpdateWasteOwnerValidationData,
   ) => {
     if (!onSubmit || isViewMode) return;
+
+    const contractFiles = contractDocuments
+      .map((doc) => doc.file)
+      .filter((file): file is File => file instanceof File);
 
     if (isCreateMode && "name" in data && "businessCode" in data) {
       const createData = data as CreateWasteOwnerValidationData;
@@ -151,7 +165,7 @@ export function WasteOwnerForm({
             }
           : {}),
       };
-      await onSubmit(submitData);
+      await onSubmit({ data: submitData, contractFiles });
     } else if (isEditMode) {
       const updateData: UpdateWasteOwnerDTO = {
         ...(data.name !== undefined && { name: data.name }),
@@ -170,7 +184,7 @@ export function WasteOwnerForm({
           data.isActive !== undefined && { isActive: data.isActive }),
         ...(locationRefId && { location: { refId: locationRefId } }),
       };
-      await onSubmit(updateData);
+      await onSubmit({ data: updateData, contractFiles });
     }
   };
 
@@ -202,6 +216,28 @@ export function WasteOwnerForm({
           onFullAddressChange={(value) => setFullAddress(value)}
         />
       </div>
+
+      {!isViewMode && (
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase">
+            Hợp đồng chủ nguồn thải
+          </h3>
+          <DocumentUpload
+            documents={contractDocuments}
+            onDocumentsChange={setContractDocuments}
+            documentTypes={[
+              {
+                value: "waste_owner_contract",
+                label: "Hợp đồng chủ nguồn thải",
+              },
+            ]}
+            disabled={isLoading}
+            maxSizeMB={10}
+            maxFilesTotal={10}
+            category={FileType.WASTE_OWNER_CONTRACT}
+          />
+        </div>
+      )}
 
       {/* Location Information Section (read-only, from API) */}
       {isViewMode && initialData?.location && (

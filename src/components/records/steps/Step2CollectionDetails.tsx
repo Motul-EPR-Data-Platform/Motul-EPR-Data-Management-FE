@@ -325,22 +325,27 @@ export function Step2CollectionDetails({
             documents={evidenceFiles || []}
             onDocumentsChange={(files) => onEvidenceFilesChange?.(files)}
             documentTypes={[
-              { value: "phieu-can", label: "Phiếu cân" },
-              { value: "bien-ban-giao-nhan", label: "Biên bản giao nhận" },
-              { value: "bien-so-xe", label: "Biển số xe" },
-              { value: "khac", label: "Khác" },
+              { value: "weighing_slip", label: "Phiếu cân" },
+              { value: "delivery_receipt", label: "Biên bản giao nhận" },
+              {
+                value: "vehicle_license_plate",
+                label: "Ảnh biển số xe",
+              },
+              { value: "other", label: "Khác" },
             ]}
             disabled={disabled}
             maxSizeMB={10}
+            maxFilesTotal={10}
+            maxFilesPerType={3}
             category={FileType.EVIDENCE_PHOTO}
             documentTypeToCategory={(docType) => {
               // All evidence document types map to EVIDENCE_PHOTO
               if (
                 [
-                  "phieu-can",
-                  "bien-ban-giao-nhan",
-                  "bien-so-xe",
-                  "khac",
+                  "weighing_slip",
+                  "delivery_receipt",
+                  "vehicle_license_plate",
+                  "other",
                 ].includes(docType)
               ) {
                 return FileType.EVIDENCE_PHOTO;

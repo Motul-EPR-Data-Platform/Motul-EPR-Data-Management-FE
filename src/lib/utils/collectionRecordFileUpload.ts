@@ -25,6 +25,13 @@ export interface OriginalFileIds {
   stockpilePhoto: string | null;
 }
 
+const EVIDENCE_SUBTYPES = new Set([
+  "weighing_slip",
+  "delivery_receipt",
+  "vehicle_license_plate",
+  "other",
+]);
+
 /**
  * Check if a file ID is new (not in original set) - for edit mode
  */
@@ -73,38 +80,38 @@ export const uploadFilesForRecordCreate = async (
 
   // Upload evidence photos (from Step 2) - only new/changed files
   if (evidenceFiles && evidenceFiles.length > 0) {
-    const evidencePhotos = evidenceFiles
-      .filter(
-        (doc) =>
-          doc &&
-          doc.file &&
-          ["phieu-can", "bien-ban-giao-nhan", "bien-so-xe", "khac"].includes(
-            doc.type,
-          ),
-      )
-      .map((doc) => doc.file)
-      .filter((file): file is File => file instanceof File);
+    const evidenceBySubType = new Map<string, File[]>();
 
-    // Filter out already uploaded files
-    const newEvidencePhotos = evidencePhotos.filter((file) => {
-      const fileId = getFileId(file);
-      return !uploadedFilesRef.current.evidenceFiles.has(fileId);
+    evidenceFiles.forEach((doc) => {
+      if (!doc?.file || !(doc.file instanceof File)) return;
+      if (!EVIDENCE_SUBTYPES.has(doc.type)) return;
+      if (!evidenceBySubType.has(doc.type)) {
+        evidenceBySubType.set(doc.type, []);
+      }
+      evidenceBySubType.get(doc.type)!.push(doc.file);
     });
 
-    if (newEvidencePhotos.length > 0) {
-      uploadPromises.push(
-        CollectionRecordService.uploadMultipleFiles(
-          recordId,
-          newEvidencePhotos,
-          FileType.EVIDENCE_PHOTO,
-        ).then(() => {
-          // Mark as uploaded
-          newEvidencePhotos.forEach((file) => {
-            uploadedFilesRef.current.evidenceFiles.add(getFileId(file));
-          });
-        }),
-      );
-    }
+    evidenceBySubType.forEach((files, subType) => {
+      const newEvidencePhotos = files.filter((file) => {
+        const fileId = getFileId(file);
+        return !uploadedFilesRef.current.evidenceFiles.has(fileId);
+      });
+
+      if (newEvidencePhotos.length > 0) {
+        uploadPromises.push(
+          CollectionRecordService.uploadMultipleFiles(
+            recordId,
+            newEvidencePhotos,
+            FileType.EVIDENCE_PHOTO,
+            subType,
+          ).then(() => {
+            newEvidencePhotos.forEach((file) => {
+              uploadedFilesRef.current.evidenceFiles.add(getFileId(file));
+            });
+          }),
+        );
+      }
+    });
   }
 
   // Upload stockpile photo (from Step 3) - only if changed
@@ -225,19 +232,29 @@ export const uploadFilesForRecordEdit = async (
     const newEvidenceFiles = evidenceFiles.filter((doc) =>
       isNewFileId(doc.id, originalFileIds),
     );
-    const filesToUpload = newEvidenceFiles
-      .map((doc) => doc.file)
-      .filter((file): file is File => file instanceof File);
 
-    if (filesToUpload.length > 0) {
+    const evidenceBySubType = new Map<string, File[]>();
+
+    newEvidenceFiles.forEach((doc) => {
+      if (!(doc.file instanceof File)) return;
+      if (!EVIDENCE_SUBTYPES.has(doc.type)) return;
+      if (!evidenceBySubType.has(doc.type)) {
+        evidenceBySubType.set(doc.type, []);
+      }
+      evidenceBySubType.get(doc.type)!.push(doc.file);
+    });
+
+    evidenceBySubType.forEach((files, subType) => {
+      if (files.length === 0) return;
       uploadPromises.push(
         CollectionRecordService.uploadMultipleFiles(
           recordId,
-          filesToUpload,
+          files,
           FileType.EVIDENCE_PHOTO,
+          subType,
         ),
       );
-    }
+    });
   }
 
   // Only upload quality documents that are new

@@ -6,7 +6,7 @@ import { CreateDraftFormData } from "@/types/record";
  */
 export const mapDocumentTypeToFileType = (docType: string): FileType => {
   if (
-    ["phieu-can", "bien-ban-giao-nhan", "bien-so-xe", "khac"].includes(
+    ["weighing_slip", "delivery_receipt", "vehicle_license_plate", "other"].includes(
       docType,
     )
   ) {

@@ -11,6 +11,7 @@ import {
   fromBackendWasteOwnerType,
 } from "@/types/waste-owner";
 import { IPaginationParams } from "@/types/pagination";
+import { FileType } from "@/types/file-record";
 
 export const WasteOwnerService = {
   /**
@@ -176,5 +177,26 @@ export const WasteOwnerService = {
    */
   async deleteWasteOwner(id: string): Promise<void> {
     await api.delete(path.wasteOwners(ENDPOINTS.WASTE_OWNERS.BY_ID(id)));
+  },
+
+  /**
+   * Upload waste owner contract files
+   * POST /api/waste-owners/upload
+   */
+  async uploadWasteOwnerContractFiles(
+    files: File[],
+    wasteOwnerId?: string,
+  ): Promise<void> {
+    if (!files || files.length === 0) return;
+
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    formData.append("category", FileType.WASTE_OWNER_CONTRACT);
+
+    if (wasteOwnerId) {
+      formData.append("metadata", JSON.stringify({ wasteOwnerId }));
+    }
+
+    await api.post(path.wasteOwners(ENDPOINTS.WASTE_OWNERS.UPLOAD), formData);
   },
 };

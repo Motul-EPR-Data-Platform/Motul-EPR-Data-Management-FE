@@ -8,14 +8,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CreateWasteOwnerDTO } from "@/types/waste-owner";
+import { CreateWasteOwnerDTO, UpdateWasteOwnerDTO } from "@/types/waste-owner";
 import { WasteOwnerForm } from "./WasteOwnerForm";
 import { validateCreateWasteOwner } from "@/lib/validations/waste-owner";
+import { WasteOwnerService } from "@/lib/services/waste-owner.service";
+import { toast } from "sonner";
 
 interface CreateWasteOwnerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateWasteOwner: (dto: CreateWasteOwnerDTO) => Promise<void>;
+  onCreateWasteOwner: (
+    dto: CreateWasteOwnerDTO,
+  ) => Promise<{ id: string } | void>;
 }
 
 export function CreateWasteOwnerDialog({
@@ -26,8 +30,11 @@ export function CreateWasteOwnerDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = async (dto: CreateWasteOwnerDTO | any) => {
-    const createData = dto as CreateWasteOwnerDTO;
+  const handleSubmit = async (payload: {
+    data: CreateWasteOwnerDTO | UpdateWasteOwnerDTO;
+    contractFiles: File[];
+  }) => {
+    const createData = payload.data as CreateWasteOwnerDTO;
 
     // Use Zod validation
     const validation = validateCreateWasteOwner(createData);
@@ -39,11 +46,30 @@ export function CreateWasteOwnerDialog({
 
     setIsLoading(true);
     try {
-      await onCreateWasteOwner(createData);
+      const created = await onCreateWasteOwner(createData);
+
+      if (payload.contractFiles.length > 0) {
+        try {
+          await WasteOwnerService.uploadWasteOwnerContractFiles(
+            payload.contractFiles,
+            (created as any)?.id,
+          );
+        } catch (uploadError) {
+          toast.error(
+            (uploadError as any)?.response?.data?.message ||
+              (uploadError as any)?.message ||
+              "Không thể tải lên hợp đồng chủ nguồn thải",
+          );
+        }
+      }
       setErrors({});
       onOpenChange(false);
     } catch (error) {
-      // Error handled by parent component
+      toast.error(
+        (error as any)?.response?.data?.message ||
+          (error as any)?.message ||
+          "Không thể tạo chủ nguồn thải",
+      );
     } finally {
       setIsLoading(false);
     }

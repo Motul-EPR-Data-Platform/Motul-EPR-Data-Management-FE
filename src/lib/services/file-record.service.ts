@@ -25,11 +25,11 @@ export const FileRecordService = {
     }
 
     const formData = new FormData();
-    formData.append("file", input.file);
+    formData.append("files", input.file);
     formData.append("category", input.category);
 
-    if (input.position !== undefined) {
-      formData.append("position", input.position.toString());
+    if (input.subType) {
+      formData.append("subType", input.subType);
     }
 
     if (input.metadata) {
@@ -52,6 +52,7 @@ export const FileRecordService = {
     recordId: string,
     files: File[],
     category: FileType,
+    subType?: string,
   ): Promise<IFileUploadResponse[]> {
     // Validate files array
     if (!files || files.length === 0) {
@@ -102,6 +103,9 @@ export const FileRecordService = {
     });
 
     formData.append("category", category);
+    if (subType) {
+      formData.append("subType", subType);
+    }
 
     // Debug: Log FormData contents (for development)
     if (process.env.NODE_ENV === "development") {
@@ -115,7 +119,7 @@ export const FileRecordService = {
 
     const { data } = await api.post(
       path.collectionRecords(
-        ENDPOINTS.COLLECTION_RECORDS.UPLOAD_MULTIPLE(recordId),
+        ENDPOINTS.COLLECTION_RECORDS.UPLOAD(recordId),
       ),
       formData,
     );
@@ -161,13 +165,13 @@ export const FileRecordService = {
   },
 
   /**
-   * Replace file at specific position
-   * PUT /api/collection-records/:recordId/upload/:position
+   * Replace file by ID
+   * PUT /api/collection-records/:recordId/upload/:fileId
    */
-  async replaceFileByPosition(
+  async replaceFileById(
     recordId: string,
     category: FileType,
-    position: number,
+    fileId: string,
     file: File,
   ): Promise<IFileUploadResponse> {
     // Validate file type based on category
@@ -182,7 +186,7 @@ export const FileRecordService = {
 
     const { data } = await api.put(
       path.collectionRecords(
-        ENDPOINTS.COLLECTION_RECORDS.REPLACE_FILE(recordId, position),
+        ENDPOINTS.COLLECTION_RECORDS.REPLACE_FILE(recordId, fileId),
       ),
       formData,
     );

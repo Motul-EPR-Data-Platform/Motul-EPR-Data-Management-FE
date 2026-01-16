@@ -14,6 +14,30 @@ export enum FileType {
   // For waste transfer point profile creation
   WTP_CONFIRMATION_LETTER = "wtp_confirmation_letter",
   RECYCLING_SERVICE_AGREEMENT = "recycling_service_agreement",
+  // For waste owner contracts
+  WASTE_OWNER_CONTRACT = "waste_owner_contract",
+}
+
+export enum EvidencePhotoSubType {
+  WEIGHING_SLIP = "weighing_slip",
+  DELIVERY_RECEIPT = "delivery_receipt",
+  VEHICLE_LICENSE_PLATE = "vehicle_license_plate",
+  OTHER = "other",
+}
+
+export enum StockpilePhotoSubType {
+  WEIGHING_SLIP = "weighing_slip",
+  WAREHOUSE_ENTRY_PHOTO = "warehouse_entry_photo",
+  WAREHOUSE_RECEIPT = "warehouse_receipt",
+  WAREHOUSE_ISSUE_SLIP = "warehouse_issue_slip",
+  OTHER = "other",
+}
+
+export enum RecycledPhotoSubType {
+  RESULT_REPORT = "result_report",
+  SEMI_FINISHED_PRODUCT = "semi_finished_product",
+  SLUDGE_WASTE = "sludge_waste",
+  OTHER = "other",
 }
 
 // File metadata interface
@@ -28,6 +52,7 @@ export interface IFile {
   metadata?: Record<string, any> | null;
   category: FileType;
   position?: number; // For ordering multiple files
+  subType?: string | null;
   recordId?: string | null; // Link to collection record
 }
 
@@ -37,6 +62,7 @@ export interface IFileUploadInput {
   category: FileType;
   recordId?: string;
   position?: number;
+  subType?: string;
   metadata?: Record<string, any>;
 }
 

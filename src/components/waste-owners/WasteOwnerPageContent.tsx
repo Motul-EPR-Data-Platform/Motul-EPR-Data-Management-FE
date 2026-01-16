@@ -42,7 +42,7 @@ interface WasteOwnerPageContentProps {
   canEdit?: boolean;
 
   // Callbacks
-  onCreate?: (dto: CreateWasteOwnerDTO) => Promise<void>;
+  onCreate?: (dto: CreateWasteOwnerDTO) => Promise<WasteOwnerWithLocation | void>;
   onUpdate?: (id: string, dto: UpdateWasteOwnerDTO) => Promise<void>;
   onDelete?: (wasteOwner: WasteOwnerWithLocation) => Promise<void>;
 }
@@ -223,18 +223,16 @@ export function WasteOwnerPageContent({
 
   const handleCreateWasteOwner = async (dto: CreateWasteOwnerDTO) => {
     try {
-      if (onCreate) {
-        await onCreate(dto);
-      } else {
-        await toast.promise(WasteOwnerService.createWasteOwner(dto), {
-          loading: "Đang tạo chủ nguồn thải...",
-          success: "Tạo chủ nguồn thải thành công",
-          error: (err) =>
-            err?.response?.data?.message ||
-            err?.message ||
-            "Không thể tạo chủ nguồn thải. Vui lòng thử lại.",
-        });
-      }
+      const created = onCreate
+        ? await onCreate(dto)
+        : await toast.promise(WasteOwnerService.createWasteOwner(dto), {
+            loading: "Đang tạo chủ nguồn thải...",
+            success: "Tạo chủ nguồn thải thành công",
+            error: (err) =>
+              err?.response?.data?.message ||
+              err?.message ||
+              "Không thể tạo chủ nguồn thải. Vui lòng thử lại.",
+          });
 
       // Close dialog first
       setIsCreateDialogOpen(false);
@@ -247,9 +245,11 @@ export function WasteOwnerPageContent({
       // Pass page: 1 and noCache: true to force fresh data
       setPagination((prev) => ({ ...prev, page: 1 }));
       await reload({ page: 1, limit: pagination.limit, noCache: true });
+      return created;
     } catch (error) {
       // Error already handled by toast or onCreate callback
       console.error("Error creating waste owner:", error);
+      throw error;
     }
   };
 

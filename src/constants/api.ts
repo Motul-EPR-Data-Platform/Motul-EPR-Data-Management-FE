@@ -61,6 +61,7 @@ export const ENDPOINTS = {
   WASTE_OWNERS: {
     ROOT: "/waste-owners",
     BY_ID: (id: string) => `/waste-owners/${id}`,
+    UPLOAD: "/waste-owners/upload",
   },
   COLLECTION_RECORDS: {
     ROOT: "/collection-records",
@@ -76,8 +77,7 @@ export const ENDPOINTS = {
     FILES: (id: string) => `/${id}/files`,
     FILES_PREVIEW: (id: string) => `/${id}/files/preview`,
     UPLOAD: (id: string) => `/${id}/upload`,
-    UPLOAD_MULTIPLE: (id: string) => `/${id}/upload-multiple`,
-    REPLACE_FILE: (id: string, position: number) => `/${id}/upload/${position}`,
+    REPLACE_FILE: (id: string, fileId: string) => `/${id}/upload/${fileId}`,
   },
   LOCATIONS: {
     ROOT: "/location",

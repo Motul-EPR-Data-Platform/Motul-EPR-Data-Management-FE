@@ -230,7 +230,7 @@ export default function EditCollectionRecordPage() {
                     return {
                       id: file.id,
                       file: fileObj,
-                      type: "evidence_photo",
+                      type: file.subType || "other",
                     };
                   }),
                 );
