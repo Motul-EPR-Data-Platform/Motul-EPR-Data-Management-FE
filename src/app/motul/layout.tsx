@@ -12,11 +12,11 @@ export default function MotulLayout({
 }) {
   return (
     <RouteGuard>
-      <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+      <SidebarProvider className="h-screen overflow-hidden">
+        <div className="flex h-full w-full">
           <AppSidebar />
 
-          <SidebarInset className="flex flex-col flex-1">
+          <SidebarInset className="flex flex-col flex-1 overflow-auto">
             <Navbar />
             <main className="flex-1 bg-gray-50 p-6">{children}</main>
           </SidebarInset>

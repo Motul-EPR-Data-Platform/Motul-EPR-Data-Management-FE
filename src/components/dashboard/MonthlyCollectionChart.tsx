@@ -220,7 +220,7 @@ export function MonthlyCollectionChart({
               data={chartData}
               dataKey="value"
               xAxisKey="month"
-              color={CHART_COLORS.green}
+              color={CHART_COLORS.red}
               height={350}
               unit=" kg"
               hideCard={true}

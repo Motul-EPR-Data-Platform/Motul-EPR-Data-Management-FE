@@ -37,7 +37,7 @@ export function BarChart({
   data,
   dataKey,
   xAxisKey,
-  color = CHART_COLORS.green,
+  color = CHART_COLORS.red,
   className,
   height = 300,
   unit,
@@ -49,16 +49,16 @@ export function BarChart({
         data={data}
         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
       >
-        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
         <XAxis
           dataKey={xAxisKey}
-          stroke="#888888"
+          stroke="var(--muted-foreground)"
           fontSize={12}
           tickLine={false}
           axisLine={false}
         />
         <YAxis
-          stroke="#888888"
+          stroke="var(--muted-foreground)"
           fontSize={12}
           tickLine={false}
           axisLine={false}
@@ -66,8 +66,8 @@ export function BarChart({
         />
         <Tooltip
           contentStyle={{
-            backgroundColor: "white",
-            border: "1px solid #e5e7eb",
+            backgroundColor: "var(--popover)",
+            border: "1px solid var(--border)",
             borderRadius: "0.5rem",
             padding: "0.5rem",
           }}

@@ -349,9 +349,9 @@ export function WasteTypeTrendsChart({
                           <div
                             key={source.id}
                             className={cn(
-                              "flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer",
+                              "flex items-center space-x-2 p-2 rounded hover:bg-accent cursor-pointer",
                               isDisabled && "opacity-50 cursor-not-allowed",
-                              isSelected && "bg-blue-50",
+                              isSelected && "bg-primary/10",
                             )}
                             onClick={() => {
                               if (!isDisabled) {
@@ -363,8 +363,8 @@ export function WasteTypeTrendsChart({
                               className={cn(
                                 "w-4 h-4 border-2 rounded flex items-center justify-center",
                                 isSelected
-                                  ? "bg-blue-600 border-blue-600"
-                                  : "border-gray-300",
+                                  ? "bg-primary border-primary"
+                                  : "border-border",
                                 isDisabled && "opacity-50",
                               )}
                             >
@@ -454,16 +454,16 @@ export function WasteTypeTrendsChart({
                 data={chartData}
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis
                   dataKey="month"
-                  stroke="#888888"
+                  stroke="var(--muted-foreground)"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
                 />
                 <YAxis
-                  stroke="#888888"
+                  stroke="var(--muted-foreground)"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
@@ -471,8 +471,8 @@ export function WasteTypeTrendsChart({
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "white",
-                    border: "1px solid #e5e7eb",
+                    backgroundColor: "var(--popover)",
+                    border: "1px solid var(--border)",
                     borderRadius: "0.5rem",
                     padding: "0.5rem",
                   }}
