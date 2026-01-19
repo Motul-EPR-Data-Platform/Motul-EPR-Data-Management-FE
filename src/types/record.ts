@@ -21,6 +21,7 @@ export interface CollectionRecord {
   vehiclePlate?: string | null;
   stockpiled?: boolean | null;
   stockpileVolumeKg?: number | null;
+  stockInDate?: string | null; // ISO date string (ngày lưu kho)
   recycledDate?: string | null; // ISO date string
   recycledVolumeKg?: number | null;
   wasteOwnerId?: string | null;
@@ -124,6 +125,7 @@ export interface CreateDraftFormData {
   vehiclePlate?: string | null;
   stockpiled?: boolean | null;
   stockpileVolumeKg?: number | null;
+  stockInDate?: string | null; // ISO date string (YYYY-MM-DD)
   recycledDate?: string | null; // ISO date string
   recycledVolumeKg?: number | null;
   wasteOwnerId?: string | null; // Single ID from form
@@ -144,6 +146,7 @@ export interface CreateDraftDTO {
   vehiclePlate?: string | null;
   stockpiled?: boolean | null;
   stockpileVolumeKg?: number | null;
+  stockInDate?: string | null; // Date string in dd/mm/yyyy format
   recycledDate?: string | null; // Date string in dd/mm/yyyy format
   recycledVolumeKg?: number | null;
   wasteOwnerIds?: string[]; // Backend expects array - optional, but should be included when waste owners are selected
@@ -164,6 +167,7 @@ export interface UpdateDraftDTO {
   vehiclePlate?: string | null;
   stockpiled?: boolean | null;
   stockpileVolumeKg?: number | null;
+  stockInDate?: string | null; // Date string in dd/mm/yyyy format
   recycledDate?: string | null; // ISO date string
   recycledVolumeKg?: number | null;
   wasteOwnerIds?: string[]; // Backend expects array

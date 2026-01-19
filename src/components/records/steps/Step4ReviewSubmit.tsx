@@ -183,6 +183,14 @@ export function Step4ReviewSubmit({
           {formData.stockpiled === true && (
             <>
               <ReviewField
+                label="Ngày lưu kho"
+                value={
+                  formData.stockInDate
+                    ? format(new Date(formData.stockInDate), "dd/MM/yyyy")
+                    : undefined
+                }
+              />
+              <ReviewField
                 label="Khối lượng lưu kho (kg)"
                 value={formData.stockpileVolumeKg}
               />

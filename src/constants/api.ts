@@ -110,6 +110,18 @@ export const ENDPOINTS = {
     PRICE_FS_ANALYSIS: "/price-fs-analysis",
     PRICE_ZONES: "/price-zones",
   },
+  EXPORTS: {
+    ROOT: "/export",
+    RECORDS: "/records",
+    ALL_BATCHES: "/records/all-batches",
+    DRAFT: "/records/draft",
+    SUBMITTED: "/records/submitted",
+    APPROVED: "/records/approved",
+    BY_BATCH: (batchId: string) => `/records/batch/${batchId}`,
+    BY_WASTE_OWNER: (wasteOwnerId: string) =>
+      `/records/waste-owner/${wasteOwnerId}`,
+    DATE_RANGE: "/records/date-range",
+  },
 } as const;
 
 // Helpers to compose full paths
@@ -127,4 +139,5 @@ export const path = {
   batches: (p: string) => `${ENDPOINTS.BATCHES.ROOT}${p}`, // Prepend ROOT to batch paths
   dashboard: (p: string) => `${ENDPOINTS.DASHBOARD.ROOT}${p}`, // Prepend ROOT to dashboard paths
   analytics: (p: string) => `${ENDPOINTS.ANALYTICS.ROOT}${p}`, // Prepend ROOT to analytics paths
+  exports: (p: string) => `${ENDPOINTS.EXPORTS.ROOT}${p}`, // Prepend ROOT to export paths
 };

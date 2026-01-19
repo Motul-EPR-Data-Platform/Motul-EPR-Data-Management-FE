@@ -235,14 +235,11 @@ export const mockWasteSourceClassification: PieChartDataPoint[] = [
 
 // Chart colors - using new theme colors
 export const chartColors = {
-  primary: CHART_COLORS.green, // Green theme primary
-  green: CHART_COLORS.green,
-  orange: CHART_COLORS.orange,
+  primary: CHART_COLORS.red,
+  dark: CHART_COLORS.grayDark,
   gray: CHART_COLORS.gray,
+  light: CHART_COLORS.grayLight,
   black: CHART_COLORS.black,
-  blue: CHART_COLORS.blue,
-  purple: CHART_COLORS.purple,
-  yellow: CHART_COLORS.yellow,
 };
 
 // Line chart series colors (for multiple lines)

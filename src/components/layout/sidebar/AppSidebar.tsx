@@ -60,7 +60,7 @@ export function AppSidebar() {
             <div className="h-10 w-10 bg-gray-200 animate-pulse rounded-lg group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8" />
           </div>
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent className="flex-1">
           <div className="p-4 space-y-2">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="h-8 bg-gray-200 animate-pulse rounded" />
@@ -83,7 +83,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="flex-1">
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -124,7 +124,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="mt-auto">
         <div className="text-center text-sm text-gray-500 py-4 border-t">
           {config.footerText}
         </div>

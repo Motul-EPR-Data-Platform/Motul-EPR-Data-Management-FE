@@ -17,6 +17,8 @@ import {
 } from "@/components/records/DocumentUpload";
 import { FileType } from "@/types/file-record";
 import { FileUpload } from "@/components/ui/file-upload";
+import { parseDate } from "@/lib/utils/collectionRecordHelpers";
+import type { ChangeEvent } from "react";
 
 interface Step3WarehouseRecyclingProps {
   formData: Partial<CreateDraftFormData>;
@@ -87,13 +89,33 @@ export function Step3WarehouseRecycling({
         {/* Stockpile Volume and Photo (if stockpiled) */}
         {formData.stockpiled === true && (
           <>
+            {/* Stock In Date */}
+            <div className="grid gap-2">
+              <Label htmlFor="stockInDate">
+                Ngày lưu kho <span className="text-red-500">*</span>
+              </Label>
+              <DatePicker
+                value={parseDate(formData.stockInDate || undefined)}
+                onChange={(date: Date | undefined) => {
+                  onChange(
+                    "stockInDate",
+                    date ? date.toISOString().split("T")[0] : null,
+                  );
+                }}
+                disabled={disabled}
+              />
+              {errors.stockInDate && (
+                <p className="text-sm text-red-500">{errors.stockInDate}</p>
+              )}
+            </div>
+
             <div className="grid gap-2">
               <Label htmlFor="stockpileVolumeKg">Khối lượng lưu kho (kg)</Label>
               <Input
                 id="stockpileVolumeKg"
                 type="number"
                 value={formData.stockpileVolumeKg || ""}
-                onChange={(e) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   onChange(
                     "stockpileVolumeKg",
                     e.target.value ? parseFloat(e.target.value) : null,
@@ -168,7 +190,7 @@ export function Step3WarehouseRecycling({
             id="recycledVolumeKg"
             type="number"
             value={formData.recycledVolumeKg || ""}
-            onChange={(e) =>
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
               onChange(
                 "recycledVolumeKg",
                 e.target.value ? parseFloat(e.target.value) : null,

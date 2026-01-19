@@ -68,8 +68,8 @@ export function PieChart({
             </Pie>
             <Tooltip
               contentStyle={{
-                backgroundColor: "white",
-                border: "1px solid #e5e7eb",
+                backgroundColor: "var(--popover)",
+                border: "1px solid var(--border)",
                 borderRadius: "0.5rem",
                 padding: "0.5rem",
               }}

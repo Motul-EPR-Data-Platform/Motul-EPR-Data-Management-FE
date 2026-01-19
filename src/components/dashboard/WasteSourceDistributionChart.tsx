@@ -106,10 +106,10 @@ export function WasteSourceDistributionChart({
               layout="vertical"
               margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 type="number"
-                stroke="#888888"
+                stroke="var(--muted-foreground)"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -118,7 +118,7 @@ export function WasteSourceDistributionChart({
               <YAxis
                 type="category"
                 dataKey="name"
-                stroke="#888888"
+                stroke="var(--muted-foreground)"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -134,8 +134,8 @@ export function WasteSourceDistributionChart({
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "white",
-                  border: "1px solid #e5e7eb",
+                  backgroundColor: "var(--popover)",
+                  border: "1px solid var(--border)",
                   borderRadius: "0.5rem",
                   padding: "0.5rem",
                 }}
