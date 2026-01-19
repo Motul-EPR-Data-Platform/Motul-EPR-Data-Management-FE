@@ -5,6 +5,7 @@ export type ExportType = "ALL_RECORDS" | "DRAFT" | "SUBMITTED" | "APPROVED";
 
 export type ExportRoute =
   | { kind: "all"; exportType: ExportType; recyclerId?: string }
+  | { kind: "allBatches"; exportType: ExportType; recyclerId?: string }
   | { kind: "draft"; recyclerId?: string }
   | { kind: "submitted"; recyclerId?: string }
   | { kind: "approved"; recyclerId?: string }
@@ -69,6 +70,10 @@ export const ExportService = {
         params.endDate = route.endDate;
         params.exportType = route.exportType;
         break;
+      case "allBatches":
+        endpoint = ENDPOINTS.EXPORTS.ALL_BATCHES;
+        params.exportType = route.exportType;
+        break;
       case "all":
       default:
         endpoint = ENDPOINTS.EXPORTS.RECORDS;
@@ -99,6 +104,17 @@ export const ExportService = {
     downloadBlob(blob, filename);
 
     return { filename, recordCount };
+  },
+
+  exportAllBatchesMultiSheet(params: {
+    exportType: ExportType;
+    recyclerId?: string;
+  }): Promise<{ filename: string; recordCount?: number }> {
+    return this.exportRecords({
+      kind: "allBatches",
+      exportType: params.exportType,
+      recyclerId: params.recyclerId,
+    });
   },
 };
 

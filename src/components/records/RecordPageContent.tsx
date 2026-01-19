@@ -21,7 +21,11 @@ import { usePaginationWithURL } from "@/hooks/usePaginationWithURL";
 import { useTableData } from "@/hooks/useTableData";
 import { CollectionRecordService } from "@/lib/services/collection-record.service";
 import { BatchService } from "@/lib/services/batch.service";
-import { ExportService, type ExportType } from "@/lib/services/export.service";
+import {
+  ExportService,
+  type ExportRoute,
+  type ExportType,
+} from "@/lib/services/export.service";
 import { CollectionBatch } from "@/types/batch";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -273,6 +277,62 @@ export function RecordPageContent({
     return "ALL_RECORDS";
   };
 
+  const resolveExportRoute = (params: {
+    status: string;
+    batchId: string;
+    startDate: string;
+    endDate: string;
+    recyclerId?: string;
+  }): { route?: ExportRoute; error?: string } => {
+    const exportType = mapStatusToExportType(params.status);
+    if (!exportType) {
+      return {
+        error: "Chưa hỗ trợ xuất Excel cho trạng thái 'Bị từ chối'.",
+      };
+    }
+
+    const hasBatch = params.batchId !== "all";
+    const hasDateRange = Boolean(params.startDate && params.endDate);
+    if (hasBatch && hasDateRange) {
+      return {
+        error:
+          "Xuất Excel chưa hỗ trợ đồng thời Lô hàng + Khoảng ngày. Vui lòng bỏ một bộ lọc.",
+      };
+    }
+
+    if (hasDateRange) {
+      return {
+        route: {
+          kind: "dateRange",
+          startDate: params.startDate,
+          endDate: params.endDate,
+          exportType,
+          recyclerId: params.recyclerId,
+        },
+      };
+    }
+
+    if (hasBatch) {
+      return {
+        route: {
+          kind: "byBatch",
+          batchId: params.batchId,
+          exportType,
+          recyclerId: params.recyclerId,
+        },
+      };
+    }
+
+    // Batch filter is "all" => export multi-sheet per batch
+    return {
+      route: {
+        kind: "allBatches",
+        exportType,
+        recyclerId: params.recyclerId,
+      },
+    };
+  };
+
   const handleExport = async () => {
     if (isExporting) return;
 
@@ -281,56 +341,25 @@ export function RecordPageContent({
     const startDate = (filterParams.startDate as string) || "";
     const endDate = (filterParams.endDate as string) || "";
 
-    const exportType = mapStatusToExportType(status);
-    if (!exportType) {
-      toast.error("Chưa hỗ trợ xuất Excel cho trạng thái 'Bị từ chối'.");
-      return;
-    }
-
-    const hasBatch = batchId !== "all";
-    const hasDateRange = Boolean(startDate && endDate);
-    if (hasBatch && hasDateRange) {
-      toast.error("Xuất Excel chưa hỗ trợ đồng thời Lô hàng + Khoảng ngày. Vui lòng bỏ một bộ lọc.");
-      return;
-    }
-
     setIsExporting(true);
     try {
       const recyclerId = user?.recyclerId || undefined;
+      const exportDecision = resolveExportRoute({
+        status,
+        batchId,
+        startDate,
+        endDate,
+        recyclerId,
+      });
+
+      if (exportDecision.error) {
+        toast.error(exportDecision.error);
+        return;
+      }
 
       await toast.promise(
         (async () => {
-          if (hasDateRange) {
-            // yyyy-mm-dd strings from <input type="date"> (backend accepts Date parsing)
-            return await ExportService.exportRecords({
-              kind: "dateRange",
-              startDate,
-              endDate,
-              exportType,
-              recyclerId,
-            });
-          }
-
-          if (hasBatch) {
-            return await ExportService.exportRecords({
-              kind: "byBatch",
-              batchId,
-              exportType,
-              recyclerId,
-            });
-          }
-
-          if (status === "draft") {
-            return await ExportService.exportRecords({ kind: "draft", recyclerId });
-          }
-          if (status === "pending") {
-            return await ExportService.exportRecords({ kind: "submitted", recyclerId });
-          }
-          if (status === "approved") {
-            return await ExportService.exportRecords({ kind: "approved", recyclerId });
-          }
-
-          return await ExportService.exportRecords({ kind: "all", exportType, recyclerId });
+          return await ExportService.exportRecords(exportDecision.route!);
         })(),
         {
           loading: "Đang xuất Excel...",

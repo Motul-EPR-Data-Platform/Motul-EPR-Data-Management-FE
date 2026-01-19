@@ -113,6 +113,7 @@ export const ENDPOINTS = {
   EXPORTS: {
     ROOT: "/export",
     RECORDS: "/records",
+    ALL_BATCHES: "/records/all-batches",
     DRAFT: "/records/draft",
     SUBMITTED: "/records/submitted",
     APPROVED: "/records/approved",
