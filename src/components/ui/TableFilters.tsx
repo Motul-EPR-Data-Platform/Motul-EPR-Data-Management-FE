@@ -61,17 +61,22 @@ export function TableFilters({
       <div className="flex flex-col gap-4">
         {search && <div className="w-full">{search}</div>}
 
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
           {filters && filters.length > 0 && (
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 flex-1 flex-wrap">
               {filters.map((filter, index) => (
-                <div key={index} className="flex-shrink-0">{filter}</div>
+                <div
+                  key={index}
+                  className="w-full sm:w-auto flex-shrink-0"
+                >
+                  {filter}
+                </div>
               ))}
             </div>
           )}
 
           {actions && (
-            <div className="flex items-center flex-shrink-0">
+            <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto flex-shrink-0">
               {actions}
             </div>
           )}

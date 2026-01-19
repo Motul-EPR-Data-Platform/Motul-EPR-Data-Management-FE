@@ -195,6 +195,7 @@ export interface GetRecordsFilters {
   status?: RecordStatus | "SUBMITTED"; // Backend uses "SUBMITTED", frontend uses "submitted" or "pending"
   recyclerId?: string;
   submissionMonth?: string; // ISO date string (YYYY-MM)
+  batchId?: string;
   startDate?: string; // ISO date string (YYYY-MM-DD)
   endDate?: string; // ISO date string (YYYY-MM-DD)
   page?: number;

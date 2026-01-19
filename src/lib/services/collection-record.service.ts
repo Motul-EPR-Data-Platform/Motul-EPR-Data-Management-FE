@@ -115,6 +115,9 @@ export const CollectionRecordService = {
     if (filters?.submissionMonth) {
       queryParams.append("submissionMonth", filters.submissionMonth);
     }
+    if (filters?.batchId) {
+      queryParams.append("batchId", filters.batchId);
+    }
     if (filters?.startDate) {
       queryParams.append("startDate", filters.startDate);
     }
