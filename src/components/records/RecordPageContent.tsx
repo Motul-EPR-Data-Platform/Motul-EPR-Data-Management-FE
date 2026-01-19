@@ -132,6 +132,7 @@ export function RecordPageContent({
   // Build filters for API call - memoized to prevent infinite loops
   const filters = useMemo(() => {
     const filterObj: Omit<GetRecordsFilters, "page" | "limit"> = {};
+    const batchId = (filterParams.batchId as string) || "all";
 
     if (filterParams.status !== "all") {
       filterObj.status = filterParams.status as RecordStatus;
@@ -142,12 +143,22 @@ export function RecordPageContent({
       filterObj.endDate = filterParams.endDate;
     }
 
+    if (batchId !== "all") {
+      filterObj.batchId = batchId;
+    }
+
     // Use debounced search value for API call based on selected search field
     // Note: Backend doesn't support search by these fields directly, so we'll filter client-side
     // or we can add backend support later
 
     return filterObj;
-  }, [filterParams.status, filterParams.startDate, filterParams.endDate]);
+  }, [
+    filterParams.status,
+    filterParams.startDate,
+    filterParams.endDate,
+    filterParams.batchId,
+    batches,
+  ]);
 
   // Memoize fetchData function to prevent recreation on every render
   const fetchData = useCallback(
@@ -440,11 +451,6 @@ export function RecordPageContent({
   const filteredRecords = useMemo(() => {
     let filtered = [...records];
 
-    // Filter by batch (client-side)
-    if (filterParams.batchId && filterParams.batchId !== "all") {
-      filtered = filtered.filter((record) => record.batchId === filterParams.batchId);
-    }
-
     // Filter by search query
     if (debouncedSearchQuery.trim()) {
       const query = debouncedSearchQuery.toLowerCase();
@@ -508,7 +514,7 @@ export function RecordPageContent({
             onChange={handleStatusChange}
             placeholder="Tất cả trạng thái"
           />,
-          <div key="batch" className="flex gap-2 w-full sm:w-auto">
+          <div key="batch" className="flex flex-wrap gap-2 w-full sm:w-auto">
             <Select
               value={filterParams.batchId as string}
               onValueChange={handleBatchChange}
