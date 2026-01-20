@@ -61,6 +61,10 @@ export const ENDPOINTS = {
   WASTE_OWNERS: {
     ROOT: "/waste-owners",
     BY_ID: (id: string) => `/waste-owners/${id}`,
+    UPLOAD: "/waste-owners/upload", // Pre-creation upload
+    UPLOAD_TO_EXISTING: (id: string) => `/waste-owners/${id}/upload`, // Post-creation upload
+    REPLACE_FILE: (fileId: string) => `/waste-owners/file/${fileId}`, // ✅ Replace file by ID
+    FILES_WITH_PREVIEW: (id: string) => `/waste-owners/contract/${id}/files-with-preview`,
   },
   COLLECTION_RECORDS: {
     ROOT: "/collection-records",
@@ -75,9 +79,8 @@ export const ENDPOINTS = {
     ADMIN_UPDATE: (id: string) => `/${id}/admin-update`,
     FILES: (id: string) => `/${id}/files`,
     FILES_PREVIEW: (id: string) => `/${id}/files/preview`,
-    UPLOAD: (id: string) => `/${id}/upload`,
-    UPLOAD_MULTIPLE: (id: string) => `/${id}/upload-multiple`,
-    REPLACE_FILE: (id: string, position: number) => `/${id}/upload/${position}`,
+    UPLOAD: (id: string) => `/${id}/upload`, // Handles both single and multiple files
+    REPLACE_FILE: (id: string, fileId: string) => `/${id}/upload/${fileId}`,
   },
   LOCATIONS: {
     ROOT: "/location",
@@ -85,9 +88,11 @@ export const ENDPOINTS = {
     BY_REF_ID: (refId: string) => `/${refId}`,
   },
   FILES: {
-    ROOT: "/files",
+    ROOT: "/file",
     BY_ID: (id: string) => `/${id}`,
     DOWNLOAD: (id: string) => `/${id}/download`,
+    DELETE: (id: string) => `/${id}`,
+    REPLACE: (id: string) => `/${id}/replace`,
   },
   BATCHES: {
     ROOT: "/batches",

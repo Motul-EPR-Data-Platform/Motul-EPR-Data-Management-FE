@@ -72,6 +72,9 @@ export interface CreateWasteOwnerDTO {
   location?: {
     refId: string;
   };
+  files?: {
+    wasteOwnerContractIds: string[];
+  };
 }
 
 export interface UpdateWasteOwnerDTO {
@@ -84,6 +87,9 @@ export interface UpdateWasteOwnerDTO {
   wasteOwnerType?: WasteOwnerType;
   location?: {
     refId: string;
+  };
+  files?: {
+    wasteOwnerContractIds: string[];
   };
 }
 

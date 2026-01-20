@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { WasteOwnerFormFields } from "./WasteOwnerFormFields";
 import { WasteOwnerLocationFields } from "./WasteOwnerLocationFields";
+import { WasteOwnerFileUpload } from "./WasteOwnerFileUpload";
 import {
   CreateWasteOwnerDTO,
   UpdateWasteOwnerDTO,
@@ -19,6 +20,8 @@ import {
   type CreateWasteOwnerValidationData,
   type UpdateWasteOwnerValidationData,
 } from "@/lib/validations/waste-owner";
+import { ManagedFile } from "@/hooks/useFileManager";
+import { IFileWithSignedUrl } from "@/types/file-record";
 
 interface WasteOwnerFormProps {
   // Initial data (for edit/view mode)
@@ -32,8 +35,18 @@ interface WasteOwnerFormProps {
   errors?: Record<string, string>;
 
   // Handlers
-  onSubmit?: (data: CreateWasteOwnerDTO | UpdateWasteOwnerDTO) => Promise<void>;
+  onSubmit?: (
+    data: CreateWasteOwnerDTO | UpdateWasteOwnerDTO,
+    fileIds?: string[],
+  ) => Promise<void>;
   onCancel?: () => void;
+
+  // File management (for create/edit modes)
+  files?: ManagedFile[];
+  onAddFiles?: (files: File[]) => void;
+  onRemoveFile?: (fileId: string) => Promise<void>;
+  onReplaceFile?: (fileId: string, newFile: File) => void;
+  existingFiles?: IFileWithSignedUrl[]; // For edit mode
 
   // Submit button text
   submitButtonText?: string;
@@ -47,6 +60,11 @@ export function WasteOwnerForm({
   errors: externalErrors = {},
   onSubmit,
   onCancel,
+  files,
+  onAddFiles,
+  onRemoveFile,
+  onReplaceFile,
+  existingFiles,
   submitButtonText,
   showCancelButton = true,
 }: WasteOwnerFormProps) {
@@ -133,6 +151,11 @@ export function WasteOwnerForm({
   ) => {
     if (!onSubmit || isViewMode) return;
 
+    // Get uploaded file IDs
+    const uploadedFileIds = files
+      ?.filter((f) => f.status === "uploaded" && f.fileData?.id)
+      .map((f) => f.fileData!.id);
+
     if (isCreateMode && "name" in data && "businessCode" in data) {
       const createData = data as CreateWasteOwnerValidationData;
       const submitData: CreateWasteOwnerDTO = {
@@ -151,7 +174,7 @@ export function WasteOwnerForm({
             }
           : {}),
       };
-      await onSubmit(submitData);
+      await onSubmit(submitData, uploadedFileIds);
     } else if (isEditMode) {
       const updateData: UpdateWasteOwnerDTO = {
         ...(data.name !== undefined && { name: data.name }),
@@ -170,7 +193,7 @@ export function WasteOwnerForm({
           data.isActive !== undefined && { isActive: data.isActive }),
         ...(locationRefId && { location: { refId: locationRefId } }),
       };
-      await onSubmit(updateData);
+      await onSubmit(updateData, uploadedFileIds);
     }
   };
 
@@ -210,6 +233,64 @@ export function WasteOwnerForm({
             Địa chỉ
           </h3>
           <WasteOwnerLocationFields location={initialData.location} disabled />
+        </div>
+      )}
+
+      {/* File Upload Section (create/edit mode only) */}
+      {!isViewMode && onAddFiles && onRemoveFile && files && (
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase">
+            Hợp đồng / Giấy tờ
+          </h3>
+          <WasteOwnerFileUpload
+            files={files}
+            maxFiles={3}
+            onAddFiles={onAddFiles}
+            onRemoveFile={onRemoveFile}
+            onReplaceFile={onReplaceFile}
+            disabled={isLoading}
+          />
+        </div>
+      )}
+
+      {/* View existing files (view mode only) */}
+      {isViewMode && existingFiles && existingFiles.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase">
+            Hợp đồng / Giấy tờ
+          </h3>
+          <div className="space-y-2">
+            {existingFiles.map((file) => {
+              const isImage =
+                file.mimeType?.startsWith("image/") ||
+                /\.(jpg|jpeg|png|gif|webp)$/i.test(file.fileName);
+
+              return (
+                <a
+                  key={file.id}
+                  href={file.signedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  {/* Show thumbnail for images */}
+                  {isImage && (
+                    <img
+                      src={file.signedUrl}
+                      alt={file.fileName}
+                      className="h-12 w-12 object-cover rounded border shrink-0"
+                    />
+                  )}
+                  <span className="flex-1 text-sm font-medium truncate">
+                    {file.fileName}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {(file.fileSize / 1024).toFixed(1)} KB
+                  </span>
+                </a>
+              );
+            })}
+          </div>
         </div>
       )}
 
