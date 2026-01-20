@@ -11,6 +11,12 @@ import {
   fromBackendWasteOwnerType,
 } from "@/types/waste-owner";
 import { IPaginationParams } from "@/types/pagination";
+import {
+  IFile,
+  IMultipleFileUploadResponse,
+  IWasteOwnerFilesWithPreview,
+  FileType,
+} from "@/types/file-record";
 
 export const WasteOwnerService = {
   /**
@@ -158,7 +164,7 @@ export const WasteOwnerService = {
     if (dto.email !== undefined) {
       backendDto.email = dto.email || null;
     }
-    const { data } = await api.patch(
+    const { data } = await api.put(
       path.wasteOwners(ENDPOINTS.WASTE_OWNERS.BY_ID(id)),
       backendDto,
     );
@@ -176,5 +182,93 @@ export const WasteOwnerService = {
    */
   async deleteWasteOwner(id: string): Promise<void> {
     await api.delete(path.wasteOwners(ENDPOINTS.WASTE_OWNERS.BY_ID(id)));
+  },
+
+  /**
+   * Upload files before waste owner creation (pre-creation upload)
+   * POST /api/waste-owners/upload
+   * Returns file IDs to be used when creating waste owner
+   */
+  async uploadFiles(files: File[]): Promise<IMultipleFileUploadResponse> {
+    if (!files || files.length === 0) {
+      throw new Error("No files provided for upload");
+    }
+
+    if (files.length > 3) {
+      throw new Error("Maximum 3 files allowed");
+    }
+
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+    formData.append("category", FileType.WASTE_OWNER_CONTRACT);
+
+    const { data } = await api.post(
+      path.wasteOwners(ENDPOINTS.WASTE_OWNERS.UPLOAD),
+      formData,
+    );
+
+    return data;
+  },
+
+  /**
+   * Upload files to existing waste owner (post-creation upload)
+   * POST /api/waste-owners/:wasteOwnerId/upload
+   */
+  async uploadFilesToExisting(
+    wasteOwnerId: string,
+    files: File[],
+  ): Promise<IMultipleFileUploadResponse> {
+    if (!files || files.length === 0) {
+      throw new Error("No files provided for upload");
+    }
+
+    if (files.length > 3) {
+      throw new Error("Maximum 3 files allowed");
+    }
+
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    const { data } = await api.post(
+      path.wasteOwners(ENDPOINTS.WASTE_OWNERS.UPLOAD_TO_EXISTING(wasteOwnerId)),
+      formData,
+    );
+
+    return data;
+  },
+
+  /**
+   * Get waste owner contract files with preview URLs
+   * GET /api/waste-owners/contract/:id/files-with-preview
+   */
+  async getFilesWithPreview(
+    wasteOwnerId: string,
+  ): Promise<IWasteOwnerFilesWithPreview> {
+    const { data } = await api.get(
+      path.wasteOwners(ENDPOINTS.WASTE_OWNERS.FILES_WITH_PREVIEW(wasteOwnerId)),
+    );
+
+    return data.data || data;
+  },
+
+  /**
+   * Replace a waste owner file
+   * PUT /api/waste-owners/file/:fileId
+   * Backend automatically preserves category and position
+   */
+  async replaceFile(fileId: string, newFile: File): Promise<IFile> {
+    const formData = new FormData();
+    formData.append("file", newFile);
+
+    const { data } = await api.put(
+      path.wasteOwners(ENDPOINTS.WASTE_OWNERS.REPLACE_FILE(fileId)),
+      formData,
+    );
+
+    return data.data || data;
   },
 };

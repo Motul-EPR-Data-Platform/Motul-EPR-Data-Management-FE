@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { WasteOwnerWithLocation } from "@/types/waste-owner";
 import { WasteOwnerForm } from "./WasteOwnerForm";
+import { WasteOwnerService } from "@/lib/services/waste-owner.service";
+import { IFileWithSignedUrl } from "@/types/file-record";
 
 interface WasteOwnerDetailDialogProps {
   open: boolean;
@@ -21,6 +24,37 @@ export function WasteOwnerDetailDialog({
   onOpenChange,
   wasteOwner,
 }: WasteOwnerDetailDialogProps) {
+  const [existingFiles, setExistingFiles] = useState<IFileWithSignedUrl[]>([]);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+
+  // Load files when dialog opens
+  useEffect(() => {
+    if (wasteOwner && open) {
+      const fetchFiles = async () => {
+        setIsLoadingFiles(true);
+        try {
+          const filesData = await WasteOwnerService.getFilesWithPreview(
+            wasteOwner.id,
+          );
+          setExistingFiles(filesData.wasteOwnerContract || []);
+        } catch (error) {
+          console.error("Error loading files:", error);
+          setExistingFiles([]);
+        } finally {
+          setIsLoadingFiles(false);
+        }
+      };
+      fetchFiles();
+    }
+  }, [wasteOwner, open]);
+
+  // Clear files when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setExistingFiles([]);
+    }
+  }, [open]);
+
   if (!wasteOwner) return null;
 
   return (
@@ -30,11 +64,13 @@ export function WasteOwnerDetailDialog({
           <DialogTitle>Chi tiết Chủ nguồn thải</DialogTitle>
           <DialogDescription>
             Thông tin chi tiết về chủ nguồn thải
+            {isLoadingFiles && " - Đang tải file..."}
           </DialogDescription>
         </DialogHeader>
         <WasteOwnerForm
           initialData={wasteOwner}
           mode="view"
+          existingFiles={existingFiles}
           showCancelButton={false}
         />
       </DialogContent>

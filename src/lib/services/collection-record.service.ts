@@ -320,6 +320,8 @@ export const CollectionRecordService = {
   /**
    * Delete a file from a collection record
    * DELETE /api/files/:fileId
+   *
+   *  Warning: This action is PERMANENT and cannot be undone!
    */
   async deleteFile(fileId: string): Promise<void> {
     return FileRecordService.deleteFile(fileId);

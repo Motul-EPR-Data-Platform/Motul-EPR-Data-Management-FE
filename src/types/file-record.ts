@@ -1,3 +1,16 @@
+// Entity types for file operations
+export enum EntityType {
+  COLLECTION_RECORD = "collection_record",
+  RECYCLER_PROFILE = "recycler_profile",
+  WASTE_TRANSFER_PROFILE = "waste_transfer_profile",
+}
+
+// Entity identifier for file operations
+export interface IEntityIdentifier {
+  type: EntityType;
+  id: string;
+}
+
 // File category enum - Combined for both records and profiles
 export enum FileType {
   // For collection records
@@ -14,6 +27,8 @@ export enum FileType {
   // For waste transfer point profile creation
   WTP_CONFIRMATION_LETTER = "wtp_confirmation_letter",
   RECYCLING_SERVICE_AGREEMENT = "recycling_service_agreement",
+  // For waste owner contracts
+  WASTE_OWNER_CONTRACT = "waste_owner_contract",
 }
 
 // File metadata interface
@@ -29,6 +44,9 @@ export interface IFile {
   category: FileType;
   position?: number; // For ordering multiple files
   recordId?: string | null; // Link to collection record
+  recyclerProfileId?: string | null; // Link to recycler profile
+  wtpProfileId?: string | null; // Link to WTP profile
+  wasteOwnerId?: string | null; // Link to waste owner
 }
 
 // File upload input
@@ -37,6 +55,7 @@ export interface IFileUploadInput {
   category: FileType;
   recordId?: string;
   position?: number;
+  subType?: string; // For categories that support sub-types
   metadata?: Record<string, any>;
 }
 
@@ -75,6 +94,27 @@ export interface ICollectionRecordFilesWithPreview {
 export interface IRecyclerProfileFilesWithPreview {
   businessRegFile: IFileWithSignedUrl | null;
   environmentalPermitFile: IFileWithSignedUrl | null;
+}
+
+// Waste owner contract files with signed URLs for preview
+export interface IWasteOwnerFilesWithPreview {
+  wasteOwnerContract: IFileWithSignedUrl[];
+}
+
+// File upload response with multiple files
+export interface IMultipleFileUploadResponse {
+  success: boolean;
+  message: string;
+  data: IFile[];
+  fileIds: string[];
+  count: number;
+}
+
+// Replace file input interface
+export interface IReplaceFileInput {
+  fileId: string;
+  newFile: File;
+  uploadedBy: string;
 }
 
 // File validation result

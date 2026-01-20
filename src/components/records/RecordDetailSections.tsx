@@ -4,8 +4,12 @@ import { CollectionRecordDetail } from "@/types/record";
 import { ICollectionRecordFilesWithPreview } from "@/types/file-record";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
-import { FileText, Download, Image as ImageIcon } from "lucide-react";
+import { FileText, Download, Image as ImageIcon, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { FileDeleteConfirmDialog } from "./FileDeleteConfirmDialog";
+import { CollectionRecordService } from "@/lib/services/collection-record.service";
+import { toast } from "sonner";
 
 interface RecordDetailSectionsProps {
   record: CollectionRecordDetail;
@@ -218,6 +222,10 @@ export function EvidenceSection({
   const outputQualityMetrics = filesWithPreview?.outputQualityMetrics;
   const qualityMetrics = filesWithPreview?.qualityMetrics;
 
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const isImageFile = (mimeType: string): boolean => {
     return mimeType.startsWith("image/");
   };
@@ -230,6 +238,28 @@ export function EvidenceSection({
 
   const handlePreview = (signedUrl: string, fileName: string) => {
     window.open(signedUrl, "_blank");
+  };
+
+  const handleDeleteClick = (fileId: string, fileName: string) => {
+    setFileToDelete({ id: fileId, name: fileName });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!fileToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await CollectionRecordService.deleteFile(fileToDelete.id);
+      toast.success("Xóa file thành công");
+      setDeleteDialogOpen(false);
+      // Reload the page to refresh file list
+      window.location.reload();
+    } catch (error: any) {
+      toast.error(error.message || "Không thể xóa file");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const hasAnyFiles =
@@ -265,7 +295,7 @@ export function EvidenceSection({
                       className="border rounded-md overflow-hidden hover:shadow-md transition-shadow"
                     >
                       {isImageFile(file.mimeType) ? (
-                        <div className="relative">
+                        <div className="relative group">
                           <img
                             src={file.signedUrl}
                             alt={file.fileName}
@@ -274,6 +304,16 @@ export function EvidenceSection({
                               handlePreview(file.signedUrl, file.fileName)
                             }
                           />
+                          {/* Delete button overlay */}
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleDeleteClick(file.id, file.fileName)}
+                            title="Xóa file"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                           <div className="p-2">
                             <p
                               className="text-xs font-medium truncate"
@@ -300,17 +340,28 @@ export function EvidenceSection({
                           <p className="text-xs text-muted-foreground mb-2">
                             {formatFileSize(file.fileSize)}
                           </p>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full"
-                            onClick={() =>
-                              handlePreview(file.signedUrl, file.fileName)
-                            }
-                          >
-                            <Download className="h-3 w-3 mr-1" />
-                            Xem
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() =>
+                                handlePreview(file.signedUrl, file.fileName)
+                              }
+                            >
+                              <Download className="h-3 w-3 mr-1" />
+                              Xem
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => handleDeleteClick(file.id, file.fileName)}
+                              title="Xóa file"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -554,6 +605,15 @@ export function EvidenceSection({
           </div>
         )}
       </CardContent>
+
+      {/* Delete Confirmation Dialog */}
+      <FileDeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        fileName={fileToDelete?.name}
+        isDeleting={isDeleting}
+      />
     </Card>
   );
 }
