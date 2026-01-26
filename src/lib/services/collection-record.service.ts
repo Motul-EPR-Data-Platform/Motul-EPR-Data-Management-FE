@@ -124,6 +124,12 @@ export const CollectionRecordService = {
     if (filters?.endDate) {
       queryParams.append("endDate", filters.endDate);
     }
+    if (filters?.sortBy) {
+      queryParams.append("sortBy", filters.sortBy);
+    }
+    if (filters?.sortOrder) {
+      queryParams.append("sortOrder", filters.sortOrder);
+    }
     if (paginationParams?.page) {
       queryParams.append("page", paginationParams.page.toString());
     }

@@ -75,6 +75,7 @@ export function RecordPageContent({
       batchId: { defaultValue: "all" },
       startDate: { defaultValue: "" },
       endDate: { defaultValue: "" },
+      sortOrder: { defaultValue: "" },
     }),
     []
   );
@@ -151,12 +152,19 @@ export function RecordPageContent({
     // Note: Backend doesn't support search by these fields directly, so we'll filter client-side
     // or we can add backend support later
 
+    // Sorting by deliveryDate
+    if (filterParams.sortOrder && (filterParams.sortOrder === "asc" || filterParams.sortOrder === "desc")) {
+      filterObj.sortBy = "deliveryDate";
+      filterObj.sortOrder = filterParams.sortOrder as "asc" | "desc";
+    }
+
     return filterObj;
   }, [
     filterParams.status,
     filterParams.startDate,
     filterParams.endDate,
     filterParams.batchId,
+    filterParams.sortOrder,
     batches,
   ]);
 
@@ -243,8 +251,8 @@ export function RecordPageContent({
       const err = error as { response?: { data?: { message?: string } }; message?: string };
       toast.error(
         err?.response?.data?.message ||
-          err?.message ||
-          "Không thể tải danh sách bản ghi"
+        err?.message ||
+        "Không thể tải danh sách bản ghi"
       );
     }
   }, [error]);
@@ -273,6 +281,14 @@ export function RecordPageContent({
 
   const handleEndDateChange = (value: string) => {
     updateFilterParams({ endDate: value });
+    if (pagination.page !== 1) {
+      resetToPageOne();
+    }
+  };
+
+  // Handle sorting change
+  const handleSortChange = (sortOrder: "asc" | "desc" | null) => {
+    updateFilterParams({ sortOrder: sortOrder || "" });
     if (pagination.page !== 1) {
       resetToPageOne();
     }
@@ -632,6 +648,8 @@ export function RecordPageContent({
         pagination={pagination}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
+        sortOrder={filterParams.sortOrder ? (filterParams.sortOrder as "asc" | "desc") : null}
+        onSortChange={handleSortChange}
       />
     </div>
   );

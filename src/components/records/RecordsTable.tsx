@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { IPaginationMeta } from "@/types/pagination";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -25,6 +25,9 @@ interface RecordsTableProps {
   pagination?: IPaginationMeta;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
+  // Sorting props
+  sortOrder?: "asc" | "desc" | null;
+  onSortChange?: (sortOrder: "asc" | "desc" | null) => void;
 }
 
 const getStatusBadgeVariant = (
@@ -118,7 +121,31 @@ export function RecordsTable({
   pagination,
   onPageChange,
   onPageSizeChange,
+  sortOrder,
+  onSortChange,
 }: RecordsTableProps) {
+  // Handle sort click - first click sets asc, then toggles between asc and desc
+  const handleSortClick = () => {
+    if (!onSortChange) return;
+    if (sortOrder === null || sortOrder === undefined) {
+      onSortChange("asc");
+    } else if (sortOrder === "asc") {
+      onSortChange("desc");
+    } else {
+      onSortChange("asc");
+    }
+  };
+
+  // Get the appropriate sort icon
+  const getSortIcon = () => {
+    if (sortOrder === "asc") {
+      return <ArrowUp className="h-3.5 w-3.5" />;
+    } else if (sortOrder === "desc") {
+      return <ArrowDown className="h-3.5 w-3.5" />;
+    }
+    return <ArrowUpDown className="h-3.5 w-3.5 opacity-50" />;
+  };
+
   if (isLoading) {
     return (
       <div className="rounded-lg border bg-white p-12 text-center">
@@ -141,101 +168,111 @@ export function RecordsTable({
     <div className="space-y-4">
       <div className="rounded-lg border bg-white overflow-x-auto">
         <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Mã hồ sơ</TableHead>
-            <TableHead>Ngày nộp</TableHead>
-            <TableHead>Ngày thu gom</TableHead>
-            <TableHead>Chủ nguồn thải</TableHead>
-            <TableHead>Số lượng</TableHead>
-            <TableHead>Trạng thái</TableHead>
-            <TableHead>Hành động</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {records.map((record) => (
-            <TableRow key={record.id}>
-              <TableCell className="font-mono text-sm">
-                {record.recordName || record.id.slice(0, 8) + "..."}
-              </TableCell>
-              <TableCell>
-                {formatDate(record.submittedAt || record.createdAt)}
-              </TableCell>
-              <TableCell>{formatDate(record.deliveryDate)}</TableCell>
-              <TableCell>
-                {record.wasteOwner?.name ||
-                 (record.wasteOwners && record.wasteOwners.length > 0
-                   ? record.wasteOwners[0]?.name
-                   : "-")}
-              </TableCell>
-              <TableCell>
-                {record.collectedVolumeKg
-                  ? `${record.collectedVolumeKg.toLocaleString("vi-VN")} kg`
-                  : "-"}
-              </TableCell>
-              <TableCell>
-                <Badge
-                  variant={getStatusBadgeVariant(record.status)}
-                  className="text-[10px] sm:text-xs px-1.5 sm:px-2.5 py-0.5"
+          <TableHeader>
+            <TableRow>
+              <TableHead>Mã hồ sơ</TableHead>
+              <TableHead>Ngày nộp</TableHead>
+              <TableHead className="text-center">
+                <Button
+                  variant="ghost"
+                  onClick={handleSortClick}
+                  className="flex items-center gap-0.5 hover:bg-transparent hover:text-inherit w-full justify-center"
+                  title="Sắp xếp theo ngày thu gom"
                 >
-                  <span className="hidden sm:inline">{getStatusLabel(record.status)}</span>
-                  <span className="sm:hidden">{getStatusLabelShort(record.status)}</span>
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  {onView ? (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onView(record)}
-                      className="h-8 w-8"
-                      title="Xem chi tiết"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        // Navigate using query params for static export compatibility
-                        window.location.href = `/recycler/records/view?id=${record.id}`;
-                      }}
-                      className="h-8 w-8"
-                      title="Xem chi tiết"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {(record.status === "draft" || record.status === "rejected") && onEdit && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onEdit(record)}
-                      className="h-8 w-8"
-                      title="Chỉnh sửa"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {record.status === "draft" && onDelete && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onDelete(record)}
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      title="Xóa bản nháp"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </TableCell>
+                  Ngày thu gom
+                  {getSortIcon()}
+                </Button>
+              </TableHead>
+              <TableHead>Chủ nguồn thải</TableHead>
+              <TableHead>Số lượng</TableHead>
+              <TableHead>Trạng thái</TableHead>
+              <TableHead>Hành động</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {records.map((record) => (
+              <TableRow key={record.id}>
+                <TableCell className="font-mono text-sm">
+                  {record.recordName || record.id.slice(0, 8) + "..."}
+                </TableCell>
+                <TableCell>
+                  {formatDate(record.submittedAt || record.createdAt)}
+                </TableCell>
+                <TableCell className="text-center">{formatDate(record.deliveryDate)}</TableCell>
+                <TableCell>
+                  {record.wasteOwner?.name ||
+                    (record.wasteOwners && record.wasteOwners.length > 0
+                      ? record.wasteOwners[0]?.name
+                      : "-")}
+                </TableCell>
+                <TableCell>
+                  {record.collectedVolumeKg
+                    ? `${record.collectedVolumeKg.toLocaleString("vi-VN")} kg`
+                    : "-"}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={getStatusBadgeVariant(record.status)}
+                    className="text-[10px] sm:text-xs px-1.5 sm:px-2.5 py-0.5"
+                  >
+                    <span className="hidden sm:inline">{getStatusLabel(record.status)}</span>
+                    <span className="sm:hidden">{getStatusLabelShort(record.status)}</span>
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    {onView ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onView(record)}
+                        className="h-8 w-8"
+                        title="Xem chi tiết"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          // Navigate using query params for static export compatibility
+                          window.location.href = `/recycler/records/view?id=${record.id}`;
+                        }}
+                        className="h-8 w-8"
+                        title="Xem chi tiết"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {(record.status === "draft" || record.status === "rejected") && onEdit && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onEdit(record)}
+                        className="h-8 w-8"
+                        title="Chỉnh sửa"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {record.status === "draft" && onDelete && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onDelete(record)}
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        title="Xóa bản nháp"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
       {pagination && onPageChange && (
         <Pagination

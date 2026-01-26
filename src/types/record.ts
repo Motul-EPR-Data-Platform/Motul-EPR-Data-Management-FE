@@ -198,6 +198,8 @@ export interface GetRecordsFilters {
   batchId?: string;
   startDate?: string; // ISO date string (YYYY-MM-DD)
   endDate?: string; // ISO date string (YYYY-MM-DD)
+  sortBy?: "deliveryDate"; // Sorting field
+  sortOrder?: "asc" | "desc"; // Sorting order
   page?: number;
   limit?: number;
 }
