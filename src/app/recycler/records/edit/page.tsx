@@ -63,6 +63,8 @@ export default function EditCollectionRecordPage() {
     setEvidenceFiles,
     qualityDocuments,
     setQualityDocuments,
+    hazWasteCertificates,
+    setHazWasteCertificates,
     recycledPhoto,
     setRecycledPhoto,
     stockpilePhoto,
@@ -204,6 +206,7 @@ export default function EditCollectionRecordPage() {
             evidencePhotos: new Set(),
             qualityMetrics: new Set(),
             outputQualityMetrics: new Set(),
+            hazWasteCertificates: new Set(),
             recycledPhoto: null,
             stockpilePhoto: null,
           };
@@ -278,6 +281,26 @@ export default function EditCollectionRecordPage() {
                 setQualityDocuments(qualityDocs);
               }
 
+              // Convert haz waste certificates
+              if (filesWithPreview.hazWasteCertificates?.length > 0) {
+                const certDocs: DocumentFile[] = await Promise.all(
+                  filesWithPreview.hazWasteCertificates.map(async (file) => {
+                    const fileObj = await urlToFile(
+                      file.signedUrl,
+                      file.fileName,
+                      file.mimeType,
+                    );
+                    originalFileIdsRef.current.hazWasteCertificates.add(file.id);
+                    return {
+                      id: file.id,
+                      file: fileObj,
+                      type: "haz_waste_certificate",
+                    };
+                  }),
+                );
+                setHazWasteCertificates(certDocs);
+              }
+
               // Convert recycled photo
               if (filesWithPreview.recycledPhoto) {
                 const fileObj = await urlToFile(
@@ -334,6 +357,7 @@ export default function EditCollectionRecordPage() {
     setLocationRefId,
     setEvidenceFiles,
     setQualityDocuments,
+    setHazWasteCertificates,
     setRecycledPhoto,
     setStockpilePhoto,
     originalFileIdsRef,
@@ -440,6 +464,8 @@ export default function EditCollectionRecordPage() {
               onRecycledDateChange={setRecycledDate}
               qualityDocuments={qualityDocuments}
               onQualityDocumentsChange={setQualityDocuments}
+              hazWasteCertificates={hazWasteCertificates}
+              onHazWasteCertificatesChange={setHazWasteCertificates}
               recycledPhoto={recycledPhoto}
               onRecycledPhotoChange={setRecycledPhoto}
               stockpilePhoto={stockpilePhoto}

@@ -13,6 +13,17 @@ const imageFileValidation = z
     return imageTypes.includes(file.type);
   }, "Chỉ chấp nhận file ảnh: JPEG, PNG, WebP");
 
+const hazWasteCertificateValidation = z
+  .instanceof(File)
+  .refine(
+    (file) => file.size <= 10 * 1024 * 1024,
+    "Kích thước file tối đa 10MB",
+  )
+  .refine((file) => {
+    const allowedTypes = ["application/pdf", "image/png"];
+    return allowedTypes.includes(file.type);
+  }, "Chỉ chấp nhận file PDF hoặc PNG");
+
 // Step 3 validation schema
 export const step3ValidationSchema = z
   .object({
@@ -151,6 +162,15 @@ export const recordSubmissionSchema = z
         (files) => files.every((doc) => doc.file.size <= 10 * 1024 * 1024),
         "Kích thước file tối đa 10MB",
       ),
+    hazWasteCertificates: z
+      .array(
+        z.object({
+          id: z.string(),
+          file: hazWasteCertificateValidation,
+          type: z.string(),
+        }),
+      )
+      .min(1, "Cần ít nhất 1 chứng nhận CTNH"),
   });
 
 export type RecordSubmissionValidationData = z.infer<typeof recordSubmissionSchema>;
@@ -169,11 +189,21 @@ export function validateRecordSubmission(data: {
   recycledPhoto: File | null;
   evidenceFiles: Array<{ id: string; file: File; type: string }>;
   qualityDocuments?: Array<{ id: string; file: File; type: string }>;
+  hazWasteCertificates?: Array<{ id: string; file: File; type: string }>;
 }): {
   success: boolean;
   errors: Record<string, string>;
 } {
-  const { formData, locationRefId, collectionDate, recycledDate, recycledPhoto, evidenceFiles, qualityDocuments } = data;
+  const {
+    formData,
+    locationRefId,
+    collectionDate,
+    recycledDate,
+    recycledPhoto,
+    evidenceFiles,
+    qualityDocuments,
+    hazWasteCertificates,
+  } = data;
 
   // Check collectionDate first
   if (!collectionDate || !(collectionDate instanceof Date) || isNaN(collectionDate.getTime())) {
@@ -207,6 +237,13 @@ export function validateRecordSubmission(data: {
     };
   }
 
+  if (!hazWasteCertificates || hazWasteCertificates.length === 0) {
+    return {
+      success: false,
+      errors: { hazWasteCertificates: "Cần ít nhất 1 chứng nhận CTNH" },
+    };
+  }
+
   const validationData = {
     wasteOwnerId: formData.wasteOwnerId || "",
     contractTypeId: formData.contractTypeId || "",
@@ -223,6 +260,7 @@ export function validateRecordSubmission(data: {
     recycledPhoto,
     evidenceFiles: evidenceFiles || [],
     qualityDocuments: qualityDocuments || [],
+    hazWasteCertificates: hazWasteCertificates || [],
   };
 
   const result = recordSubmissionSchema.safeParse(validationData);

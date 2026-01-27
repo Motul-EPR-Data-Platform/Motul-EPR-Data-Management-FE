@@ -81,6 +81,8 @@ export interface UseCollectionRecordFormReturn {
   setEvidenceFiles: (files: DocumentFile[]) => void;
   qualityDocuments: DocumentFile[];
   setQualityDocuments: (docs: DocumentFile[]) => void;
+  hazWasteCertificates: DocumentFile[];
+  setHazWasteCertificates: (docs: DocumentFile[]) => void;
   recycledPhoto: File | null;
   setRecycledPhoto: (photo: File | null) => void;
   stockpilePhoto: File | null;
@@ -155,6 +157,7 @@ export function useCollectionRecordForm(
   // File state
   const [evidenceFiles, setEvidenceFiles] = useState<DocumentFile[]>([]);
   const [qualityDocuments, setQualityDocuments] = useState<DocumentFile[]>([]);
+  const [hazWasteCertificates, setHazWasteCertificates] = useState<DocumentFile[]>([]);
   const [recycledPhoto, setRecycledPhoto] = useState<File | null>(null);
   const [stockpilePhoto, setStockpilePhoto] = useState<File | null>(null);
 
@@ -174,6 +177,7 @@ export function useCollectionRecordForm(
     evidenceFiles: new Set(),
     qualityMetricsFiles: new Set(),
     outputQualityMetricsFiles: new Set(),
+    hazWasteCertificates: new Set(),
     recycledPhoto: null,
     stockpilePhoto: null,
   });
@@ -183,6 +187,7 @@ export function useCollectionRecordForm(
     evidencePhotos: new Set(),
     qualityMetrics: new Set(),
     outputQualityMetrics: new Set(),
+    hazWasteCertificates: new Set(),
     recycledPhoto: null,
     stockpilePhoto: null,
   });
@@ -276,6 +281,7 @@ export function useCollectionRecordForm(
       collectionDate,
       recycledPhoto,
       stockpilePhoto,
+      hazWasteCertificates,
     };
 
     const result = validateStep(currentStep, context);
@@ -313,6 +319,7 @@ export function useCollectionRecordForm(
         setAddress({});
         setEvidenceFiles([]);
         setQualityDocuments([]);
+        setHazWasteCertificates([]);
         setRecycledPhoto(null);
         setStockpilePhoto(null);
         setDraftId(null);
@@ -342,6 +349,7 @@ export function useCollectionRecordForm(
         locationRefId,
         evidenceFiles,
         qualityDocuments,
+        hazWasteCertificates,
         recycledPhoto,
         stockpilePhoto,
         originalFormData: originalFormDataRef.current,
@@ -369,6 +377,7 @@ export function useCollectionRecordForm(
     locationRefId,
     evidenceFiles,
     qualityDocuments,
+    hazWasteCertificates,
     recycledPhoto,
     stockpilePhoto,
     uploadedFilesRef,
@@ -389,6 +398,7 @@ export function useCollectionRecordForm(
       recycledPhoto,
       evidenceFiles,
       qualityDocuments,
+      hazWasteCertificates,
     });
 
     if (!validationResult.success) {
@@ -400,7 +410,14 @@ export function useCollectionRecordForm(
         setCurrentStep(1);
       } else if (validationResult.errors.collectedVolumeKg || validationResult.errors.vehiclePlate || validationResult.errors.locationRefId || validationResult.errors.collectionDate || validationResult.errors.collectedPricePerKg) {
         setCurrentStep(2);
-      } else if (validationResult.errors.recycledVolumeKg || validationResult.errors.recycledPhoto || validationResult.errors.evidenceFiles || validationResult.errors.recycledDate || validationResult.errors.qualityDocuments) {
+      } else if (
+        validationResult.errors.recycledVolumeKg ||
+        validationResult.errors.recycledPhoto ||
+        validationResult.errors.evidenceFiles ||
+        validationResult.errors.recycledDate ||
+        validationResult.errors.qualityDocuments ||
+        validationResult.errors.hazWasteCertificates
+      ) {
         setCurrentStep(3);
       } else {
         setCurrentStep(1);
@@ -427,6 +444,7 @@ export function useCollectionRecordForm(
         locationRefId,
         evidenceFiles,
         qualityDocuments,
+        hazWasteCertificates,
         recycledPhoto,
         stockpilePhoto,
         originalFormData: originalFormDataRef.current,
@@ -462,6 +480,7 @@ export function useCollectionRecordForm(
     locationRefId,
     evidenceFiles,
     qualityDocuments,
+    hazWasteCertificates,
     recycledPhoto,
     stockpilePhoto,
     uploadedFilesRef,
@@ -539,6 +558,8 @@ export function useCollectionRecordForm(
     setEvidenceFiles,
     qualityDocuments,
     setQualityDocuments,
+    hazWasteCertificates,
+    setHazWasteCertificates,
     recycledPhoto,
     setRecycledPhoto,
     stockpilePhoto,

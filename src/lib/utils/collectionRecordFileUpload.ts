@@ -8,6 +8,7 @@ export interface FileUploadTracking {
   evidenceFiles: Set<string>;
   qualityMetricsFiles: Set<string>;
   outputQualityMetricsFiles: Set<string>;
+  hazWasteCertificates: Set<string>;
   recycledPhoto: string | null;
   stockpilePhoto: string | null;
 }
@@ -21,6 +22,7 @@ export interface OriginalFileIds {
   evidencePhotos: Set<string>;
   qualityMetrics: Set<string>;
   outputQualityMetrics: Set<string>;
+  hazWasteCertificates: Set<string>;
   recycledPhoto: string | null;
   stockpilePhoto: string | null;
 }
@@ -36,6 +38,7 @@ export const isNewFileId = (
     !originalFileIds.evidencePhotos.has(fileId) &&
     !originalFileIds.qualityMetrics.has(fileId) &&
     !originalFileIds.outputQualityMetrics.has(fileId) &&
+    !originalFileIds.hazWasteCertificates.has(fileId) &&
     originalFileIds.recycledPhoto !== fileId &&
     originalFileIds.stockpilePhoto !== fileId
   );
@@ -65,6 +68,7 @@ export const uploadFilesForRecordCreate = async (
   recordId: string,
   evidenceFiles: DocumentFile[],
   qualityDocuments: DocumentFile[],
+  hazWasteCertificates: DocumentFile[],
   recycledPhoto: File | null,
   stockpilePhoto: File | null,
   uploadedFilesRef: MutableRefObject<FileUploadTracking>,
@@ -200,6 +204,33 @@ export const uploadFilesForRecordCreate = async (
     }
   }
 
+  // Upload haz waste certificates (from Step 3) - only new/changed files
+  if (hazWasteCertificates && hazWasteCertificates.length > 0) {
+    const certFiles = hazWasteCertificates
+      .filter((doc) => doc && doc.file && doc.type === "haz_waste_certificate")
+      .map((doc) => doc.file)
+      .filter((file): file is File => file instanceof File);
+
+    const newCertFiles = certFiles.filter((file) => {
+      const fileId = getFileId(file);
+      return !uploadedFilesRef.current.hazWasteCertificates.has(fileId);
+    });
+
+    if (newCertFiles.length > 0) {
+      uploadPromises.push(
+        CollectionRecordService.uploadMultipleFiles(
+          recordId,
+          newCertFiles,
+          FileType.HAZ_WASTE_CERTIFICATE,
+        ).then(() => {
+          newCertFiles.forEach((file) => {
+            uploadedFilesRef.current.hazWasteCertificates.add(getFileId(file));
+          });
+        }),
+      );
+    }
+  }
+
   // Execute all uploads in parallel
   if (uploadPromises.length > 0) {
     await Promise.all(uploadPromises);
@@ -213,6 +244,7 @@ export const uploadFilesForRecordEdit = async (
   recordId: string,
   evidenceFiles: DocumentFile[],
   qualityDocuments: DocumentFile[],
+  hazWasteCertificates: DocumentFile[],
   recycledPhoto: File | null,
   stockpilePhoto: File | null,
   originalFileIds: OriginalFileIds,
@@ -252,6 +284,26 @@ export const uploadFilesForRecordEdit = async (
           }),
         );
       }
+    }
+  }
+
+  // Only upload haz waste certificates that are new
+  if (hazWasteCertificates && hazWasteCertificates.length > 0) {
+    const newCerts = hazWasteCertificates.filter((doc) =>
+      isNewFileId(doc.id, originalFileIds),
+    );
+    const filesToUpload = newCerts
+      .map((doc) => doc.file)
+      .filter((file): file is File => file instanceof File);
+
+    if (filesToUpload.length > 0) {
+      uploadPromises.push(
+        CollectionRecordService.uploadMultipleFiles(
+          recordId,
+          filesToUpload,
+          FileType.HAZ_WASTE_CERTIFICATE,
+        ),
+      );
     }
   }
 

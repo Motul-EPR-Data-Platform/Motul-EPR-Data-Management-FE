@@ -221,6 +221,7 @@ export function EvidenceSection({
   const acceptanceDoc = filesWithPreview?.acceptanceDoc;
   const outputQualityMetrics = filesWithPreview?.outputQualityMetrics;
   const qualityMetrics = filesWithPreview?.qualityMetrics;
+  const hazWasteCertificates = filesWithPreview?.hazWasteCertificates || [];
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<{ id: string; name: string } | null>(null);
@@ -268,7 +269,8 @@ export function EvidenceSection({
     recycledPhoto ||
     acceptanceDoc ||
     outputQualityMetrics ||
-    qualityMetrics;
+    qualityMetrics ||
+    hazWasteCertificates.length > 0;
 
   return (
     <Card>
@@ -599,6 +601,47 @@ export function EvidenceSection({
                     <Download className="h-4 w-4 mr-2" />
                     Xem
                   </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Haz Waste Certificates */}
+            {hazWasteCertificates.length > 0 && (
+              <div>
+                <p className="text-sm font-medium mb-2">
+                  Chứng nhận CTNH ({hazWasteCertificates.length})
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {hazWasteCertificates.map((file) => (
+                    <div
+                      key={file.id}
+                      className="flex items-center justify-between p-3 border rounded-md"
+                    >
+                      <div className="flex items-center gap-3">
+                        {isImageFile(file.mimeType) ? (
+                          <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                        ) : (
+                          <FileText className="h-5 w-5 text-muted-foreground" />
+                        )}
+                        <div>
+                          <p className="font-medium text-sm">{file.fileName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatFileSize(file.fileSize)}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          handlePreview(file.signedUrl, file.fileName)
+                        }
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Xem
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
