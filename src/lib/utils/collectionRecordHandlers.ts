@@ -107,6 +107,7 @@ interface SaveDraftParams {
   locationRefId: string;
   evidenceFiles: DocumentFile[];
   qualityDocuments: DocumentFile[];
+  hazWasteCertificates: DocumentFile[];
   recycledPhoto: File | null;
   stockpilePhoto: File | null;
   originalFormData: OriginalFormData | null;
@@ -127,6 +128,7 @@ export const handleSaveDraft = async (params: SaveDraftParams): Promise<string |
     locationRefId,
     evidenceFiles,
     qualityDocuments,
+    hazWasteCertificates,
     recycledPhoto,
     stockpilePhoto,
     originalFormData,
@@ -157,6 +159,7 @@ export const handleSaveDraft = async (params: SaveDraftParams): Promise<string |
     currentDraftId &&
     (evidenceFiles.length > 0 ||
       qualityDocuments.length > 0 ||
+      hazWasteCertificates.length > 0 ||
       recycledPhoto ||
       stockpilePhoto)
   ) {
@@ -166,6 +169,7 @@ export const handleSaveDraft = async (params: SaveDraftParams): Promise<string |
           currentDraftId,
           evidenceFiles,
           qualityDocuments,
+          hazWasteCertificates,
           recycledPhoto,
           stockpilePhoto,
           uploadedFilesRef,
@@ -175,6 +179,7 @@ export const handleSaveDraft = async (params: SaveDraftParams): Promise<string |
           currentDraftId,
           evidenceFiles,
           qualityDocuments,
+          hazWasteCertificates,
           recycledPhoto,
           stockpilePhoto,
           originalFileIdsRef.current,
@@ -207,6 +212,7 @@ interface SubmitRecordParams {
   locationRefId: string;
   evidenceFiles: DocumentFile[];
   qualityDocuments: DocumentFile[];
+  hazWasteCertificates: DocumentFile[];
   recycledPhoto: File | null;
   stockpilePhoto: File | null;
   originalFormData: OriginalFormData | null;
@@ -226,6 +232,7 @@ export const handleSubmitRecord = async (params: SubmitRecordParams): Promise<vo
     locationRefId,
     evidenceFiles,
     qualityDocuments,
+    hazWasteCertificates,
     recycledPhoto,
     stockpilePhoto,
     originalFormData,
@@ -275,6 +282,7 @@ export const handleSubmitRecord = async (params: SubmitRecordParams): Promise<vo
     currentDraftId &&
     (evidenceFiles.length > 0 ||
       qualityDocuments.length > 0 ||
+      hazWasteCertificates.length > 0 ||
       recycledPhoto ||
       stockpilePhoto)
   ) {
@@ -284,6 +292,7 @@ export const handleSubmitRecord = async (params: SubmitRecordParams): Promise<vo
           currentDraftId,
           evidenceFiles,
           qualityDocuments,
+          hazWasteCertificates,
           recycledPhoto,
           stockpilePhoto,
           uploadedFilesRef,
@@ -293,6 +302,7 @@ export const handleSubmitRecord = async (params: SubmitRecordParams): Promise<vo
           currentDraftId,
           evidenceFiles,
           qualityDocuments,
+          hazWasteCertificates,
           recycledPhoto,
           stockpilePhoto,
           originalFileIdsRef.current,

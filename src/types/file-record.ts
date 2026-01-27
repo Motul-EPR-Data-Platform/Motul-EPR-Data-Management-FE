@@ -21,6 +21,7 @@ export enum FileType {
   OUTPUT_QUALITY_METRICS = "output_quality_metrics",
   QUALITY_METRICS = "quality_metrics",
   APPROVAL_DOC = "approval_doc", // Approval certificate/document
+  HAZ_WASTE_CERTIFICATE = "haz_waste_certificate",
   // For recycler profile creation
   ENVIRONMENTAL_PERMIT_FILE = "environmental_permit_file",
   BUSINESS_REG_FILE = "business_reg_file",
@@ -73,6 +74,7 @@ export interface ICollectionRecordFiles {
   approvalDoc: IFile | null; // Approval certificate/document
   outputQualityMetrics: IFile | null;
   qualityMetrics: IFile | null;
+  hazWasteCertificates: IFile[];
 }
 
 // File with signed URL for preview
@@ -88,6 +90,7 @@ export interface ICollectionRecordFilesWithPreview {
   acceptanceDoc: IFileWithSignedUrl | null;
   outputQualityMetrics: IFileWithSignedUrl | null;
   qualityMetrics: IFileWithSignedUrl | null;
+  hazWasteCertificates: IFileWithSignedUrl[];
 }
 
 // Recycler profile files with signed URLs for preview
@@ -128,6 +131,7 @@ export const validateRequiredFiles = (params: {
   evidencePhotos: IFile[];
   recycledPhoto: IFile | null;
   stockpilePhoto: IFile | null;
+  hazWasteCertificates: IFile[];
   stockpiledFlag: boolean;
 }): IFileValidationResult => {
   const missing: string[] = [];
@@ -145,6 +149,10 @@ export const validateRequiredFiles = (params: {
   // Stockpile photo is required only if stockpiled flag is true
   if (params.stockpiledFlag && !params.stockpilePhoto) {
     missing.push("stockpile_photo");
+  }
+
+  if (!params.hazWasteCertificates || params.hazWasteCertificates.length === 0) {
+    missing.push("haz_waste_certificate");
   }
 
   return {

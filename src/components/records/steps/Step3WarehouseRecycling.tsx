@@ -29,6 +29,8 @@ interface Step3WarehouseRecyclingProps {
   onRecycledDateChange?: (date: Date) => void;
   qualityDocuments?: DocumentFile[];
   onQualityDocumentsChange?: (files: DocumentFile[]) => void;
+  hazWasteCertificates?: DocumentFile[];
+  onHazWasteCertificatesChange?: (files: DocumentFile[]) => void;
   recycledPhoto?: File | null;
   onRecycledPhotoChange?: (file: File | null) => void;
   stockpilePhoto?: File | null;
@@ -44,11 +46,21 @@ export function Step3WarehouseRecycling({
   onRecycledDateChange,
   qualityDocuments = [],
   onQualityDocumentsChange,
+  hazWasteCertificates = [],
+  onHazWasteCertificatesChange,
   recycledPhoto,
   onRecycledPhotoChange,
   stockpilePhoto,
   onStockpilePhotoChange,
 }: Step3WarehouseRecyclingProps) {
+  const handleHazCertChange = (files: DocumentFile[]) => {
+    if (files.length > 3) {
+      alert("Chỉ được tải tối đa 3 chứng nhận CTNH");
+      return;
+    }
+    onHazWasteCertificatesChange?.(files);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -261,6 +273,31 @@ export function Step3WarehouseRecycling({
               return FileType.QUALITY_METRICS;
             }}
           />
+        </div>
+
+        {/* Haz Waste Certificates Upload */}
+        <div className="space-y-2">
+          <Label>
+            Chứng nhận CTNH <span className="text-red-500">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground mb-2">
+            Tải lên chứng nhận CTNH (PDF hoặc PNG, tối đa 3 file)
+          </p>
+          <DocumentUpload
+            documents={hazWasteCertificates}
+            onDocumentsChange={handleHazCertChange}
+            documentTypes={[
+              { value: "haz_waste_certificate", label: "Chứng nhận CTNH" },
+            ]}
+            disabled={disabled}
+            maxSizeMB={10}
+            category={FileType.HAZ_WASTE_CERTIFICATE}
+          />
+          {errors.hazWasteCertificates && (
+            <p className="text-sm text-red-500">
+              {errors.hazWasteCertificates}
+            </p>
+          )}
         </div>
       </div>
     </div>

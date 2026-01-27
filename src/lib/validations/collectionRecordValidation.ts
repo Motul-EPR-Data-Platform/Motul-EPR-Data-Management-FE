@@ -8,6 +8,7 @@ export interface ValidationContext {
   collectionDate: Date;
   recycledPhoto: globalThis.File | null;
   stockpilePhoto: globalThis.File | null;
+  hazWasteCertificates?: Array<{ id: string; file: File; type: string }>;
 }
 
 /**
@@ -20,7 +21,14 @@ export const validateStep = (
   step: number,
   context: ValidationContext,
 ): { isValid: boolean; errors: Record<string, string> } => {
-  const { formData, locationRefId, collectionDate, recycledPhoto, stockpilePhoto } = context;
+  const {
+    formData,
+    locationRefId,
+    collectionDate,
+    recycledPhoto,
+    stockpilePhoto,
+    hazWasteCertificates,
+  } = context;
   const newErrors: Record<string, string> = {};
 
   if (step === 1) {
@@ -102,6 +110,11 @@ export const validateStep = (
           }
         }
       }
+    }
+
+    if (!hazWasteCertificates || hazWasteCertificates.length === 0) {
+      newErrors.hazWasteCertificates =
+        "Cần ít nhất 1 chứng nhận CTNH (PDF hoặc PNG)";
     }
   }
 

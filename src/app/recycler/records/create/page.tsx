@@ -49,6 +49,8 @@ export default function CreateCollectionRecordPage() {
     setEvidenceFiles,
     qualityDocuments,
     setQualityDocuments,
+    hazWasteCertificates,
+    setHazWasteCertificates,
     recycledPhoto,
     setRecycledPhoto,
     stockpilePhoto,
@@ -175,6 +177,8 @@ export default function CreateCollectionRecordPage() {
               onRecycledDateChange={setRecycledDate}
               qualityDocuments={qualityDocuments}
               onQualityDocumentsChange={setQualityDocuments}
+              hazWasteCertificates={hazWasteCertificates}
+              onHazWasteCertificatesChange={setHazWasteCertificates}
               recycledPhoto={recycledPhoto}
               onRecycledPhotoChange={setRecycledPhoto}
               stockpilePhoto={stockpilePhoto}
