@@ -121,7 +121,7 @@ export function CollectionDetailsSection({
             <p className="font-medium">
               {record.collectedPricePerKg
                 ? `${record.collectedPricePerKg.toLocaleString("vi-VN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} VNĐ/kg`
-                : "-"}
+                : "0"}
             </p>
           </div>
           <div className="md:col-span-2">

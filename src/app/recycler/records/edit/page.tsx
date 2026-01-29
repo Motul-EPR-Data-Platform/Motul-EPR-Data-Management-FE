@@ -153,13 +153,13 @@ export default function EditCollectionRecordPage() {
             contractTypeId: record.contractTypeId || null,
             wasteSourceId: record.wasteSourceId || null,
             hazWasteId,
-            collectedVolumeKg: record.collectedVolumeKg || null,
+            collectedVolumeKg: record.collectedVolumeKg ?? null,
             vehiclePlate: record.vehiclePlate || null,
             stockpiled: record.stockpiled || null,
-            stockpileVolumeKg: record.stockpileVolumeKg || null,
+            stockpileVolumeKg: record.stockpileVolumeKg ?? null,
             stockInDate: (record as any).stockInDate || null,
-            recycledVolumeKg: record.recycledVolumeKg || null,
-            collectedPricePerKg: record.collectedPricePerKg || null,
+            recycledVolumeKg: record.recycledVolumeKg ?? null,
+            collectedPricePerKg: record.collectedPricePerKg ?? null,
           };
           setFormData(prefillData);
 

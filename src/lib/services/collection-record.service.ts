@@ -299,8 +299,9 @@ export const CollectionRecordService = {
     recordId: string,
     files: File[],
     category: FileType,
+    subType?: string,
   ): Promise<IFileUploadResponse[]> {
-    return FileRecordService.uploadMultipleFiles(recordId, files, category);
+    return FileRecordService.uploadMultipleFiles(recordId, files, category, subType);
   },
 
   /**

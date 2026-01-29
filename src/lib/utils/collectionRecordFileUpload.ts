@@ -75,93 +75,147 @@ export const uploadFilesForRecordCreate = async (
 ): Promise<void> => {
   const uploadPromises: Promise<any>[] = [];
 
-  // Upload evidence photos (from Step 2) - only new/changed files
+  // Upload evidence photos (from Step 2) - group by subType and upload
   if (evidenceFiles && evidenceFiles.length > 0) {
-    const evidencePhotos = evidenceFiles
-      .filter(
-        (doc) =>
-          doc &&
-          doc.file &&
-          ["phieu-can", "bien-ban-giao-nhan", "bien-so-xe", "khac"].includes(
-            doc.type,
-          ),
-      )
-      .map((doc) => doc.file)
-      .filter((file): file is File => file instanceof File);
+    // Filter valid evidence files
+    const validEvidenceFiles = evidenceFiles.filter(
+      (doc) =>
+        doc &&
+        doc.file instanceof File &&
+        ["phieu-can", "bien-ban-giao-nhan", "bien-so-xe", "khac"].includes(
+          doc.type,
+        ),
+    );
 
-    // Filter out already uploaded files
-    const newEvidencePhotos = evidencePhotos.filter((file) => {
-      const fileId = getFileId(file);
-      return !uploadedFilesRef.current.evidenceFiles.has(fileId);
-    });
+    // Group files by subType
+    const filesBySubType = validEvidenceFiles.reduce(
+      (acc, doc) => {
+        // Map frontend types to backend subTypes
+        const subTypeMap: Record<string, string> = {
+          "phieu-can": "weighing_slip",
+          "bien-ban-giao-nhan": "delivery_receipt",
+          "bien-so-xe": "vehicle_license_plate",
+          "khac": "other",
+        };
+        const subType = subTypeMap[doc.type] || doc.type;
 
-    if (newEvidencePhotos.length > 0) {
-      uploadPromises.push(
-        CollectionRecordService.uploadMultipleFiles(
-          recordId,
-          newEvidencePhotos,
-          FileType.EVIDENCE_PHOTO,
-        ).then(() => {
-          // Mark as uploaded
-          newEvidencePhotos.forEach((file) => {
-            uploadedFilesRef.current.evidenceFiles.add(getFileId(file));
-          });
-        }),
+        if (!acc[subType]) {
+          acc[subType] = [];
+        }
+        acc[subType].push({ file: doc.file, id: getFileId(doc.file) });
+        return acc;
+      },
+      {} as Record<string, Array<{ file: File; id: string }>>,
+    );
+
+    // Upload each subType group separately
+    for (const [subType, files] of Object.entries(filesBySubType)) {
+      // Filter out already uploaded files
+      const newFiles = files.filter(
+        ({ id }) => !uploadedFilesRef.current.evidenceFiles.has(id),
       );
+
+      if (newFiles.length > 0) {
+        uploadPromises.push(
+          CollectionRecordService.uploadMultipleFiles(
+            recordId,
+            newFiles.map((f) => f.file),
+            FileType.EVIDENCE_PHOTO,
+            subType,
+          ).then(() => {
+            // Mark as uploaded
+            newFiles.forEach(({ id }) => {
+              uploadedFilesRef.current.evidenceFiles.add(id);
+            });
+          }),
+        );
+      }
     }
   }
 
-  // Upload stockpile photos (from Step 3) - only new/changed files
+  // Upload stockpile photos (from Step 3) - group by subType and upload
   if (stockpilePhotos && stockpilePhotos.length > 0) {
-    const stockpileFiles = stockpilePhotos
-      .filter((doc) => doc && doc.file)
-      .map((doc) => doc.file)
-      .filter((file): file is File => file instanceof File);
+    // Filter valid stockpile files
+    const validStockpileFiles = stockpilePhotos.filter(
+      (doc) => doc && doc.file instanceof File,
+    );
 
-    const newStockpileFiles = stockpileFiles.filter((file) => {
-      const fileId = getFileId(file);
-      return !uploadedFilesRef.current.stockpilePhotos.has(fileId);
-    });
+    // Group files by subType - stockpile types are already in backend format
+    const filesBySubType = validStockpileFiles.reduce(
+      (acc, doc) => {
+        const subType = doc.type || "other";
+        if (!acc[subType]) {
+          acc[subType] = [];
+        }
+        acc[subType].push({ file: doc.file, id: getFileId(doc.file) });
+        return acc;
+      },
+      {} as Record<string, Array<{ file: File; id: string }>>,
+    );
 
-    if (newStockpileFiles.length > 0) {
-      uploadPromises.push(
-        CollectionRecordService.uploadMultipleFiles(
-          recordId,
-          newStockpileFiles,
-          FileType.STOCKPILE_PHOTO,
-        ).then(() => {
-          newStockpileFiles.forEach((file) => {
-            uploadedFilesRef.current.stockpilePhotos.add(getFileId(file));
-          });
-        }),
+    // Upload each subType group separately
+    for (const [subType, files] of Object.entries(filesBySubType)) {
+      const newFiles = files.filter(
+        ({ id }) => !uploadedFilesRef.current.stockpilePhotos.has(id),
       );
+
+      if (newFiles.length > 0) {
+        uploadPromises.push(
+          CollectionRecordService.uploadMultipleFiles(
+            recordId,
+            newFiles.map((f) => f.file),
+            FileType.STOCKPILE_PHOTO,
+            subType,
+          ).then(() => {
+            newFiles.forEach(({ id }) => {
+              uploadedFilesRef.current.stockpilePhotos.add(id);
+            });
+          }),
+        );
+      }
     }
   }
 
-  // Upload recycled photos (from Step 3) - only new/changed files
+  // Upload recycled photos (from Step 3) - group by subType and upload
   if (recycledPhotos && recycledPhotos.length > 0) {
-    const recycledFiles = recycledPhotos
-      .filter((doc) => doc && doc.file)
-      .map((doc) => doc.file)
-      .filter((file): file is File => file instanceof File);
+    // Filter valid recycled files
+    const validRecycledFiles = recycledPhotos.filter(
+      (doc) => doc && doc.file instanceof File,
+    );
 
-    const newRecycledFiles = recycledFiles.filter((file) => {
-      const fileId = getFileId(file);
-      return !uploadedFilesRef.current.recycledPhotos.has(fileId);
-    });
+    // Group files by subType - recycled types are already in backend format
+    const filesBySubType = validRecycledFiles.reduce(
+      (acc, doc) => {
+        const subType = doc.type || "other";
+        if (!acc[subType]) {
+          acc[subType] = [];
+        }
+        acc[subType].push({ file: doc.file, id: getFileId(doc.file) });
+        return acc;
+      },
+      {} as Record<string, Array<{ file: File; id: string }>>,
+    );
 
-    if (newRecycledFiles.length > 0) {
-      uploadPromises.push(
-        CollectionRecordService.uploadMultipleFiles(
-          recordId,
-          newRecycledFiles,
-          FileType.RECYCLED_PHOTO,
-        ).then(() => {
-          newRecycledFiles.forEach((file) => {
-            uploadedFilesRef.current.recycledPhotos.add(getFileId(file));
-          });
-        }),
+    // Upload each subType group separately
+    for (const [subType, files] of Object.entries(filesBySubType)) {
+      const newFiles = files.filter(
+        ({ id }) => !uploadedFilesRef.current.recycledPhotos.has(id),
       );
+
+      if (newFiles.length > 0) {
+        uploadPromises.push(
+          CollectionRecordService.uploadMultipleFiles(
+            recordId,
+            newFiles.map((f) => f.file),
+            FileType.RECYCLED_PHOTO,
+            subType,
+          ).then(() => {
+            newFiles.forEach(({ id }) => {
+              uploadedFilesRef.current.recycledPhotos.add(id);
+            });
+          }),
+        );
+      }
     }
   }
 
@@ -276,23 +330,45 @@ export const uploadFilesForRecordEdit = async (
 ): Promise<void> => {
   const uploadPromises: Promise<any>[] = [];
 
-  // Only upload evidence photos that are new (not in original set)
+  // Only upload evidence photos that are new (not in original set) - group by subType
   if (evidenceFiles && evidenceFiles.length > 0) {
-    const newEvidenceFiles = evidenceFiles.filter((doc) =>
-      isNewFileId(doc.id, originalFileIds),
+    const newEvidenceFiles = evidenceFiles.filter(
+      (doc) => doc.file instanceof File && isNewFileId(doc.id, originalFileIds),
     );
-    const filesToUpload = newEvidenceFiles
-      .map((doc) => doc.file)
-      .filter((file): file is File => file instanceof File);
 
-    if (filesToUpload.length > 0) {
-      uploadPromises.push(
-        CollectionRecordService.uploadMultipleFiles(
-          recordId,
-          filesToUpload,
-          FileType.EVIDENCE_PHOTO,
-        ),
-      );
+    // Group by subType
+    const filesBySubType = newEvidenceFiles.reduce(
+      (acc, doc) => {
+        // Map frontend types to backend subTypes
+        const subTypeMap: Record<string, string> = {
+          "phieu-can": "weighing_slip",
+          "bien-ban-giao-nhan": "delivery_receipt",
+          "bien-so-xe": "vehicle_license_plate",
+          "khac": "other",
+        };
+        const subType = subTypeMap[doc.type] || doc.type;
+
+        if (!acc[subType]) {
+          acc[subType] = [];
+        }
+        acc[subType].push(doc.file);
+        return acc;
+      },
+      {} as Record<string, File[]>,
+    );
+
+    // Upload each subType group separately
+    for (const [subType, files] of Object.entries(filesBySubType)) {
+      if (files.length > 0) {
+        uploadPromises.push(
+          CollectionRecordService.uploadMultipleFiles(
+            recordId,
+            files,
+            FileType.EVIDENCE_PHOTO,
+            subType,
+          ),
+        );
+      }
     }
   }
 
@@ -331,43 +407,71 @@ export const uploadFilesForRecordEdit = async (
     }
   }
 
-  // Upload stockpile photos only if they are new
+  // Upload stockpile photos only if they are new - group by subType
   if (stockpilePhotos && stockpilePhotos.length > 0) {
-    const newStockpilePhotos = stockpilePhotos.filter((doc) =>
-      isNewFileId(doc.id, originalFileIds),
+    const newStockpilePhotos = stockpilePhotos.filter(
+      (doc) => doc.file instanceof File && isNewFileId(doc.id, originalFileIds),
     );
-    const filesToUpload = newStockpilePhotos
-      .map((doc) => doc.file)
-      .filter((file): file is File => file instanceof File);
 
-    if (filesToUpload.length > 0) {
-      uploadPromises.push(
-        CollectionRecordService.uploadMultipleFiles(
-          recordId,
-          filesToUpload,
-          FileType.STOCKPILE_PHOTO,
-        ),
-      );
+    // Group by subType
+    const filesBySubType = newStockpilePhotos.reduce(
+      (acc, doc) => {
+        const subType = doc.type || "other";
+        if (!acc[subType]) {
+          acc[subType] = [];
+        }
+        acc[subType].push(doc.file);
+        return acc;
+      },
+      {} as Record<string, File[]>,
+    );
+
+    // Upload each subType group separately
+    for (const [subType, files] of Object.entries(filesBySubType)) {
+      if (files.length > 0) {
+        uploadPromises.push(
+          CollectionRecordService.uploadMultipleFiles(
+            recordId,
+            files,
+            FileType.STOCKPILE_PHOTO,
+            subType,
+          ),
+        );
+      }
     }
   }
 
-  // Upload recycled photos only if they are new
+  // Upload recycled photos only if they are new - group by subType
   if (recycledPhotos && recycledPhotos.length > 0) {
-    const newRecycledPhotos = recycledPhotos.filter((doc) =>
-      isNewFileId(doc.id, originalFileIds),
+    const newRecycledPhotos = recycledPhotos.filter(
+      (doc) => doc.file instanceof File && isNewFileId(doc.id, originalFileIds),
     );
-    const filesToUpload = newRecycledPhotos
-      .map((doc) => doc.file)
-      .filter((file): file is File => file instanceof File);
 
-    if (filesToUpload.length > 0) {
-      uploadPromises.push(
-        CollectionRecordService.uploadMultipleFiles(
-          recordId,
-          filesToUpload,
-          FileType.RECYCLED_PHOTO,
-        ),
-      );
+    // Group by subType
+    const filesBySubType = newRecycledPhotos.reduce(
+      (acc, doc) => {
+        const subType = doc.type || "other";
+        if (!acc[subType]) {
+          acc[subType] = [];
+        }
+        acc[subType].push(doc.file);
+        return acc;
+      },
+      {} as Record<string, File[]>,
+    );
+
+    // Upload each subType group separately
+    for (const [subType, files] of Object.entries(filesBySubType)) {
+      if (files.length > 0) {
+        uploadPromises.push(
+          CollectionRecordService.uploadMultipleFiles(
+            recordId,
+            files,
+            FileType.RECYCLED_PHOTO,
+            subType,
+          ),
+        );
+      }
     }
   }
 

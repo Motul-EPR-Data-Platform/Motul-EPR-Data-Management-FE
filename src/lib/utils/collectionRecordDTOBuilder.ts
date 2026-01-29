@@ -27,14 +27,14 @@ export const buildDraftDTO = (
     submissionMonth: formatDateDDMMYYYY(
       new Date(collectionDate.getFullYear(), collectionDate.getMonth(), 1),
     ),
-    collectedVolumeKg: formData.collectedVolumeKg || null,
+    collectedVolumeKg: formData.collectedVolumeKg ?? null,
     deliveryDate: formatDateDDMMYYYY(collectionDate),
     vehiclePlate: formData.vehiclePlate || null,
     stockpiled: formData.stockpiled ?? false,
-    stockpileVolumeKg: formData.stockpileVolumeKg || null,
+    stockpileVolumeKg: formData.stockpileVolumeKg ?? null,
     stockInDate,
     recycledDate: recycledDate ? formatDateDDMMYYYY(recycledDate) : null,
-    recycledVolumeKg: formData.recycledVolumeKg || null,
+    recycledVolumeKg: formData.recycledVolumeKg ?? null,
     wasteOwnerIds: formData.wasteOwnerId ? [formData.wasteOwnerId] : [],
     contractTypeId: formData.contractTypeId || null,
     wasteSourceId: formData.wasteSourceId || null,
@@ -43,7 +43,7 @@ export const buildDraftDTO = (
         ? formData.hazWasteId
         : null,
     pickupLocation: locationRefId ? { refId: locationRefId } : null,
-    collectedPricePerKg: formData.collectedPricePerKg || null,
+    collectedPricePerKg: formData.collectedPricePerKg ?? null,
   };
 };
 
@@ -90,7 +90,7 @@ export const buildPartialDraftDTO = (
   const currentCollectedVolume = normalizeValue(formData.collectedVolumeKg);
   const originalCollectedVolume = normalizeValue(original.formData.collectedVolumeKg);
   if (currentCollectedVolume !== originalCollectedVolume) {
-    partialDTO.collectedVolumeKg = formData.collectedVolumeKg || null;
+    partialDTO.collectedVolumeKg = formData.collectedVolumeKg ?? null;
   }
 
   const currentVehiclePlate = normalizeValue(formData.vehiclePlate);
@@ -109,7 +109,7 @@ export const buildPartialDraftDTO = (
   const currentStockpileVolume = normalizeValue(formData.stockpileVolumeKg);
   const originalStockpileVolume = normalizeValue(original.formData.stockpileVolumeKg);
   if (currentStockpileVolume !== originalStockpileVolume) {
-    partialDTO.stockpileVolumeKg = formData.stockpileVolumeKg || null;
+    partialDTO.stockpileVolumeKg = formData.stockpileVolumeKg ?? null;
   }
 
   const currentStockInDate = normalizeValue(formData.stockInDate);
@@ -133,7 +133,7 @@ export const buildPartialDraftDTO = (
   const currentRecycledVolume = normalizeValue(formData.recycledVolumeKg);
   const originalRecycledVolume = normalizeValue(original.formData.recycledVolumeKg);
   if (currentRecycledVolume !== originalRecycledVolume) {
-    partialDTO.recycledVolumeKg = formData.recycledVolumeKg || null;
+    partialDTO.recycledVolumeKg = formData.recycledVolumeKg ?? null;
   }
 
   const currentWasteOwnerId = normalizeValue(formData.wasteOwnerId);
@@ -176,7 +176,7 @@ export const buildPartialDraftDTO = (
   const currentPricePerKg = normalizeValue(formData.collectedPricePerKg);
   const originalPricePerKg = normalizeValue(original.formData.collectedPricePerKg);
   if (currentPricePerKg !== originalPricePerKg) {
-    partialDTO.collectedPricePerKg = formData.collectedPricePerKg || null;
+    partialDTO.collectedPricePerKg = formData.collectedPricePerKg ?? null;
   }
 
   return partialDTO;
