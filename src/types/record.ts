@@ -200,6 +200,9 @@ export interface GetRecordsFilters {
   endDate?: string; // ISO date string (YYYY-MM-DD)
   sortBy?: "deliveryDate"; // Sorting field
   sortOrder?: "asc" | "desc"; // Sorting order
+  wasteOwnerName?: string;
+  vehiclePlate?: string;
+  recordName?: string;
   page?: number;
   limit?: number;
 }

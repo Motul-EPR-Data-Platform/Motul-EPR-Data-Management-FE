@@ -149,8 +149,16 @@ export function RecordPageContent({
     }
 
     // Use debounced search value for API call based on selected search field
-    // Note: Backend doesn't support search by these fields directly, so we'll filter client-side
-    // or we can add backend support later
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.trim();
+      if (searchField === "id") {
+        filterObj.recordName = query;
+      } else if (searchField === "wasteOwner") {
+        filterObj.wasteOwnerName = query;
+      } else if (searchField === "vehiclePlate") {
+        filterObj.vehiclePlate = query;
+      }
+    }
 
     // Sorting by deliveryDate
     if (filterParams.sortOrder && (filterParams.sortOrder === "asc" || filterParams.sortOrder === "desc")) {
@@ -166,6 +174,8 @@ export function RecordPageContent({
     filterParams.batchId,
     filterParams.sortOrder,
     batches,
+    debouncedSearchQuery,
+    searchField,
   ]);
 
   // Memoize fetchData function to prevent recreation on every render
@@ -464,35 +474,10 @@ export function RecordPageContent({
   };
 
   // Filter client-side by search query and batch if needed
+  // Client-side filtering is no longer needed as we filter on the backend
   const filteredRecords = useMemo(() => {
-    let filtered = [...records];
-
-    // Filter by search query
-    if (debouncedSearchQuery.trim()) {
-      const query = debouncedSearchQuery.toLowerCase();
-      filtered = filtered.filter((record) => {
-        if (searchField === "id") {
-          return (
-            record.id.toLowerCase().includes(query) ||
-            record.recordName?.toLowerCase().includes(query)
-          );
-        } else if (searchField === "wasteOwner") {
-          const wasteOwner =
-            record.wasteOwner ||
-            (record.wasteOwners && record.wasteOwners.length > 0 ? record.wasteOwners[0] : null);
-          return (
-            wasteOwner?.name?.toLowerCase().includes(query) ||
-            wasteOwner?.businessCode?.toLowerCase().includes(query)
-          );
-        } else if (searchField === "vehiclePlate") {
-          return record.vehiclePlate?.toLowerCase().includes(query);
-        }
-        return false;
-      });
-    }
-
-    return filtered;
-  }, [records, debouncedSearchQuery, searchField, filterParams.batchId]);
+    return records;
+  }, [records]);
 
   // Filter options
   const statusOptions = [

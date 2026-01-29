@@ -130,6 +130,15 @@ export const CollectionRecordService = {
     if (filters?.sortOrder) {
       queryParams.append("sortOrder", filters.sortOrder);
     }
+    if (filters?.wasteOwnerName) {
+      queryParams.append("wasteOwnerName", filters.wasteOwnerName);
+    }
+    if (filters?.vehiclePlate) {
+      queryParams.append("vehiclePlate", filters.vehiclePlate);
+    }
+    if (filters?.recordName) {
+      queryParams.append("recordName", filters.recordName);
+    }
     if (paginationParams?.page) {
       queryParams.append("page", paginationParams.page.toString());
     }

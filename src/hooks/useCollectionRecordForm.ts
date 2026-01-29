@@ -287,7 +287,7 @@ export function useCollectionRecordForm(
     const result = validateStep(currentStep, context);
     setErrors(result.errors);
     return result.isValid;
-  }, [currentStep, formData, locationRefId, collectionDate, recycledPhoto, stockpilePhoto]);
+  }, [currentStep, formData, locationRefId, collectionDate, recycledPhoto, stockpilePhoto, hazWasteCertificates]);
 
   // Navigation handlers
   const handleNext = useCallback(() => {
@@ -362,8 +362,8 @@ export function useCollectionRecordForm(
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message ||
-          error?.message ||
-          "Không thể lưu bản nháp",
+        error?.message ||
+        "Không thể lưu bản nháp",
       );
     } finally {
       setIsLoading(false);
