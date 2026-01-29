@@ -235,10 +235,6 @@ export const CollectionRecordService = {
     id: string,
     dto: ApprovalDTO,
   ): Promise<CollectionRecordDetail> {
-    if (!dto.file) {
-      throw new Error("Acceptance document file is required");
-    }
-
     const formData = new FormData();
     formData.append("eprId", dto.eprId);
     formData.append("acceptanceDate", dto.acceptanceDate);
@@ -246,13 +242,15 @@ export const CollectionRecordService = {
     if (dto.comment) {
       formData.append("comment", dto.comment);
     }
-    formData.append("file", dto.file);
+    if (dto.file) {
+      formData.append("file", dto.file);
+    }
 
-    console.log("Uploading approval document:", {
+    console.log("Approving record:", {
       recordId: id,
-      fileName: dto.file.name,
-      fileSize: dto.file.size,
-      fileType: dto.file.type,
+      fileName: dto.file?.name,
+      fileSize: dto.file?.size,
+      fileType: dto.file?.type,
       eprId: dto.eprId,
       acceptanceDate: dto.acceptanceDate,
     });

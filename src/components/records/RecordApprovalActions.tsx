@@ -100,38 +100,28 @@ export function RecordApprovalActions({
       return;
     }
 
-    if (!approvalDocument) {
-      toast.error("Vui lòng tải lên tài liệu chấp thuận");
-      return;
-    }
+
 
     setIsLoading(true);
     try {
       // Format date as dd/mm/yyyy
       const formattedDate = format(acceptanceDate, "dd/MM/yyyy");
 
-      // Verify file is present
-      if (!approvalDocument) {
-        toast.error("Vui lòng tải lên tài liệu chấp thuận");
-        setIsLoading(false);
-        return;
-      }
-
-      console.log("Approving record with file:", {
+      console.log("Approving record:", {
         recordId: record.id,
         eprId,
         acceptanceDate: formattedDate,
-        fileName: approvalDocument.name,
-        fileSize: approvalDocument.size,
-        fileType: approvalDocument.type,
+        fileName: approvalDocument?.name,
+        fileSize: approvalDocument?.size,
+        fileType: approvalDocument?.type,
       });
 
-      // Approve the record with all required fields including file
+      // Approve the record with all required fields (file is optional)
       await CollectionRecordService.approveRecord(record.id, {
         eprId,
         acceptanceDate: formattedDate,
         comment: approvalComment || null,
-        file: approvalDocument,
+        file: approvalDocument || undefined,
         hazWasteDocNumber: hazWasteDocNumber.trim(),
       });
 
@@ -146,8 +136,8 @@ export function RecordApprovalActions({
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message ||
-          error?.message ||
-          "Không thể phê duyệt bản ghi",
+        error?.message ||
+        "Không thể phê duyệt bản ghi",
       );
     } finally {
       setIsLoading(false);
@@ -181,8 +171,8 @@ export function RecordApprovalActions({
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message ||
-          error?.message ||
-          "Không thể từ chối bản ghi",
+        error?.message ||
+        "Không thể từ chối bản ghi",
       );
     } finally {
       setIsLoading(false);
@@ -312,8 +302,7 @@ export function RecordApprovalActions({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="approvalDocument">
-                Tài liệu chấp thuận (Giấy chứng nhận){" "}
-                <span className="text-red-500">*</span>
+                Tài liệu chấp thuận (Giấy chứng nhận) - Tùy chọn
               </Label>
               <FileUpload
                 id="approvalDocument"
@@ -323,13 +312,7 @@ export function RecordApprovalActions({
                 maxSize={10}
                 disabled={isLoading}
                 category={FileType.APPROVAL_DOC}
-                required
               />
-              {!approvalDocument && (
-                <p className="text-xs text-red-500">
-                  Vui lòng tải lên tài liệu chấp thuận
-                </p>
-              )}
               <p className="text-xs text-muted-foreground">
                 Chấp nhận file: PDF, DOC, DOCX (tối đa 10MB)
               </p>
@@ -349,7 +332,6 @@ export function RecordApprovalActions({
                 isLoading ||
                 !eprId ||
                 !acceptanceDate ||
-                !approvalDocument ||
                 !hazWasteDocNumber.trim()
               }
               className="bg-green-600 hover:bg-green-700"
