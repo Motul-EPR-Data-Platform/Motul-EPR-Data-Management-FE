@@ -83,10 +83,10 @@ export interface UseCollectionRecordFormReturn {
   setQualityDocuments: (docs: DocumentFile[]) => void;
   hazWasteCertificates: DocumentFile[];
   setHazWasteCertificates: (docs: DocumentFile[]) => void;
-  recycledPhoto: File | null;
-  setRecycledPhoto: (photo: File | null) => void;
-  stockpilePhoto: File | null;
-  setStockpilePhoto: (photo: File | null) => void;
+  recycledPhotos: DocumentFile[];
+  setRecycledPhotos: (photos: DocumentFile[]) => void;
+  stockpilePhotos: DocumentFile[];
+  setStockpilePhotos: (photos: DocumentFile[]) => void;
 
   // Dropdown data
   dropdownData: DropdownData;
@@ -158,8 +158,8 @@ export function useCollectionRecordForm(
   const [evidenceFiles, setEvidenceFiles] = useState<DocumentFile[]>([]);
   const [qualityDocuments, setQualityDocuments] = useState<DocumentFile[]>([]);
   const [hazWasteCertificates, setHazWasteCertificates] = useState<DocumentFile[]>([]);
-  const [recycledPhoto, setRecycledPhoto] = useState<File | null>(null);
-  const [stockpilePhoto, setStockpilePhoto] = useState<File | null>(null);
+  const [recycledPhotos, setRecycledPhotos] = useState<DocumentFile[]>([]);
+  const [stockpilePhotos, setStockpilePhotos] = useState<DocumentFile[]>([]);
 
   // Dropdown data
   const [dropdownData, setDropdownData] = useState<DropdownData>({
@@ -178,8 +178,8 @@ export function useCollectionRecordForm(
     qualityMetricsFiles: new Set(),
     outputQualityMetricsFiles: new Set(),
     hazWasteCertificates: new Set(),
-    recycledPhoto: null,
-    stockpilePhoto: null,
+    recycledPhotos: new Set(),
+    stockpilePhotos: new Set(),
   });
 
   // Original file tracking (for edit mode)
@@ -188,13 +188,13 @@ export function useCollectionRecordForm(
     qualityMetrics: new Set(),
     outputQualityMetrics: new Set(),
     hazWasteCertificates: new Set(),
-    recycledPhoto: null,
-    stockpilePhoto: null,
+    recycledPhotos: new Set(),
+    stockpilePhotos: new Set(),
   });
 
   const originalFileRefsRef = useRef<OriginalFileRefs>({
-    recycledPhoto: null,
-    stockpilePhoto: null,
+    recycledPhotos: [],
+    stockpilePhotos: [],
   });
 
   // Original form data (for edit mode - to track changes)
@@ -279,15 +279,15 @@ export function useCollectionRecordForm(
       formData,
       locationRefId,
       collectionDate,
-      recycledPhoto,
-      stockpilePhoto,
+      recycledPhotos,
+      stockpilePhotos,
       hazWasteCertificates,
     };
 
     const result = validateStep(currentStep, context);
     setErrors(result.errors);
     return result.isValid;
-  }, [currentStep, formData, locationRefId, collectionDate, recycledPhoto, stockpilePhoto, hazWasteCertificates]);
+  }, [currentStep, formData, locationRefId, collectionDate, recycledPhotos, stockpilePhotos, hazWasteCertificates]);
 
   // Navigation handlers
   const handleNext = useCallback(() => {
@@ -320,8 +320,8 @@ export function useCollectionRecordForm(
         setEvidenceFiles([]);
         setQualityDocuments([]);
         setHazWasteCertificates([]);
-        setRecycledPhoto(null);
-        setStockpilePhoto(null);
+        setRecycledPhotos([]);
+        setStockpilePhotos([]);
         setDraftId(null);
       } else if (mode === "edit" && onRecordLoad) {
         // Reload record data - this should be handled by the page component
@@ -350,8 +350,8 @@ export function useCollectionRecordForm(
         evidenceFiles,
         qualityDocuments,
         hazWasteCertificates,
-        recycledPhoto,
-        stockpilePhoto,
+        recycledPhotos,
+        stockpilePhotos,
         originalFormData: originalFormDataRef.current,
         uploadedFilesRef,
         originalFileIdsRef,
@@ -378,8 +378,8 @@ export function useCollectionRecordForm(
     evidenceFiles,
     qualityDocuments,
     hazWasteCertificates,
-    recycledPhoto,
-    stockpilePhoto,
+    recycledPhotos,
+    stockpilePhotos,
     uploadedFilesRef,
     originalFileIdsRef,
     originalFileRefsRef,
@@ -395,7 +395,7 @@ export function useCollectionRecordForm(
       locationRefId,
       collectionDate,
       recycledDate,
-      recycledPhoto,
+      recycledPhotos,
       evidenceFiles,
       qualityDocuments,
       hazWasteCertificates,
@@ -412,7 +412,7 @@ export function useCollectionRecordForm(
         setCurrentStep(2);
       } else if (
         validationResult.errors.recycledVolumeKg ||
-        validationResult.errors.recycledPhoto ||
+        validationResult.errors.recycledPhotos ||
         validationResult.errors.evidenceFiles ||
         validationResult.errors.recycledDate ||
         validationResult.errors.qualityDocuments ||
@@ -445,8 +445,8 @@ export function useCollectionRecordForm(
         evidenceFiles,
         qualityDocuments,
         hazWasteCertificates,
-        recycledPhoto,
-        stockpilePhoto,
+        recycledPhotos,
+        stockpilePhotos,
         originalFormData: originalFormDataRef.current,
         uploadedFilesRef,
         originalFileIdsRef,
@@ -468,7 +468,7 @@ export function useCollectionRecordForm(
     locationRefId,
     collectionDate,
     recycledDate,
-    recycledPhoto,
+    recycledPhotos,
     evidenceFiles,
     qualityDocuments,
     validateCurrentStep,
@@ -481,8 +481,8 @@ export function useCollectionRecordForm(
     evidenceFiles,
     qualityDocuments,
     hazWasteCertificates,
-    recycledPhoto,
-    stockpilePhoto,
+    recycledPhotos,
+    stockpilePhotos,
     uploadedFilesRef,
     originalFileIdsRef,
     originalFileRefsRef,
@@ -560,10 +560,10 @@ export function useCollectionRecordForm(
     setQualityDocuments,
     hazWasteCertificates,
     setHazWasteCertificates,
-    recycledPhoto,
-    setRecycledPhoto,
-    stockpilePhoto,
-    setStockpilePhoto,
+    recycledPhotos,
+    setRecycledPhotos,
+    stockpilePhotos,
+    setStockpilePhotos,
 
     // Dropdown data
     dropdownData,

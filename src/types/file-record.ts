@@ -32,6 +32,14 @@ export enum FileType {
   WASTE_OWNER_CONTRACT = "waste_owner_contract",
 }
 
+// Recycled photo subtypes for categorizing different types of recycled photos
+export enum RecycledPhotoSubType {
+  RESULT_REPORT = 'result_report', // bien_ban_ket_qua
+  SEMI_FINISHED_PRODUCT = 'semi_finished_product', // anh_dau_thanh_pham
+  SLUDGE_WASTE = 'sludge_waste', // anh_bun_thai
+  OTHER = 'other',
+}
+
 // File metadata interface
 export interface IFile {
   readonly id: string;

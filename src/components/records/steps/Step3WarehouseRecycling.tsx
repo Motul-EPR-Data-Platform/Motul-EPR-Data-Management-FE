@@ -16,8 +16,7 @@ import {
   DocumentUpload,
   DocumentFile,
 } from "@/components/records/DocumentUpload";
-import { FileType } from "@/types/file-record";
-import { FileUpload } from "@/components/ui/file-upload";
+import { FileType, RecycledPhotoSubType } from "@/types/file-record";
 import { parseDate } from "@/lib/utils/collectionRecordHelpers";
 import type { ChangeEvent } from "react";
 
@@ -32,10 +31,10 @@ interface Step3WarehouseRecyclingProps {
   onQualityDocumentsChange?: (files: DocumentFile[]) => void;
   hazWasteCertificates?: DocumentFile[];
   onHazWasteCertificatesChange?: (files: DocumentFile[]) => void;
-  recycledPhoto?: File | null;
-  onRecycledPhotoChange?: (file: File | null) => void;
-  stockpilePhoto?: File | null;
-  onStockpilePhotoChange?: (file: File | null) => void;
+  recycledPhotos?: DocumentFile[];
+  onRecycledPhotosChange?: (files: DocumentFile[]) => void;
+  stockpilePhotos?: DocumentFile[];
+  onStockpilePhotosChange?: (files: DocumentFile[]) => void;
 }
 
 export function Step3WarehouseRecycling({
@@ -49,10 +48,10 @@ export function Step3WarehouseRecycling({
   onQualityDocumentsChange,
   hazWasteCertificates = [],
   onHazWasteCertificatesChange,
-  recycledPhoto,
-  onRecycledPhotoChange,
-  stockpilePhoto,
-  onStockpilePhotoChange,
+  recycledPhotos = [],
+  onRecycledPhotosChange,
+  stockpilePhotos = [],
+  onStockpilePhotosChange,
 }: Step3WarehouseRecyclingProps) {
   const handleHazCertChange = (files: DocumentFile[]) => {
     if (files.length > 3) {
@@ -147,21 +146,24 @@ export function Step3WarehouseRecycling({
 
             {/* Stockpile Photo Upload */}
             <div className="space-y-2">
-              <Label htmlFor="stockpilePhoto">
-                Ảnh nhập kho <span className="text-red-500">*</span>
+              <Label>
+                Tài liệu nhập kho <span className="text-red-500">*</span>
               </Label>
               <p className="text-sm text-muted-foreground mb-2">
-                Tải lên ảnh nhập kho (JPEG, PNG, WebP)
+                Tải lên tài liệu nhập kho: Phiếu cân, Ảnh nhập kho, Phiếu nhập kho, Phiếu xuất kho...
               </p>
-              <FileUpload
-                id="stockpilePhoto"
-                label=""
-                maxSize={10}
-                value={stockpilePhoto || null}
-                onChange={(file) => onStockpilePhotoChange?.(file || null)}
-                error={errors.stockpilePhoto}
-                required
+              <DocumentUpload
+                documents={stockpilePhotos}
+                onDocumentsChange={(files) => onStockpilePhotosChange?.(files)}
+                documentTypes={[
+                  { value: "weighing_slip", label: "Phiếu cân" },
+                  { value: "warehouse_entry_photo", label: "Ảnh nhập kho" },
+                  { value: "warehouse_receipt", label: "Phiếu nhập kho" },
+                  { value: "warehouse_issue_slip", label: "Phiếu xuất kho" },
+                  { value: "other", label: "Khác" },
+                ]}
                 disabled={disabled}
+                maxSizeMB={10}
                 category={FileType.STOCKPILE_PHOTO}
               />
               {errors.stockpilePhoto && (
@@ -220,25 +222,27 @@ export function Step3WarehouseRecycling({
 
         {/* Recycled Photo Upload */}
         <div className="space-y-2">
-          <Label htmlFor="recycledPhoto">
+          <Label>
             Ảnh sản phẩm đã tái chế <span className="text-red-500">*</span>
           </Label>
           <p className="text-sm text-muted-foreground mb-2">
-            Tải lên ảnh sản phẩm sau khi tái chế (JPEG, PNG, WebP)
+            Tải lên ảnh sản phẩm sau khi tái chế: Biên bản kết quả, Ảnh dầu thành phẩm, Ảnh bùn thải...
           </p>
-          <FileUpload
-            id="recycledPhoto"
-            label=""
-            maxSize={10}
-            value={recycledPhoto || null}
-            onChange={(file) => onRecycledPhotoChange?.(file || null)}
-            error={errors.recycledPhoto}
-            required
+          <DocumentUpload
+            documents={recycledPhotos}
+            onDocumentsChange={(files) => onRecycledPhotosChange?.(files)}
+            documentTypes={[
+              { value: RecycledPhotoSubType.RESULT_REPORT, label: "Biên bản kết quả" },
+              { value: RecycledPhotoSubType.SEMI_FINISHED_PRODUCT, label: "Ảnh dầu thành phẩm" },
+              { value: RecycledPhotoSubType.SLUDGE_WASTE, label: "Ảnh bùn thải" },
+              { value: RecycledPhotoSubType.OTHER, label: "Khác" },
+            ]}
             disabled={disabled}
+            maxSizeMB={10}
             category={FileType.RECYCLED_PHOTO}
           />
-          {errors.recycledPhoto && (
-            <p className="text-sm text-red-500">{errors.recycledPhoto}</p>
+          {errors.recycledPhotos && (
+            <p className="text-sm text-red-500">{errors.recycledPhotos}</p>
           )}
         </div>
 

@@ -31,8 +31,20 @@ export const step3ValidationSchema = z
     stockpileVolumeKg: z.number().positive().nullable().optional(),
     stockInDate: z.string().nullable().optional(),
     recycledVolumeKg: z.number().positive("Khối lượng tái chế phải lớn hơn 0"),
-    recycledPhoto: imageFileValidation,
-    stockpilePhoto: imageFileValidation.nullable().optional(),
+    recycledPhotos: z.array(
+      z.object({
+        id: z.string(),
+        file: imageFileValidation,
+        type: z.string(),
+      })
+    ).min(1, "Cần ít nhất 1 ảnh sản phẩm đã tái chế"),
+    stockpilePhotos: z.array(
+      z.object({
+        id: z.string(),
+        file: imageFileValidation,
+        type: z.string(),
+      })
+    ).optional(),
   })
   .refine(
     (data) => {
@@ -66,10 +78,11 @@ export const step3ValidationSchema = z
   )
   .refine(
     (data) => {
-      // If stockpiled is true, stockpilePhoto is required
+      // If stockpiled is true, stockpilePhotos is required
       if (data.stockpiled === true) {
         return (
-          data.stockpilePhoto !== null && data.stockpilePhoto !== undefined
+          data.stockpilePhotos !== undefined &&
+          data.stockpilePhotos.length > 0
         );
       }
       return true;
@@ -126,16 +139,21 @@ export const recordSubmissionSchema = z
     recycledDate: z.date(),
 
     // Files - required
-    recycledPhoto: z
-      .instanceof(File, { message: "Ảnh sản phẩm đã tái chế là bắt buộc" })
-      .refine(
-        (file) => file.size <= 10 * 1024 * 1024,
-        "Kích thước file tối đa 10MB",
+    recycledPhotos: z
+      .array(
+        z.object({
+          id: z.string(),
+          file: z.instanceof(File).refine(
+            (file) => file.size <= 10 * 1024 * 1024,
+            "Kích thước file tối đa 10MB",
+          ).refine((file) => {
+            const imageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+            return imageTypes.includes(file.type);
+          }, "Chỉ chấp nhận file ảnh: JPEG, PNG, WebP"),
+          type: z.string(),
+        })
       )
-      .refine((file) => {
-        const imageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-        return imageTypes.includes(file.type);
-      }, "Chỉ chấp nhận file ảnh: JPEG, PNG, WebP"),
+      .min(1, "Cần ít nhất 1 ảnh sản phẩm đã tái chế"),
     evidenceFiles: z
       .array(
         z.object({
@@ -186,7 +204,7 @@ export function validateRecordSubmission(data: {
   locationRefId: string;
   collectionDate: Date;
   recycledDate: Date | undefined;
-  recycledPhoto: File | null;
+  recycledPhotos: Array<{ id: string; file: File; type: string }>;
   evidenceFiles: Array<{ id: string; file: File; type: string }>;
   qualityDocuments?: Array<{ id: string; file: File; type: string }>;
   hazWasteCertificates?: Array<{ id: string; file: File; type: string }>;
@@ -199,7 +217,7 @@ export function validateRecordSubmission(data: {
     locationRefId,
     collectionDate,
     recycledDate,
-    recycledPhoto,
+    recycledPhotos,
     evidenceFiles,
     qualityDocuments,
     hazWasteCertificates,
@@ -221,11 +239,11 @@ export function validateRecordSubmission(data: {
     };
   }
 
-  // Check recycledPhoto first
-  if (!recycledPhoto) {
+  // Check recycledPhotos
+  if (!recycledPhotos || recycledPhotos.length === 0) {
     return {
       success: false,
-      errors: { recycledPhoto: "Ảnh sản phẩm đã tái chế là bắt buộc" },
+      errors: { recycledPhotos: "Cần ít nhất 1 ảnh sản phẩm đã tái chế" },
     };
   }
 
@@ -257,7 +275,7 @@ export function validateRecordSubmission(data: {
     locationRefId: locationRefId || "",
     collectionDate,
     recycledDate,
-    recycledPhoto,
+    recycledPhotos,
     evidenceFiles: evidenceFiles || [],
     qualityDocuments: qualityDocuments || [],
     hazWasteCertificates: hazWasteCertificates || [],

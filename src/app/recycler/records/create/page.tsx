@@ -24,7 +24,7 @@ const STEPS = [
 
 export default function CreateCollectionRecordPage() {
   const confirmHook = useConfirm();
-  
+
   const {
     currentStep,
     setCurrentStep,
@@ -51,10 +51,10 @@ export default function CreateCollectionRecordPage() {
     setQualityDocuments,
     hazWasteCertificates,
     setHazWasteCertificates,
-    recycledPhoto,
-    setRecycledPhoto,
-    stockpilePhoto,
-    setStockpilePhoto,
+    recycledPhotos,
+    setRecycledPhotos,
+    stockpilePhotos,
+    setStockpilePhotos,
     dropdownData,
     handleFieldChange,
     handleNext,
@@ -179,10 +179,10 @@ export default function CreateCollectionRecordPage() {
               onQualityDocumentsChange={setQualityDocuments}
               hazWasteCertificates={hazWasteCertificates}
               onHazWasteCertificatesChange={setHazWasteCertificates}
-              recycledPhoto={recycledPhoto}
-              onRecycledPhotoChange={setRecycledPhoto}
-              stockpilePhoto={stockpilePhoto}
-              onStockpilePhotoChange={setStockpilePhoto}
+              recycledPhotos={recycledPhotos}
+              onRecycledPhotosChange={setRecycledPhotos}
+              stockpilePhotos={stockpilePhotos}
+              onStockpilePhotosChange={setStockpilePhotos}
             />
           )}
 
@@ -202,8 +202,8 @@ export default function CreateCollectionRecordPage() {
               recycledDate={recycledDate}
               evidenceFilesCount={evidenceFiles.length}
               qualityDocumentsCount={qualityDocuments.length}
-              hasRecycledPhoto={!!recycledPhoto}
-              hasStockpilePhoto={!!stockpilePhoto}
+              hasRecycledPhoto={recycledPhotos.length > 0}
+              hasStockpilePhoto={stockpilePhotos.length > 0}
             />
           )}
 

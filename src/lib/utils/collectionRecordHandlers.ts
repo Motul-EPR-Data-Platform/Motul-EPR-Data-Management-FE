@@ -108,8 +108,8 @@ interface SaveDraftParams {
   evidenceFiles: DocumentFile[];
   qualityDocuments: DocumentFile[];
   hazWasteCertificates: DocumentFile[];
-  recycledPhoto: File | null;
-  stockpilePhoto: File | null;
+  recycledPhotos: DocumentFile[];
+  stockpilePhotos: DocumentFile[];
   originalFormData: OriginalFormData | null;
   uploadedFilesRef: React.MutableRefObject<FileUploadTracking>;
   originalFileIdsRef: React.MutableRefObject<OriginalFileIds>;
@@ -129,8 +129,8 @@ export const handleSaveDraft = async (params: SaveDraftParams): Promise<string |
     evidenceFiles,
     qualityDocuments,
     hazWasteCertificates,
-    recycledPhoto,
-    stockpilePhoto,
+    recycledPhotos,
+    stockpilePhotos,
     originalFormData,
     uploadedFilesRef,
     originalFileIdsRef,
@@ -160,8 +160,8 @@ export const handleSaveDraft = async (params: SaveDraftParams): Promise<string |
     (evidenceFiles.length > 0 ||
       qualityDocuments.length > 0 ||
       hazWasteCertificates.length > 0 ||
-      recycledPhoto ||
-      stockpilePhoto)
+      recycledPhotos.length > 0 ||
+      stockpilePhotos.length > 0)
   ) {
     try {
       if (mode === "create") {
@@ -170,8 +170,8 @@ export const handleSaveDraft = async (params: SaveDraftParams): Promise<string |
           evidenceFiles,
           qualityDocuments,
           hazWasteCertificates,
-          recycledPhoto,
-          stockpilePhoto,
+          recycledPhotos,
+          stockpilePhotos,
           uploadedFilesRef,
         );
       } else {
@@ -180,8 +180,8 @@ export const handleSaveDraft = async (params: SaveDraftParams): Promise<string |
           evidenceFiles,
           qualityDocuments,
           hazWasteCertificates,
-          recycledPhoto,
-          stockpilePhoto,
+          recycledPhotos,
+          stockpilePhotos,
           originalFileIdsRef.current,
           originalFileRefsRef.current,
         );
@@ -191,8 +191,8 @@ export const handleSaveDraft = async (params: SaveDraftParams): Promise<string |
       console.error("Error uploading files:", fileError);
       toast.error(
         fileError?.response?.data?.message ||
-          fileError?.message ||
-          "Đã lưu bản nháp nhưng không thể tải lên một số tài liệu",
+        fileError?.message ||
+        "Đã lưu bản nháp nhưng không thể tải lên một số tài liệu",
       );
     }
   }
@@ -213,8 +213,8 @@ interface SubmitRecordParams {
   evidenceFiles: DocumentFile[];
   qualityDocuments: DocumentFile[];
   hazWasteCertificates: DocumentFile[];
-  recycledPhoto: File | null;
-  stockpilePhoto: File | null;
+  recycledPhotos: DocumentFile[];
+  stockpilePhotos: DocumentFile[];
   originalFormData: OriginalFormData | null;
   uploadedFilesRef: React.MutableRefObject<FileUploadTracking>;
   originalFileIdsRef: React.MutableRefObject<OriginalFileIds>;
@@ -233,8 +233,8 @@ export const handleSubmitRecord = async (params: SubmitRecordParams): Promise<vo
     evidenceFiles,
     qualityDocuments,
     hazWasteCertificates,
-    recycledPhoto,
-    stockpilePhoto,
+    recycledPhotos,
+    stockpilePhotos,
     originalFormData,
     uploadedFilesRef,
     originalFileIdsRef,
@@ -271,8 +271,8 @@ export const handleSubmitRecord = async (params: SubmitRecordParams): Promise<vo
   } catch (error: any) {
     toast.error(
       error?.response?.data?.message ||
-        error?.message ||
-        "Không thể lưu bản nháp",
+      error?.message ||
+      "Không thể lưu bản nháp",
     );
     throw error;
   }
@@ -283,8 +283,8 @@ export const handleSubmitRecord = async (params: SubmitRecordParams): Promise<vo
     (evidenceFiles.length > 0 ||
       qualityDocuments.length > 0 ||
       hazWasteCertificates.length > 0 ||
-      recycledPhoto ||
-      stockpilePhoto)
+      recycledPhotos.length > 0 ||
+      stockpilePhotos.length > 0)
   ) {
     try {
       if (mode === "create") {
@@ -293,8 +293,8 @@ export const handleSubmitRecord = async (params: SubmitRecordParams): Promise<vo
           evidenceFiles,
           qualityDocuments,
           hazWasteCertificates,
-          recycledPhoto,
-          stockpilePhoto,
+          recycledPhotos,
+          stockpilePhotos,
           uploadedFilesRef,
         );
       } else {
@@ -303,8 +303,8 @@ export const handleSubmitRecord = async (params: SubmitRecordParams): Promise<vo
           evidenceFiles,
           qualityDocuments,
           hazWasteCertificates,
-          recycledPhoto,
-          stockpilePhoto,
+          recycledPhotos,
+          stockpilePhotos,
           originalFileIdsRef.current,
           originalFileRefsRef.current,
         );
@@ -313,8 +313,8 @@ export const handleSubmitRecord = async (params: SubmitRecordParams): Promise<vo
       console.error("Error uploading files:", fileError);
       toast.error(
         fileError?.response?.data?.message ||
-          fileError?.message ||
-          "Không thể tải lên một số tài liệu. Vui lòng thử lại.",
+        fileError?.message ||
+        "Không thể tải lên một số tài liệu. Vui lòng thử lại.",
       );
       throw fileError;
     }
@@ -328,8 +328,8 @@ export const handleSubmitRecord = async (params: SubmitRecordParams): Promise<vo
   } catch (error: any) {
     toast.error(
       error?.response?.data?.message ||
-        error?.message ||
-        "Không thể gửi bản ghi",
+      error?.message ||
+      "Không thể gửi bản ghi",
     );
     throw error;
   }

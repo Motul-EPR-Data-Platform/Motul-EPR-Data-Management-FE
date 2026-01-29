@@ -9,13 +9,13 @@ export interface FileUploadTracking {
   qualityMetricsFiles: Set<string>;
   outputQualityMetricsFiles: Set<string>;
   hazWasteCertificates: Set<string>;
-  recycledPhoto: string | null;
-  stockpilePhoto: string | null;
+  recycledPhotos: Set<string>;
+  stockpilePhotos: Set<string>;
 }
 
 export interface OriginalFileRefs {
-  recycledPhoto: File | null;
-  stockpilePhoto: File | null;
+  recycledPhotos: DocumentFile[];
+  stockpilePhotos: DocumentFile[];
 }
 
 export interface OriginalFileIds {
@@ -23,8 +23,8 @@ export interface OriginalFileIds {
   qualityMetrics: Set<string>;
   outputQualityMetrics: Set<string>;
   hazWasteCertificates: Set<string>;
-  recycledPhoto: string | null;
-  stockpilePhoto: string | null;
+  recycledPhotos: Set<string>;
+  stockpilePhotos: Set<string>;
 }
 
 /**
@@ -39,8 +39,8 @@ export const isNewFileId = (
     !originalFileIds.qualityMetrics.has(fileId) &&
     !originalFileIds.outputQualityMetrics.has(fileId) &&
     !originalFileIds.hazWasteCertificates.has(fileId) &&
-    originalFileIds.recycledPhoto !== fileId &&
-    originalFileIds.stockpilePhoto !== fileId
+    !originalFileIds.recycledPhotos.has(fileId) &&
+    !originalFileIds.stockpilePhotos.has(fileId)
   );
 };
 
@@ -69,8 +69,8 @@ export const uploadFilesForRecordCreate = async (
   evidenceFiles: DocumentFile[],
   qualityDocuments: DocumentFile[],
   hazWasteCertificates: DocumentFile[],
-  recycledPhoto: File | null,
-  stockpilePhoto: File | null,
+  recycledPhotos: DocumentFile[],
+  stockpilePhotos: DocumentFile[],
   uploadedFilesRef: MutableRefObject<FileUploadTracking>,
 ): Promise<void> => {
   const uploadPromises: Promise<any>[] = [];
@@ -111,31 +111,55 @@ export const uploadFilesForRecordCreate = async (
     }
   }
 
-  // Upload stockpile photo (from Step 3) - only if changed
-  if (stockpilePhoto) {
-    const fileId = getFileId(stockpilePhoto);
-    if (uploadedFilesRef.current.stockpilePhoto !== fileId) {
+  // Upload stockpile photos (from Step 3) - only new/changed files
+  if (stockpilePhotos && stockpilePhotos.length > 0) {
+    const stockpileFiles = stockpilePhotos
+      .filter((doc) => doc && doc.file)
+      .map((doc) => doc.file)
+      .filter((file): file is File => file instanceof File);
+
+    const newStockpileFiles = stockpileFiles.filter((file) => {
+      const fileId = getFileId(file);
+      return !uploadedFilesRef.current.stockpilePhotos.has(fileId);
+    });
+
+    if (newStockpileFiles.length > 0) {
       uploadPromises.push(
-        CollectionRecordService.uploadFile(recordId, {
-          file: stockpilePhoto,
-          category: FileType.STOCKPILE_PHOTO,
-        }).then(() => {
-          uploadedFilesRef.current.stockpilePhoto = fileId;
+        CollectionRecordService.uploadMultipleFiles(
+          recordId,
+          newStockpileFiles,
+          FileType.STOCKPILE_PHOTO,
+        ).then(() => {
+          newStockpileFiles.forEach((file) => {
+            uploadedFilesRef.current.stockpilePhotos.add(getFileId(file));
+          });
         }),
       );
     }
   }
 
-  // Upload recycled photo (from Step 3) - only if changed
-  if (recycledPhoto) {
-    const fileId = getFileId(recycledPhoto);
-    if (uploadedFilesRef.current.recycledPhoto !== fileId) {
+  // Upload recycled photos (from Step 3) - only new/changed files
+  if (recycledPhotos && recycledPhotos.length > 0) {
+    const recycledFiles = recycledPhotos
+      .filter((doc) => doc && doc.file)
+      .map((doc) => doc.file)
+      .filter((file): file is File => file instanceof File);
+
+    const newRecycledFiles = recycledFiles.filter((file) => {
+      const fileId = getFileId(file);
+      return !uploadedFilesRef.current.recycledPhotos.has(fileId);
+    });
+
+    if (newRecycledFiles.length > 0) {
       uploadPromises.push(
-        CollectionRecordService.uploadFile(recordId, {
-          file: recycledPhoto,
-          category: FileType.RECYCLED_PHOTO,
-        }).then(() => {
-          uploadedFilesRef.current.recycledPhoto = fileId;
+        CollectionRecordService.uploadMultipleFiles(
+          recordId,
+          newRecycledFiles,
+          FileType.RECYCLED_PHOTO,
+        ).then(() => {
+          newRecycledFiles.forEach((file) => {
+            uploadedFilesRef.current.recycledPhotos.add(getFileId(file));
+          });
         }),
       );
     }
@@ -245,8 +269,8 @@ export const uploadFilesForRecordEdit = async (
   evidenceFiles: DocumentFile[],
   qualityDocuments: DocumentFile[],
   hazWasteCertificates: DocumentFile[],
-  recycledPhoto: File | null,
-  stockpilePhoto: File | null,
+  recycledPhotos: DocumentFile[],
+  stockpilePhotos: DocumentFile[],
   originalFileIds: OriginalFileIds,
   originalFileRefs: OriginalFileRefs,
 ): Promise<void> => {
@@ -307,30 +331,44 @@ export const uploadFilesForRecordEdit = async (
     }
   }
 
-  // Upload stockpile photo only if it's new (different from original)
-  if (
-    stockpilePhoto instanceof File &&
-    isNewSingleFile(stockpilePhoto, originalFileRefs.stockpilePhoto)
-  ) {
-    uploadPromises.push(
-      CollectionRecordService.uploadFile(recordId, {
-        file: stockpilePhoto,
-        category: FileType.STOCKPILE_PHOTO,
-      }),
+  // Upload stockpile photos only if they are new
+  if (stockpilePhotos && stockpilePhotos.length > 0) {
+    const newStockpilePhotos = stockpilePhotos.filter((doc) =>
+      isNewFileId(doc.id, originalFileIds),
     );
+    const filesToUpload = newStockpilePhotos
+      .map((doc) => doc.file)
+      .filter((file): file is File => file instanceof File);
+
+    if (filesToUpload.length > 0) {
+      uploadPromises.push(
+        CollectionRecordService.uploadMultipleFiles(
+          recordId,
+          filesToUpload,
+          FileType.STOCKPILE_PHOTO,
+        ),
+      );
+    }
   }
 
-  // Upload recycled photo only if it's new (different from original)
-  if (
-    recycledPhoto instanceof File &&
-    isNewSingleFile(recycledPhoto, originalFileRefs.recycledPhoto)
-  ) {
-    uploadPromises.push(
-      CollectionRecordService.uploadFile(recordId, {
-        file: recycledPhoto,
-        category: FileType.RECYCLED_PHOTO,
-      }),
+  // Upload recycled photos only if they are new
+  if (recycledPhotos && recycledPhotos.length > 0) {
+    const newRecycledPhotos = recycledPhotos.filter((doc) =>
+      isNewFileId(doc.id, originalFileIds),
     );
+    const filesToUpload = newRecycledPhotos
+      .map((doc) => doc.file)
+      .filter((file): file is File => file instanceof File);
+
+    if (filesToUpload.length > 0) {
+      uploadPromises.push(
+        CollectionRecordService.uploadMultipleFiles(
+          recordId,
+          filesToUpload,
+          FileType.RECYCLED_PHOTO,
+        ),
+      );
+    }
   }
 
   if (uploadPromises.length > 0) {

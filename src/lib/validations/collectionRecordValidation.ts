@@ -6,8 +6,8 @@ export interface ValidationContext {
   formData: Partial<CreateDraftFormData>;
   locationRefId: string;
   collectionDate: Date;
-  recycledPhoto: globalThis.File | null;
-  stockpilePhoto: globalThis.File | null;
+  recycledPhotos?: Array<{ id: string; file: File; type: string }>;
+  stockpilePhotos?: Array<{ id: string; file: File; type: string }>;
   hazWasteCertificates?: Array<{ id: string; file: File; type: string }>;
 }
 
@@ -25,8 +25,8 @@ export const validateStep = (
     formData,
     locationRefId,
     collectionDate,
-    recycledPhoto,
-    stockpilePhoto,
+    recycledPhotos,
+    stockpilePhotos,
     hazWasteCertificates,
   } = context;
   const newErrors: Record<string, string> = {};
@@ -79,8 +79,8 @@ export const validateStep = (
         stockpileVolumeKg: formData.stockpileVolumeKg ?? null,
         stockInDate: formData.stockInDate ?? null,
         recycledVolumeKg: formData.recycledVolumeKg ?? 0,
-        recycledPhoto: recycledPhoto,
-        stockpilePhoto: stockpilePhoto ?? null,
+        recycledPhotos: recycledPhotos ?? [],
+        stockpilePhotos: stockpilePhotos ?? [],
       };
 
       step3ValidationSchema.parse(step3Data);
@@ -97,8 +97,8 @@ export const validateStep = (
         if (!formData.recycledVolumeKg || formData.recycledVolumeKg <= 0) {
           newErrors.recycledVolumeKg = "Khối lượng tái chế là bắt buộc";
         }
-        if (!recycledPhoto) {
-          newErrors.recycledPhoto = "Ảnh sản phẩm đã tái chế là bắt buộc";
+        if (!recycledPhotos || recycledPhotos.length === 0) {
+          newErrors.recycledPhotos = "Ảnh sản phẩm đã tái chế là bắt buộc";
         }
         if (formData.stockpiled === true) {
           if (
@@ -108,7 +108,7 @@ export const validateStep = (
             newErrors.stockpileVolumeKg =
               "Khối lượng lưu kho là bắt buộc khi chọn lưu kho";
           }
-          if (!stockpilePhoto) {
+          if (!stockpilePhotos || stockpilePhotos.length === 0) {
             newErrors.stockpilePhoto =
               "Ảnh nhập kho là bắt buộc khi chọn lưu kho";
           }

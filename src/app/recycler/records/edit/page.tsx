@@ -65,10 +65,10 @@ export default function EditCollectionRecordPage() {
     setQualityDocuments,
     hazWasteCertificates,
     setHazWasteCertificates,
-    recycledPhoto,
-    setRecycledPhoto,
-    stockpilePhoto,
-    setStockpilePhoto,
+    recycledPhotos,
+    setRecycledPhotos,
+    stockpilePhotos,
+    setStockpilePhotos,
     dropdownData,
     handleFieldChange,
     handleNext,
@@ -207,12 +207,12 @@ export default function EditCollectionRecordPage() {
             qualityMetrics: new Set(),
             outputQualityMetrics: new Set(),
             hazWasteCertificates: new Set(),
-            recycledPhoto: null,
-            stockpilePhoto: null,
+            recycledPhotos: new Set(),
+            stockpilePhotos: new Set(),
           };
           originalFileRefsRef.current = {
-            recycledPhoto: null,
-            stockpilePhoto: null,
+            recycledPhotos: [],
+            stockpilePhotos: [],
           };
 
           // Load and prefill files from preview API
@@ -301,30 +301,42 @@ export default function EditCollectionRecordPage() {
                 setHazWasteCertificates(certDocs);
               }
 
-              // Convert recycled photo
+              // Convert recycled photo to DocumentFile format
               if (filesWithPreview.recycledPhoto) {
                 const fileObj = await urlToFile(
                   filesWithPreview.recycledPhoto.signedUrl,
                   filesWithPreview.recycledPhoto.fileName,
                   filesWithPreview.recycledPhoto.mimeType,
                 );
-                originalFileIdsRef.current.recycledPhoto =
-                  filesWithPreview.recycledPhoto.id;
-                originalFileRefsRef.current.recycledPhoto = fileObj;
-                setRecycledPhoto(fileObj);
+                originalFileIdsRef.current.recycledPhotos.add(
+                  filesWithPreview.recycledPhoto.id,
+                );
+                const recycledDoc: DocumentFile = {
+                  id: filesWithPreview.recycledPhoto.id,
+                  file: fileObj,
+                  type: "result_report",
+                };
+                originalFileRefsRef.current.recycledPhotos = [recycledDoc];
+                setRecycledPhotos([recycledDoc]);
               }
 
-              // Convert stockpile photo
+              // Convert stockpile photos to DocumentFile format
               if (filesWithPreview.stockpilePhoto) {
                 const fileObj = await urlToFile(
                   filesWithPreview.stockpilePhoto.signedUrl,
                   filesWithPreview.stockpilePhoto.fileName,
                   filesWithPreview.stockpilePhoto.mimeType,
                 );
-                originalFileIdsRef.current.stockpilePhoto =
-                  filesWithPreview.stockpilePhoto.id;
-                originalFileRefsRef.current.stockpilePhoto = fileObj;
-                setStockpilePhoto(fileObj);
+                originalFileIdsRef.current.stockpilePhotos.add(
+                  filesWithPreview.stockpilePhoto.id,
+                );
+                const stockpileDoc: DocumentFile = {
+                  id: filesWithPreview.stockpilePhoto.id,
+                  file: fileObj,
+                  type: "anh-nhap-kho",
+                };
+                originalFileRefsRef.current.stockpilePhotos = [stockpileDoc];
+                setStockpilePhotos([stockpileDoc]);
               }
             } catch (fileError) {
               console.error("Error loading files:", fileError);
@@ -358,8 +370,8 @@ export default function EditCollectionRecordPage() {
     setEvidenceFiles,
     setQualityDocuments,
     setHazWasteCertificates,
-    setRecycledPhoto,
-    setStockpilePhoto,
+    setRecycledPhotos,
+    setStockpilePhotos,
     originalFileIdsRef,
     originalFileRefsRef,
     setIsLoadingRecord,
@@ -466,10 +478,10 @@ export default function EditCollectionRecordPage() {
               onQualityDocumentsChange={setQualityDocuments}
               hazWasteCertificates={hazWasteCertificates}
               onHazWasteCertificatesChange={setHazWasteCertificates}
-              recycledPhoto={recycledPhoto}
-              onRecycledPhotoChange={setRecycledPhoto}
-              stockpilePhoto={stockpilePhoto}
-              onStockpilePhotoChange={setStockpilePhoto}
+              recycledPhotos={recycledPhotos}
+              onRecycledPhotosChange={setRecycledPhotos}
+              stockpilePhotos={stockpilePhotos}
+              onStockpilePhotosChange={setStockpilePhotos}
             />
           )}
 
@@ -489,8 +501,8 @@ export default function EditCollectionRecordPage() {
               recycledDate={recycledDate}
               evidenceFilesCount={evidenceFiles.length}
               qualityDocumentsCount={qualityDocuments.length}
-              hasRecycledPhoto={!!recycledPhoto}
-              hasStockpilePhoto={!!stockpilePhoto}
+              hasRecycledPhoto={recycledPhotos.length > 0}
+              hasStockpilePhoto={stockpilePhotos.length > 0}
             />
           )}
 
