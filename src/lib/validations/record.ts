@@ -111,7 +111,7 @@ export const recordSubmissionSchema = z
       .positive("Khối lượng tái chế phải lớn hơn 0"),
     collectedPricePerKg: z
       .number()
-      .positive("Giá thu gom phải lớn hơn 0"),
+      .min(0, "Giá thu gom không được âm"),
     batchId: z
       .string()
       .min(1, "Lô hàng là bắt buộc"),

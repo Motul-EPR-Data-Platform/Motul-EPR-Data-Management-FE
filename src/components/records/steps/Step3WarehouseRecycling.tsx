@@ -1,5 +1,6 @@
 "use client";
 
+import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -111,7 +112,7 @@ export function Step3WarehouseRecycling({
                 onChange={(date: Date | undefined) => {
                   onChange(
                     "stockInDate",
-                    date ? date.toISOString().split("T")[0] : null,
+                    date ? format(date, "yyyy-MM-dd") : null,
                   );
                 }}
                 disabled={disabled}
@@ -183,7 +184,7 @@ export function Step3WarehouseRecycling({
               }
               onChange(
                 "recycledDate",
-                date ? date.toISOString().split("T")[0] : null,
+                date ? format(date, "yyyy-MM-dd") : null,
               );
             }}
             disabled={disabled}

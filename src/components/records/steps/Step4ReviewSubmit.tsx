@@ -146,12 +146,13 @@ export function Step4ReviewSubmit({
             label="Khối lượng thu gom (kg)"
             value={formData.collectedVolumeKg}
           />
-          {formData.collectedPricePerKg && (
-            <ReviewField
-              label="Giá thu gom (VNĐ/kg)"
-              value={formData.collectedPricePerKg.toLocaleString("vi-VN")}
-            />
-          )}
+          {formData.collectedPricePerKg !== undefined &&
+            formData.collectedPricePerKg !== null && (
+              <ReviewField
+                label="Giá thu gom (VNĐ/kg)"
+                value={formData.collectedPricePerKg.toLocaleString("vi-VN")}
+              />
+            )}
           <ReviewField label="Biển số xe" value={formData.vehiclePlate} />
           {fullAddress && (
             <ReviewField label="Địa chỉ thu gom" value={fullAddress} />

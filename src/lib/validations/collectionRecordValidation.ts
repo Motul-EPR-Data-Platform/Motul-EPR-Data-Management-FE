@@ -59,7 +59,11 @@ export const validateStep = (
     if (!formData.hazWasteId) {
       newErrors.hazWasteId = "Vui lòng chọn Mã HAZ";
     }
-    if (!formData.collectedPricePerKg || formData.collectedPricePerKg <= 0) {
+    if (
+      formData.collectedPricePerKg === undefined ||
+      formData.collectedPricePerKg === null ||
+      formData.collectedPricePerKg < 0
+    ) {
       newErrors.collectedPricePerKg = "Giá thu gom là bắt buộc";
     }
     if (!collectionDate || !(collectionDate instanceof Date) || isNaN(collectionDate.getTime())) {

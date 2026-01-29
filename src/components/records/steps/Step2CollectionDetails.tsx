@@ -208,15 +208,16 @@ export function Step2CollectionDetails({
           <Input
             id="collectedPricePerKg"
             type="number"
-            step="0.01"
+            step="0"
             min="0"
-            value={formData.collectedPricePerKg || ""}
-            onChange={(e) =>
+            value={formData.collectedPricePerKg ?? ""}
+            onChange={(e) => {
+              const value = e.target.value;
               onChange(
                 "collectedPricePerKg",
-                e.target.value ? parseFloat(e.target.value) : null,
-              )
-            }
+                value !== "" ? parseFloat(value) : null,
+              );
+            }}
             placeholder="0.00"
             disabled={disabled}
             className={errors.collectedPricePerKg ? "border-red-500" : ""}
